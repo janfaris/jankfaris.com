@@ -8,6 +8,11 @@ const projects = [
     link: 'https://wandrtravelai.com',
   },
   {
+    name: 'Blok',
+    description: 'AI condo management for Puerto Rico',
+    link: 'https://www.blokpr.co',
+  },
+  {
     name: 'UPRConnect',
     description: 'A student-centered platform',
     link: null,
