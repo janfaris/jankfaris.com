@@ -19,6 +19,7 @@
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: top;
   margin-bottom: 24px;
   border: 2px solid var(--border);
 }
