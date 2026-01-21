@@ -12,7 +12,7 @@ const projects = [
     name: 'Janga',
     description: 'Find where to hang out',
     link: 'https://apps.apple.com/us/app/janga/id6744530407',
-    tech: ['Swift', 'iOS', 'Supabase'],
+    tech: ['Expo', 'React Native', 'Supabase'],
   },
   {
     name: 'Blok',
