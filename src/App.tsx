@@ -12,13 +12,13 @@ const projects = [
     name: 'Janga',
     description: 'Find where to hang out',
     link: 'https://apps.apple.com/us/app/janga/id6744530407',
-    tech: ['Swift', 'iOS', 'Firebase'],
+    tech: ['Swift', 'iOS', 'Supabase'],
   },
   {
     name: 'Blok',
     description: 'AI condo management for Puerto Rico',
     link: 'https://www.blokpr.co',
-    tech: ['React', 'Supabase', 'WhatsApp API'],
+    tech: ['React', 'Supabase', 'WhatsApp API', 'Twilio'],
   },
   {
     name: 'UPRConnect',
