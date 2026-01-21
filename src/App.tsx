@@ -8,6 +8,11 @@ const projects = [
     link: 'https://wandrtravelai.com',
   },
   {
+    name: 'Janga',
+    description: 'Find where to hang out',
+    link: 'https://apps.apple.com/us/app/janga/id6744530407',
+  },
+  {
     name: 'Blok',
     description: 'AI condo management for Puerto Rico',
     link: 'https://www.blokpr.co',
