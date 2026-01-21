@@ -40,8 +40,7 @@ function App() {
           <h1 className="name">Jan Faris</h1>
           <p className="title">Software Engineer @ Microsoft</p>
           <p className="bio">
-            Building secure applications for fraud prevention and AI integration. 
-            Based in Puerto Rico.
+            Full-time at Microsoft by day. Building cool stuff for Puerto Rico by night.
           </p>
         </section>
 
