@@ -19,6 +19,15 @@ const projects = [
   },
 ]
 
+const articles = [
+  {
+    title: 'How I Built the "Cursor" for Trip Planning in 30 Days',
+    description: 'Tech stack, lessons, and the AI tools that made it possible',
+    link: 'https://x.com/jankfaris/status/2014011668271948178',
+    date: 'Jan 2026',
+  },
+]
+
 const links = [
   { label: 'LinkedIn', url: 'https://linkedin.com/in/jan-faris-garcia' },
   { label: 'GitHub', url: 'https://github.com/janfaris' },
@@ -58,6 +67,28 @@ function App() {
               >
                 <span className="link-name">{project.name}</span>
                 <span className="link-description">{project.description}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {/* Writing */}
+        <section className="section">
+          <h2 className="section-title">Writing</h2>
+          <div className="link-list">
+            {articles.map((article) => (
+              <a 
+                key={article.title}
+                href={article.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link-item article-item"
+              >
+                <div className="article-content">
+                  <span className="link-name">{article.title}</span>
+                  <span className="link-description">{article.description}</span>
+                </div>
+                <span className="article-date">{article.date}</span>
               </a>
             ))}
           </div>
