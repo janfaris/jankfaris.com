@@ -3,6 +3,12 @@ import './App.css'
 
 const projects = [
   {
+    name: 'Vantage',
+    description: 'AI-powered real estate platform for Puerto Rico',
+    link: 'https://vantagepr.vercel.app',
+    tech: ['Next.js', 'Supabase', 'Claude AI', 'ElevenLabs', 'Stripe'],
+  },
+  {
     name: 'Wandr',
     description: 'An AI travel planner',
     link: 'https://wandrtravelai.com',
