@@ -19,6 +19,12 @@
     radial-gradient(circle at 85% 92%, rgba(20, 20, 19, 0.03), transparent 50%);
 }
 
+:root.dark .app::before {
+  background-image:
+    radial-gradient(circle at 15% 8%, rgba(45, 212, 191, 0.08), transparent 40%),
+    radial-gradient(circle at 85% 92%, rgba(250, 249, 245, 0.03), transparent 50%);
+}
+
 .app > * { position: relative; z-index: 1; }
 
 /* ============================================
@@ -112,7 +118,11 @@
   object-position: top center;
   display: block;
   filter: saturate(0.92) contrast(1.02);
-  transition: transform 800ms cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 800ms cubic-bezier(0.32, 0.72, 0, 1), filter 400ms;
+}
+
+:root.dark .portrait-frame img {
+  filter: saturate(0.85) contrast(1.05) brightness(0.88);
 }
 
 .portrait:hover .portrait-frame img {
@@ -879,12 +889,41 @@ a.list-row:hover .row-arrow { color: var(--accent); transform: translate(2px, -2
 }
 
 /* ============================================
-   LANG SWITCH (top-right)
+   TOP BAR (theme toggle + lang switch)
    ============================================ */
-.lang-switch {
+.topbar {
   position: fixed;
   top: 24px;
   right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 50;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(245, 244, 237, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 200ms cubic-bezier(0.32, 0.72, 0, 1),
+              background 200ms,
+              transform 200ms;
+}
+
+:root.dark .theme-toggle { background: rgba(20, 20, 19, 0.7); }
+
+.theme-toggle:hover { color: var(--accent); transform: scale(1.05); }
+
+.lang-switch {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -892,7 +931,6 @@ a.list-row:hover .row-arrow { color: var(--accent); transform: translate(2px, -2
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  z-index: 50;
   padding: 8px 14px;
   background: rgba(245, 244, 237, 0.85);
   backdrop-filter: blur(8px);
@@ -900,6 +938,8 @@ a.list-row:hover .row-arrow { color: var(--accent); transform: translate(2px, -2
   border: 1px solid var(--border);
   border-radius: 999px;
 }
+
+:root.dark .lang-switch { background: rgba(20, 20, 19, 0.7); }
 
 .lang-switch a {
   color: var(--text-tertiary);
@@ -912,7 +952,9 @@ a.list-row:hover .row-arrow { color: var(--accent); transform: translate(2px, -2
 .lang-divider { color: var(--text-tertiary); opacity: 0.5; }
 
 @media (max-width: 480px) {
-  .lang-switch { top: 16px; right: 16px; padding: 6px 10px; }
+  .topbar { top: 16px; right: 16px; }
+  .lang-switch { padding: 6px 10px; }
+  .theme-toggle { width: 30px; height: 30px; }
 }
 
 /* ============================================
