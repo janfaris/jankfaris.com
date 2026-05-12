@@ -12,6 +12,8 @@ export interface Project {
   metrics?: Metric[]
   featured?: boolean
   span?: 'wide'
+  /** Slug for /demos/<slug>.{mp4,jpg} — when set, card renders an autoplaying muted loop with poster fallback */
+  media?: string
 }
 export interface ExperienceItem {
   company: string
@@ -103,6 +105,7 @@ export const content: Record<Lang, Content> = {
     projects: [
       {
         name: 'Lupa',
+        media: 'lupa',
         tag: 'AI Sales Tool',
         year: '2026',
         description:
@@ -119,6 +122,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'demotape',
+        media: 'demotape',
         tag: 'Open Source · npm',
         year: '2026',
         description:
@@ -135,6 +139,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Vantage',
+        media: 'vantage',
         tag: 'Real Estate',
         year: '2025',
         description:
@@ -144,6 +149,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'usableai',
+        media: 'usableai',
         tag: 'Brand · Instagram',
         year: '2026',
         description:
@@ -153,6 +159,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Wandr',
+        media: 'wandr',
         tag: 'Travel',
         year: '2025',
         description: 'AI travel planner with itineraries, flights, and local events.',
@@ -161,6 +168,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Janga',
+        media: 'janga',
         tag: 'iOS App',
         year: '2025',
         description: 'Find where to hang out — live on the App Store.',
@@ -169,6 +177,8 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Blok',
+        media: 'blok',
+        span: 'wide',
         tag: 'PropTech',
         year: '2025',
         description: 'AI condo management for Puerto Rico over WhatsApp.',
@@ -288,6 +298,7 @@ export const content: Record<Lang, Content> = {
     projects: [
       {
         name: 'Lupa',
+        media: 'lupa',
         tag: 'IA · Ventas',
         year: '2026',
         description:
@@ -304,6 +315,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'demotape',
+        media: 'demotape',
         tag: 'Open Source · npm',
         year: '2026',
         description:
@@ -320,6 +332,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Vantage',
+        media: 'vantage',
         tag: 'Bienes Raíces',
         year: '2025',
         description:
@@ -329,6 +342,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'usableai',
+        media: 'usableai',
         tag: 'Marca · Instagram',
         year: '2026',
         description:
@@ -338,6 +352,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Wandr',
+        media: 'wandr',
         tag: 'Viajes',
         year: '2025',
         description: 'Planificador de viajes con IA — itinerarios, vuelos y eventos locales.',
@@ -346,6 +361,7 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Janga',
+        media: 'janga',
         tag: 'App iOS',
         year: '2025',
         description: 'Encuentra dónde janguear — disponible en el App Store.',
@@ -354,6 +370,8 @@ export const content: Record<Lang, Content> = {
       },
       {
         name: 'Blok',
+        media: 'blok',
+        span: 'wide',
         tag: 'PropTech',
         year: '2025',
         description: 'IA para administración de condominios en Puerto Rico, sobre WhatsApp.',

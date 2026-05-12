@@ -140,31 +140,54 @@ export default function App({ lang = 'en' }: Props) {
               href={p.link}
               target="_blank"
               rel="noreferrer"
-              className={`card ${p.featured ? 'card-featured' : ''} ${p.span === 'wide' ? 'card-wide' : ''}`}
+              className={`card ${p.featured ? 'card-featured' : ''} ${p.span === 'wide' ? 'card-wide' : ''} ${p.media ? 'card-with-media' : ''}`}
             >
-              <div className="card-top">
-                <span className="card-tag">{p.tag}</span>
-                <span className="card-year">{p.year}</span>
-              </div>
-              <h3 className="card-title">{p.name}</h3>
-              <p className="card-desc">{p.description}</p>
-
-              {p.metrics && (
-                <div className="card-metrics">
-                  {p.metrics.map((m) => (
-                    <div key={m.label} className="metric">
-                      <span className="metric-val">{m.value}</span>
-                      <span className="metric-label">{m.label}</span>
-                    </div>
-                  ))}
+              {p.media && (
+                <div className="card-media">
+                  <video
+                    className="card-media-video"
+                    src={`/demos/${p.media}.mp4`}
+                    poster={`/demos/${p.media}.jpg`}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    onError={(e) => {
+                      // If video fails, fall back to poster image via parent class
+                      const v = e.currentTarget
+                      v.style.display = 'none'
+                    }}
+                  />
+                  {/* Static poster fallback for projects without video (Janga, usableai) */}
+                  <img className="card-media-poster" src={`/demos/${p.media}.jpg`} alt="" loading="lazy" />
                 </div>
               )}
-
-              <div className="card-bottom">
-                <div className="card-tech">
-                  {p.tech.map((t) => <span key={t} className="tech">{t}</span>)}
+              <div className="card-body">
+                <div className="card-top">
+                  <span className="card-tag">{p.tag}</span>
+                  <span className="card-year">{p.year}</span>
                 </div>
-                <span className="card-arrow" aria-hidden>↗</span>
+                <h3 className="card-title">{p.name}</h3>
+                <p className="card-desc">{p.description}</p>
+
+                {p.metrics && (
+                  <div className="card-metrics">
+                    {p.metrics.map((m) => (
+                      <div key={m.label} className="metric">
+                        <span className="metric-val">{m.value}</span>
+                        <span className="metric-label">{m.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="card-bottom">
+                  <div className="card-tech">
+                    {p.tech.map((t) => <span key={t} className="tech">{t}</span>)}
+                  </div>
+                  <span className="card-arrow" aria-hidden>↗</span>
+                </div>
               </div>
             </a>
           ))}
