@@ -83,14 +83,13 @@ export const content: Record<Lang, Content> = {
     },
     nav: { en: 'EN', es: 'ES', writing: 'Writing' },
     hero: {
-      display: { lead: 'I build ', em: 'AI products', tail: '\u00A0from Puerto\u00A0Rico.' },
+      display: { lead: 'Software, ', em: 'shipped', tail: '\u00A0from Puerto\u00A0Rico.' },
       lede:
-        'Software Engineer at Microsoft. Spanish-first by default. Seven shipped products, one on the App Store, one on npm. Currently shipping Lupa, demotape, and usableai.',
+        'Software Engineer at Microsoft. AI-native products, built end-to-end. EN · ES.',
       metaItems: [
-        { key: 'Role', val: 'SWE II @ Microsoft' },
-        { key: 'Based', val: 'San Juan, PR' },
-        { key: 'Focus', val: 'AI products, devtools' },
-        { key: 'Shipped', val: '7 products · 1 npm · 1 App Store' },
+        { key: 'role', val: 'SWE II @ Microsoft' },
+        { key: 'shipped', val: '2 npm · 1 App Store · internal tools' },
+        { key: 'languages', val: 'EN · ES' },
       ],
     },
     sections: {
@@ -106,10 +105,10 @@ export const content: Record<Lang, Content> = {
       {
         name: 'Lupa',
         media: 'lupa',
-        tag: 'AI Sales Tool',
+        tag: 'Internal · Client Acquisition',
         year: '2026',
         description:
-          'Discovers Puerto Rico local businesses with Gemini 3 + Maps grounding, audits their sites with PageSpeed, and auto-generates a personalized Spanish demo site per lead. One-click WhatsApp pitch with view tracking.',
+          'Internal tool I built to land website clients in Puerto Rico. From a Maps search, it audits local businesses, generates a personalized Spanish demo site per lead, and ships the pitch over WhatsApp. Used only by me and my partner — not a SaaS.',
         link: 'https://lupa-seven.vercel.app',
         tech: ['Next.js 16', 'React 19', 'Gemini 3', 'Supabase', 'Stripe'],
         metrics: [
@@ -133,6 +132,26 @@ export const content: Record<Lang, Content> = {
         span: 'wide',
       },
       {
+        name: 'usableai',
+        media: 'usableai',
+        tag: 'Internal · Content Engine',
+        year: '2026',
+        description:
+          'My private content engine. Runs the @usableai Instagram account: RSS + curated X → GPT-5.5 → vision-QA Spanish carousels, fully automated. Built for me, not for sale.',
+        link: 'https://instagram.com/usableai',
+        tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
+      },
+      {
+        name: 'spanish-tone-spec',
+        media: 'spanish-tone-spec',
+        tag: 'Open Source · npm',
+        year: '2026',
+        description:
+          'Prompt-side Spanish locale tone control for LLM output. Corpus-driven, no post-hoc regex. Solves the "sounds like Mexico, not PR" problem.',
+        link: 'https://www.npmjs.com/package/spanish-tone-spec',
+        tech: ['TypeScript', 'Zod', 'MIT'],
+      },
+      {
         name: 'Vantage',
         media: 'vantage',
         tag: 'Real Estate',
@@ -141,16 +160,6 @@ export const content: Record<Lang, Content> = {
           'AI-powered real estate platform for Puerto Rico — listings, voice search, agent tools.',
         link: 'https://vantagepr.vercel.app',
         tech: ['Next.js', 'Claude', 'ElevenLabs', 'Stripe'],
-      },
-      {
-        name: 'usableai',
-        media: 'usableai',
-        tag: 'Brand · Instagram',
-        year: '2026',
-        description:
-          'Spanish-first daily AI digest for LATAM. Automated pipeline: RSS + curated X → GPT-5.5 → Instagram carousels with QA-validated slides.',
-        link: 'https://instagram.com/usableai',
-        tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
       },
       {
         name: 'Wandr',
@@ -186,30 +195,30 @@ export const content: Record<Lang, Content> = {
         company: 'Microsoft',
         role: 'Software Engineer II',
         period: '2025 — Present',
-        note: 'Full-time engineering at Microsoft. Working on production systems at hyperscale.',
+        note: 'Commerce Core / Compliance Analytics. Shipped PRPilot — internal Claude-powered PR-review tool that scored 5.0/5.0 on internal AI evaluations across 7+ repos.',
       },
       {
         company: 'Xtillion',
         role: 'Associate Engineer',
         period: '2024 — 2025',
-        note: 'Shipped enterprise software for U.S. clients. Full-stack TypeScript, React, Node.',
+        note: 'Full-stack TypeScript / React / Node for U.S. enterprise clients. Led the Snowflake migration. First taste of real production scale.',
       },
       {
         company: 'Pratt & Whitney',
         role: 'Co-Op Software Engineer',
         period: '2021 — 2023',
-        note: 'Two-year co-op writing production code in the aerospace propulsion stack.',
+        note: 'Two-year co-op writing production code in the aerospace propulsion stack. Learned how shipping under regulation works.',
       },
     ],
     press: [],
     pressEmptyHint:
       'First mentions coming soon. If you write, podcast, or organize on AI / tech in Puerto Rico — I\u2019m happy to talk.',
     now: {
-      headline: 'Lupa — AI sales tool for Puerto Rico local businesses.',
+      headline: 'Lupa — my private client-acquisition tool, still pre-launch.',
       lines: [
-        'Shipping daily on usableai (Spanish-first AI digest, Instagram).',
+        'usableai — my private content engine that runs my Spanish AI digest on Instagram. Still polishing.',
         'Writing one essay per month on building AI products from Puerto Rico.',
-        'Open to one consulting engagement this quarter.',
+        'Both tools are in the final polish phase before going wide on real clients.',
       ],
       updated: 'Updated monthly',
     },
@@ -268,17 +277,16 @@ export const content: Record<Lang, Content> = {
     nav: { en: 'EN', es: 'ES', writing: 'Ensayos' },
     hero: {
       display: {
-        lead: 'Construyo ',
-        em: 'productos de IA',
+        lead: 'Software, ',
+        em: 'entregado',
         tail: '\u00A0desde Puerto\u00A0Rico.',
       },
       lede:
-        'Ingeniero de software en Microsoft. Español primero, por defecto. Siete productos lanzados, uno en el App Store, uno en npm. Actualmente embarcando Lupa, demotape y usableai.',
+        'Ingeniero de Software en Microsoft. Productos AI-native, de punta a punta. EN · ES.',
       metaItems: [
-        { key: 'Rol', val: 'SWE II @ Microsoft' },
-        { key: 'Base', val: 'San Juan, PR' },
-        { key: 'Foco', val: 'Productos de IA, devtools' },
-        { key: 'Lanzados', val: '7 productos · 1 npm · 1 App Store' },
+        { key: 'rol', val: 'SWE II @ Microsoft' },
+        { key: 'lanzados', val: '2 npm · 1 App Store · herramientas internas' },
+        { key: 'idiomas', val: 'EN · ES' },
       ],
     },
     sections: {
@@ -321,6 +329,26 @@ export const content: Record<Lang, Content> = {
         span: 'wide',
       },
       {
+        name: 'usableai',
+        media: 'usableai',
+        tag: 'Interno · Motor de contenido',
+        year: '2026',
+        description:
+          'Digest diario de IA en español para LATAM. Pipeline automatizado: RSS + X curado → GPT-5.5 → carruseles de Instagram con QA visual.',
+        link: 'https://instagram.com/usableai',
+        tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
+      },
+      {
+        name: 'spanish-tone-spec',
+        media: 'spanish-tone-spec',
+        tag: 'Open Source · npm',
+        year: '2026',
+        description:
+          'Control de tono del español para salida de LLMs, desde el prompt. Basado en corpus, sin regex post-hoc. Resuelve el "suena a México, no a PR".',
+        link: 'https://www.npmjs.com/package/spanish-tone-spec',
+        tech: ['TypeScript', 'Zod', 'MIT'],
+      },
+      {
         name: 'Vantage',
         media: 'vantage',
         tag: 'Bienes Raíces',
@@ -329,16 +357,6 @@ export const content: Record<Lang, Content> = {
           'Plataforma de bienes raíces con IA para Puerto Rico — listings, búsqueda por voz, herramientas para agentes.',
         link: 'https://vantagepr.vercel.app',
         tech: ['Next.js', 'Claude', 'ElevenLabs', 'Stripe'],
-      },
-      {
-        name: 'usableai',
-        media: 'usableai',
-        tag: 'Marca · Instagram',
-        year: '2026',
-        description:
-          'Digest diario de IA en español para LATAM. Pipeline automatizado: RSS + X curado → GPT-5.5 → carruseles de Instagram con QA visual.',
-        link: 'https://instagram.com/usableai',
-        tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
       },
       {
         name: 'Wandr',
@@ -380,7 +398,7 @@ export const content: Record<Lang, Content> = {
         company: 'Xtillion',
         role: 'Associate Engineer',
         period: '2024 — 2025',
-        note: 'Software empresarial para clientes en EE.UU. Full-stack TypeScript, React, Node.',
+        note: 'Full-stack TypeScript / React / Node para clientes empresariales en EE.UU. Lideré la migración a Snowflake. Primer contacto con escala real.',
       },
       {
         company: 'Pratt & Whitney',
@@ -397,7 +415,7 @@ export const content: Record<Lang, Content> = {
       lines: [
         'Publicando diariamente en usableai (digest de IA en español, Instagram).',
         'Escribiendo un ensayo al mes sobre construir productos de IA desde Puerto Rico.',
-        'Abierto a un proyecto de consultoría este trimestre.',
+        'Ambas herramientas están en fase final de pulido antes de salir con clientes reales.',
       ],
       updated: 'Actualizado mensualmente',
     },

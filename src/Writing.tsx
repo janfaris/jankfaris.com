@@ -7,36 +7,44 @@ import { JFMark } from './JFMark.tsx'
 export default function Writing() {
   return (
     <div className="app">
-      <header className="hero container post-hero">
-        <Link to="/" className="back-link">← Back to home</Link>
-        <h1 className="display post-display">Writing</h1>
-        <p className="lede">
-          Notes on building AI products, shipping in Puerto Rico, and what I learn along the way.
-        </p>
-      </header>
+      <div className="container">
+        <header className="post-hero">
+          <Link to="/" className="back-link">← Back to home</Link>
+          <h1 className="post-display">Writing.</h1>
+          <p className="post-lede">
+            Notes on building AI products, shipping in Puerto Rico, and what I learn along the way.
+          </p>
+        </header>
 
-      <hr className="rule container-rule" />
+        <section className="section" style={{ paddingTop: 0, borderBottom: 'none' }}>
+          <div className="writing-list">
+            {posts.map((p) => (
+              <Link key={p.slug} to={`/writing/${p.slug}`} className="writing-row">
+                <span className="writing-date">{p.date}</span>
+                <div>
+                  <div className="writing-title">{p.title}</div>
+                  <p className="writing-desc">{p.description}</p>
+                </div>
+                <span className="writing-time">{p.readTime}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-      <section className="section container">
-        <div className="list">
-          {posts.map((p) => (
-            <Link key={p.slug} to={`/writing/${p.slug}`} className="list-row">
-              <span className="row-date">{p.date}</span>
-              <div className="row-body">
-                <h4 className="row-title">{p.title}</h4>
-                <p className="row-desc">{p.description}</p>
-                <span className="row-readtime">{p.readTime} read</span>
-              </div>
-              <span className="row-arrow">→</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <footer className="footer container">
-        <Link to="/" className="foot-mark"><JFMark size={22} /></Link>
-        <span className="foot-text">Built in Puerto Rico · © 2026 Jan Faris</span>
-      </footer>
+        <footer className="footer">
+          <Link to="/" className="foot-mark">
+            <JFMark size={20} />
+            <span>· 2026</span>
+          </Link>
+          <span className="foot-text">
+            <span>San Juan, PR</span>
+            <span>·</span>
+            <a href="mailto:jankarlo.faris@outlook.com">jankarlo.faris@outlook.com</a>
+            <span>·</span>
+            <a href="https://github.com/janfaris" target="_blank" rel="noreferrer">GitHub</a>
+          </span>
+        </footer>
+      </div>
     </div>
   )
 }
