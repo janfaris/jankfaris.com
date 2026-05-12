@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import './index.css'
 import './App.css'
 import { getPostEs } from './posts.es'
+import { JFMark } from './JFMark.tsx'
 
 function renderMarkdown(body: string) {
   const blocks = body.split(/\n\n+/).map((b) => b.trim()).filter(Boolean)
@@ -88,7 +89,7 @@ export default function PostEs() {
       </article>
 
       <footer className="footer container">
-        <Link to="/es" className="foot-mark">JF</Link>
+        <Link to="/es" className="foot-mark"><JFMark size={22} /></Link>
         <span className="foot-text">Hecho en Puerto Rico · © 2026 Jan Faris</span>
       </footer>
     </div>

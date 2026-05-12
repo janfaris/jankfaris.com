@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import './index.css'
 import './App.css'
 import { postsEs } from './posts.es'
+import { JFMark } from './JFMark.tsx'
 
 export default function WritingEs() {
   return (
@@ -33,7 +34,7 @@ export default function WritingEs() {
       </section>
 
       <footer className="footer container">
-        <Link to="/es" className="foot-mark">JF</Link>
+        <Link to="/es" className="foot-mark"><JFMark size={22} /></Link>
         <span className="foot-text">Hecho en Puerto Rico · © 2026 Jan Faris</span>
       </footer>
     </div>

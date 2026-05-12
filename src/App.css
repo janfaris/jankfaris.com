@@ -33,29 +33,31 @@
 .eyebrow {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
+  gap: 16px;
+  margin-bottom: 40px;
   font-family: var(--mono);
 }
 
 .eyebrow-num {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-secondary);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
 }
 
 .eyebrow-rule {
-  flex: 0 0 32px;
+  flex: 0 0 56px;
   height: 1px;
-  background: var(--rule);
+  background: var(--accent);
+  opacity: 0.55;
 }
 
 .eyebrow-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.22em;
   color: var(--text);
 }
 
@@ -138,11 +140,10 @@
 }
 
 .portrait-mark {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 16px;
-  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  height: 26px;
 }
 
 .portrait-loc {
@@ -196,26 +197,31 @@
 .display {
   font-family: var(--serif);
   font-weight: 500;
-  font-size: clamp(40px, 6.4vw, 76px);
-  line-height: 1.04;
-  letter-spacing: -0.02em;
+  font-size: clamp(56px, 9.2vw, 136px);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
   color: var(--text);
   max-width: 14ch;
+  font-variation-settings: "opsz" 144;
+  text-wrap: balance;
 }
 
 .display em {
   font-style: italic;
   color: var(--accent);
   font-weight: 500;
+  font-variation-settings: "opsz" 144;
 }
 
 .lede {
   font-family: var(--serif);
-  font-size: clamp(18px, 1.6vw, 22px);
-  line-height: 1.55;
+  font-size: clamp(19px, 1.55vw, 23px);
+  line-height: 1.62;
   color: var(--text-secondary);
   max-width: 56ch;
   font-weight: 400;
+  font-variation-settings: "opsz" 28;
+  text-wrap: pretty;
 }
 
 .lede-link {
@@ -405,7 +411,7 @@
   align-items: center;
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
 }
 
 .card-tag {
@@ -419,19 +425,22 @@
 .card-title {
   font-family: var(--serif);
   font-weight: 500;
-  font-size: 30px;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
   color: var(--text);
+  font-variation-settings: "opsz" 72;
 }
 
-.card-featured .card-title { font-size: 38px; }
+.card-featured .card-title { font-size: 46px; letter-spacing: -0.03em; }
 
 .card-desc {
   color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.62;
   flex: 1;
+  font-variation-settings: "opsz" 28;
+  text-wrap: pretty;
 }
 
 .card-desc { min-height: 0; }
@@ -600,11 +609,13 @@ a.list-row:hover .row-arrow { color: var(--accent); transform: translate(2px, -2
 }
 
 .foot-mark {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 18px;
-  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+  height: 24px;
+  transition: opacity 240ms ease;
 }
+.foot-mark:hover { opacity: 0.7; }
 
 .foot-text {
   font-family: var(--mono);

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="JF monogram">
+  <title>Jan Faris monogram</title>
+  <!--
+    JF monogram v3.
+    Each letter has its own top serif. The J's hook descends below
+    the F's baseline for clear letter identity at small sizes.
+    Designed to read crisply from 16px up.
+  -->
+  <g fill="currentColor">
+    <!-- J top serif (short, capped) -->
+    <rect x="14" y="14" width="22" height="6.5" rx="0.5" />
+    <!-- J vertical stem -->
+    <rect x="21" y="20.5" width="8" height="34" />
+    <!-- J hook — descends below F baseline, curls left -->
+    <path d="M 21 49 L 29 49 Q 29 62 18 62 Q 7 62 7 51 L 15 51 Q 15 55 18 55 Q 21 55 21 49 Z" />
+    <!-- F top crossbar (sits to the right, separated from J by negative space) -->
+    <rect x="45" y="14" width="28" height="6.5" rx="0.5" />
+    <!-- F vertical stem -->
+    <rect x="45" y="20.5" width="8" height="38" />
+    <!-- F middle crossbar -->
+    <rect x="53" y="34" width="18" height="6" rx="0.5" />
+  </g>
+</svg>

@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import './index.css'
 import './App.css'
 import { getPost } from './posts'
+import { JFMark } from './JFMark.tsx'
 
 // Tiny markdown renderer for our limited subset.
 function renderMarkdown(body: string) {
@@ -84,7 +85,7 @@ export default function Post() {
       </article>
 
       <footer className="footer container">
-        <Link to="/" className="foot-mark">JF</Link>
+        <Link to="/" className="foot-mark"><JFMark size={22} /></Link>
         <span className="foot-text">Built in Puerto Rico · © 2026 Jan Faris</span>
       </footer>
     </div>

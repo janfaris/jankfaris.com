@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import './index.css'
 import './App.css'
+import { JFMark } from './JFMark.tsx'
 import { posts } from './posts'
 import { content as siteContent, type Lang } from './content'
 
@@ -95,7 +96,7 @@ export default function App({ lang = 'en' }: Props) {
               <img src="/jan-profile.jpg" alt="Jan Faris" />
             </div>
             <figcaption className="portrait-caption">
-              <span className="portrait-mark">JF</span>
+              <span className="portrait-mark"><JFMark size={26} /></span>
               <span className="portrait-loc">San Juan · PR</span>
             </figcaption>
           </figure>
@@ -323,7 +324,7 @@ export default function App({ lang = 'en' }: Props) {
       </section>
 
       <footer className="footer container">
-        <span className="foot-mark">JF</span>
+        <span className="foot-mark"><JFMark size={22} /></span>
         <span className="foot-text">{c.footer}</span>
       </footer>
     </div>

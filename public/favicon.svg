@@ -1,4 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <circle cx="16" cy="16" r="16" fill="#111"/>
-  <text x="16" y="21" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600" fill="#fff">JF</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Jan Faris">
+  <title>JF</title>
+  <circle cx="16" cy="16" r="16" fill="#20808d"/>
+  <text x="16" y="22.5" text-anchor="middle"
+    font-family="Geist, 'SF Pro Display', system-ui, sans-serif"
+    font-size="17" font-weight="700" letter-spacing="-1"
+    fill="#f5f4ed">JF</text>
 </svg>
