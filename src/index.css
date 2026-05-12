@@ -1,91 +1,91 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+/* ============================================
+   jankfaris.com — Linear Indigo
+   Tokens only. Component styles live in App.css.
+   ============================================ */
 
 :root {
-  /* Parchment + warm neutrals (Anthropic) */
-  --bg: #f5f4ed;
-  --bg-elev: #faf9f5;
-  --bg-card: #ffffff;
-  --bg-dark: #141413;
-  --bg-dark-elev: #1f1f1d;
+  /* Canvas + surfaces — near-black with cool undertone */
+  --bg:        #08090a;
+  --bg-elev:   #101114;
+  --bg-card:   #14161b;
+  --bg-card-hover: #181a20;
 
-  --text: #141413;
-  --text-secondary: #5e5d59;
-  --text-tertiary: #87867f;
-  --text-on-dark: #faf9f5;
-  --text-on-dark-secondary: #b0aea5;
+  /* Ink — cool white */
+  --text:      #e6e8eb;
+  --text-dim:  #9ca3af;
+  --text-mute: #6b7385;
 
-  --border: #e8e6dc;
-  --border-soft: #f0eee6;
-  --border-dark: #2a2a28;
+  /* Single accent — Linear violet-indigo */
+  --indigo:      #5e6ad2;
+  --indigo-soft: #7c87e0;
+  --indigo-deep: #4853c4;
 
-  /* Single accent — Perplexity-inspired deep teal */
-  --accent: #20808d;
-  --accent-soft: #2aa5b3;
-  --warm: #c16e5a;
-  --warm-soft: #d28876;
+  /* Hairlines */
+  --hairline:        rgba(230, 232, 235, 0.08);
+  --hairline-strong: rgba(230, 232, 235, 0.16);
 
-  /* Perplexity-style hairline */
-  --rule: rgba(20, 20, 19, 0.08);
-
+  /* Type stacks */
   --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  --sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-
-  color-scheme: light;
-}
-
-:root.dark {
-  --bg: #141413;
-  --bg-elev: #1f1f1d;
-  --bg-card: #26261f;
-  --bg-dark: #0a0a09;
-  --bg-dark-elev: #1f1f1d;
-
-  --text: #faf9f5;
-  --text-secondary: #b0aea5;
-  --text-tertiary: #87867f;
-  --text-on-dark: #faf9f5;
-  --text-on-dark-secondary: #b0aea5;
-
-  --border: #2a2a28;
-  --border-soft: #1f1f1d;
-  --border-dark: #3d3d3a;
-
-  /* Brighter teal in dark mode for contrast */
-  --accent: #2dd4bf;
-  --accent-soft: #5eead4;
-  --warm: #e89580;
-  --warm-soft: #f0aa97;
-
-  --rule: rgba(250, 249, 245, 0.1);
+  --sans:  'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:  'Geist Mono', ui-monospace, SFMono-Regular, monospace;
 
   color-scheme: dark;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* Light mode — kept available behind .light toggle but dark is default.
+   Light reads as inverted: ink swap, indigo deepens slightly for AA contrast. */
+:root.light {
+  --bg:        #ffffff;
+  --bg-elev:   #fafafa;
+  --bg-card:   #f6f7f8;
+  --bg-card-hover: #f0f1f3;
 
-html { scroll-behavior: smooth; }
+  --text:      #0a0a0a;
+  --text-dim:  #4a4f5c;
+  --text-mute: #7a8190;
 
-body {
-  font-family: var(--sans);
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'ss01', 'cv11';
+  --indigo:      #4853c4;
+  --indigo-soft: #5e6ad2;
+  --indigo-deep: #3b46aa;
+
+  --hairline:        rgba(10, 10, 10, 0.08);
+  --hairline-strong: rgba(10, 10, 10, 0.14);
+
+  color-scheme: light;
 }
 
-::selection { background: var(--accent); color: var(--text-on-dark); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
 
 a { color: inherit; text-decoration: none; }
 
-.container {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 32px;
-}
+::selection { background: var(--indigo); color: #fff; }
 
-@media (max-width: 640px) {
-  .container { padding: 0 20px; }
+/* Subtle ambient glow on dark canvas */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(94, 106, 210, 0.05), transparent 50%),
+    radial-gradient(circle at 80% 90%, rgba(94, 106, 210, 0.03), transparent 60%);
+  z-index: 0;
+}
+:root.light body::before { display: none; }
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

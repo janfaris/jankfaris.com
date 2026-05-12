@@ -35,7 +35,6 @@ function renderMarkdown(body: string) {
 }
 
 function inline(text: string): React.ReactNode {
-  // Process **bold**, *italic*, `code` in order
   const parts: React.ReactNode[] = []
   const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g
   let lastIdx = 0
@@ -60,11 +59,13 @@ export default function Post() {
   if (!post) {
     return (
       <div className="app">
-        <header className="hero container post-hero">
-          <Link to="/writing" className="back-link">← Back to writing</Link>
-          <h1 className="display post-display">Not found</h1>
-          <p className="lede">That post doesn't exist (yet).</p>
-        </header>
+        <div className="container">
+          <header className="post-hero">
+            <Link to="/writing" className="back-link">← Back to writing</Link>
+            <h1 className="post-display">Not found.</h1>
+            <p className="post-lede">That post doesn't exist (yet).</p>
+          </header>
+        </div>
       </div>
     )
   }
@@ -78,15 +79,22 @@ export default function Post() {
           <span className="post-meta-dot">·</span>
           <span>{post.readTime} read</span>
         </div>
-        <h1 className="display post-display">{post.title}</h1>
-        <p className="lede post-lede">{post.description}</p>
+        <h1 className="post-display">{post.title}</h1>
+        <p className="post-lede">{post.description}</p>
         <hr className="post-rule" />
         <div className="prose">{renderMarkdown(post.body)}</div>
       </article>
 
       <footer className="footer container">
-        <Link to="/" className="foot-mark"><JFMark size={22} /></Link>
-        <span className="foot-text">Built in Puerto Rico · © 2026 Jan Faris</span>
+        <Link to="/" className="foot-mark">
+          <JFMark size={20} />
+          <span>· 2026</span>
+        </Link>
+        <span className="foot-text">
+          <span>San Juan, PR</span>
+          <span>·</span>
+          <a href="mailto:jankarlo.faris@outlook.com">jankarlo.faris@outlook.com</a>
+        </span>
       </footer>
     </div>
   )
