@@ -21,6 +21,8 @@
   /* Single accent — Perplexity-inspired deep teal */
   --accent: #20808d;
   --accent-soft: #2aa5b3;
+  --warm: #c16e5a;
+  --warm-soft: #d28876;
 
   /* Perplexity-style hairline */
   --rule: rgba(20, 20, 19, 0.08);
@@ -52,6 +54,8 @@
   /* Brighter teal in dark mode for contrast */
   --accent: #2dd4bf;
   --accent-soft: #5eead4;
+  --warm: #e89580;
+  --warm-soft: #f0aa97;
 
   --rule: rgba(250, 249, 245, 0.1);
 

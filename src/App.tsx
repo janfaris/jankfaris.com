@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './index.css'
 import './App.css'
 import { JFMark } from './JFMark.tsx'
@@ -9,13 +9,44 @@ import { content as siteContent, type Lang } from './content'
 interface Props { lang?: Lang }
 
 function Eyebrow({ index, label }: { index: string; label: string }) {
+  const [visible, setVisible] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!ref.current) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setVisible(true)
+            obs.disconnect()
+            break
+          }
+        }
+      },
+      { threshold: 0.6, rootMargin: '0px 0px -40px 0px' }
+    )
+    obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [])
   return (
-    <div className="eyebrow">
+    <div ref={ref} className={`eyebrow ${visible ? 'is-visible' : ''}`}>
       <span className="eyebrow-num">{index}</span>
       <span className="eyebrow-rule" />
       <span className="eyebrow-label">{label}</span>
     </div>
   )
+}
+
+/** Split a string into individual words wrapped in .reveal-word spans for staggered animation. */
+function splitWords(text: string): React.ReactNode[] {
+  return text.split(/(\s+)/).map((tok, i) => {
+    if (/^\s+$/.test(tok)) return <span key={i}>{tok}</span>
+    return (
+      <span key={i} className="reveal-word">
+        {tok}
+      </span>
+    )
+  })
 }
 
 function useTheme() {
@@ -84,9 +115,9 @@ export default function App({ lang = 'en' }: Props) {
         <div className="hero-grid">
           <div className="hero-text">
             <h1 className="display">
-              {c.hero.display.lead}
-              <em>{c.hero.display.em}</em>
-              {c.hero.display.tail}
+              {splitWords(c.hero.display.lead)}
+              <em>{splitWords(c.hero.display.em)}</em>
+              {splitWords(c.hero.display.tail)}
             </h1>
             <p className="lede">{c.hero.lede as string}</p>
           </div>

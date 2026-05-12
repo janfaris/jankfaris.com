@@ -129,11 +129,6 @@ export const content: Record<Lang, Content> = {
           'CLI that records production-quality demo videos of web apps from a JSON config. Auth-aware, skeleton-free, multi-format. Replaces an entire category of $30/mo SaaS tools.',
         link: 'https://github.com/janfaris/demotape',
         tech: ['TypeScript', 'Playwright', 'FFmpeg', 'Zod', 'MIT'],
-        metrics: [
-          { label: 'Package', value: 'demotape' },
-          { label: 'License', value: 'MIT' },
-          { label: 'Auth providers', value: '3' },
-        ],
         featured: true,
         span: 'wide',
       },
@@ -322,11 +317,6 @@ export const content: Record<Lang, Content> = {
           'CLI que graba videos demo de calidad producción para apps web desde un config en JSON. Maneja autenticación, evita estados de loading, y exporta múltiples formatos. Reemplaza toda una categoría de SaaS de $30/mes.',
         link: 'https://github.com/janfaris/demotape',
         tech: ['TypeScript', 'Playwright', 'FFmpeg', 'Zod', 'MIT'],
-        metrics: [
-          { label: 'Paquete', value: 'demotape' },
-          { label: 'Licencia', value: 'MIT' },
-          { label: 'Auth providers', value: '3' },
-        ],
         featured: true,
         span: 'wide',
       },
