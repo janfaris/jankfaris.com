@@ -9,6 +9,111 @@ export interface Post {
 
 export const posts: Post[] = [
   {
+    slug: 'dont-patch-fix-prompt',
+    title: "Don't patch the output. Fix the prompt.",
+    description:
+      'Lessons from shipping an AI pull-request reviewer to 7 repos at Microsoft. Why diagnostic validators beat post-hoc regex, why the eval set is the product, and why trust compounds in both directions.',
+    date: 'May 2026',
+    readTime: '8 min',
+    body: `*Lessons from shipping an AI pull-request reviewer to 7 repos at Microsoft.*
+
+Last summer I almost killed my own product.
+
+I'd been working on PRPilot for a few months — an AI pull-request reviewer running on Claude Opus 4.7's 1M-token context, with retrieval over the diff and the linked issues. The pilot team was small. Three repos. Twenty engineers. The reviews were good enough that people stopped joking about turning it off.
+
+Then someone on a fourth team installed it on a repo I'd never seen. The PR was 4,000 lines. The bot left 23 comments. Eleven of them were wrong.
+
+The fix in front of me was obvious. Write a regex. Strip every comment that matched certain shapes — "consider extracting this into a function," "this could be more idiomatic," anything that smelled like advice the model couldn't justify. The team would stop muting the bot. Trust restored. Ship by Friday.
+
+I didn't do it. And I want to write about why, because I think it's the most important thing I've learned shipping AI products: **the reviewer that earns trust is the one whose author has stronger taste than the model.**
+
+If you patch the output, you don't have stronger taste. You have a softer ceiling on a model that keeps producing bad work, and your patches are getting between your users and the truth about what your system actually does.
+
+## The seductive wrong path
+
+Every team I've watched ship an AI reviewer eventually faces the same fork.
+
+The model is too noisy. Devs are complaining. There's pressure to ship a fix this week.
+
+The fast fix is always a post-processor. Sometimes it's a regex. Sometimes it's a second LLM call to classify whether the first comment was useful. Sometimes it's a denylist of phrases. Whatever shape it takes, the pattern is the same: leave the prompt alone, mask the bad outputs on the way out.
+
+It works. For about a week.
+
+Then the model gets confidently wrong in a new way your filter doesn't catch. You add another rule. Two weeks later, three more rules. Six months in, your reviewer is a Rube Goldberg machine of regex and second-pass LLM judges, none of you remembers why each rule exists, and the underlying prompt has been frozen in amber since the day you stopped trusting it.
+
+The worst part isn't the technical debt. It's that you've quietly stopped learning from your users. Every false positive your filter catches is signal you never wrote down. The prompt that's actually producing your outputs is getting worse and worse, and you don't know, because the layer above it is silently making the model look smarter than it is.
+
+This is the version of PRPilot that would have shipped by Friday. It's also the version that would have lost adoption within a quarter, because models change, prompts that worked yesterday produce different outputs tomorrow, and a brittle post-processor pipeline becomes a tax you pay every time you want to upgrade the model.
+
+## Diagnostic validators, not regex
+
+The principle I locked in instead, and now apply to every AI pipeline I build:
+
+> Validators tell you when the prompt is wrong. They never patch the output.
+
+A diagnostic validator runs after the model produces its result. If something is off — wrong tone, missing field, a class of error you've seen before — it raises a flag. It doesn't rewrite. It doesn't strip. It surfaces the failure to you, the author, and to the user, as a labeled diagnostic.
+
+In PRPilot's case, the validators check for things like:
+
+- Comments that don't cite a specific line.
+- Suggestions that contradict the code style elsewhere in the same repo.
+- "Consider X" comments where X has no clear win condition.
+- Comments that repeat verbatim across unrelated PRs — a sign the model is pattern-matching, not reading.
+
+When a validator fires, two things happen. The comment gets flagged in the bot's UI with a short label — *unjustified suggestion*, *style mismatch* — and the failure lands in a log that I read every Monday morning. I don't auto-strip. I don't auto-fix. I read.
+
+That weekly read is the whole product. It's the loop that turns user pain into prompt improvements, which turn into a model that does the right thing on its own, which means the next user gets a better experience without anyone having to push code.
+
+By the time PRPilot was scoring 5.0/5.0 on the internal evaluation rubric, the validators were firing on less than one percent of comments. Not because I was filtering harder. Because the prompt had eaten every lesson the validators had ever surfaced.
+
+## The eval set is the product
+
+The other belief I built PRPilot on, less original but harder to actually follow:
+
+**Your eval set is the product. Everything else is decoration.**
+
+I spent more time on the ground-truth set than on the prompt. The eval is a few hundred carefully-chosen pull requests, each one labeled with what a good reviewer would say, what a bad reviewer would say, and what an annoying-but-not-wrong reviewer would say. Each PR was picked because it represents a class of code the bot needs to be useful on — small refactors, infra config changes, large feature merges, security-sensitive paths, generated code, generated-by-the-bot code.
+
+A few rules I follow about evals:
+
+1. **The eval set should fit in your head.** Mine is small enough that I can name the categories without checking. If it's bigger than that, you're optimizing for a benchmark instead of a product.
+2. **Each entry should be actively painful to lose.** If you can delete an eval without flinching, it shouldn't have been in the eval.
+3. **Update the eval before the prompt.** When a user reports a bad review, the first commit is to the eval, not the prompt. The eval is the contract. The prompt is the implementation.
+4. **Run the eval before every prompt change.** Including the ones you're sure about.
+
+The 5.0/5.0 score isn't the point. The point is that I knew exactly which classes of PR the bot was strong on, which it was weak on, and which I had no eval coverage for. The score is just the receipt.
+
+## Trust compounds, and so does its absence
+
+PRPilot now runs across more than seven repos in the org. Almost none of them were sold. Three were installed by teams who saw the bot leave a useful comment on a PR they were reviewing, and DM'd me to ask how to enable it.
+
+This is the part nobody talks about with AI products. **Trust compounds.** Once a team trusts the bot, every comment after that gets the benefit of the doubt. Devs read carefully, take suggestions seriously, push back when they disagree instead of muting.
+
+The reverse compounds even faster. One bad week and a team stops reading. They don't tell you. They just stop. You don't get a churn signal — you get silence, and you discover the silence three months later when someone asks why the bot still posts to a repo nobody has touched in twelve weeks.
+
+The only way I know to make trust compound in the right direction is to be willing to ship slower than the model. Better to post one useful comment than five comments where one is useful. Better to be quiet on a PR you don't understand than to guess. Better to surface *I don't have context on this file* than to fabricate context.
+
+These are all prompt-level decisions. Not post-processor decisions. Not eval decisions. Just choices about what the model should do when it isn't sure.
+
+## What I'd tell someone shipping their first AI reviewer
+
+Three things, in order of how much they matter:
+
+1. **Treat the prompt as the source of truth.** If the model is producing the wrong thing, the right fix is upstream of the model's output. Validators that surface failure are good. Code that masks failure is debt.
+2. **Spend two weeks building an eval set before you spend two days iterating on the prompt.** You will be tempted to skip this step. Every engineer I know has skipped it. The ones who go back and build it later all wish they hadn't waited.
+3. **Read every flagged comment yourself for the first three months.** Not a dashboard. Not a summary. Read the actual model output and the actual user reaction. You are training your own taste, which is the upper bound on how good your product can ever be.
+
+If you do those three things, the rest is just work. Latency, retrieval, model routing, integrations — all of it falls into place when you have a sharp prompt, a tight eval, and the receipts to know which is which.
+
+## The general lesson
+
+Most of what made PRPilot land where so many internal AI tools fail wasn't technical. It was a willingness to slow down at the moment everyone wanted me to ship a patch, and to insist that the way to make the bot trustworthy was to make the prompt deserve trust — not to dress up its outputs after the fact.
+
+Quality is the product. The reviewer that earns trust is the one whose author has stronger taste than the model.
+
+Everything else is decoration.`,
+  },
+  {
     slug: 'first-npm-publish-2fa',
     title: 'Publishing my first npm package and the 2FA wall that almost killed it',
     description:
