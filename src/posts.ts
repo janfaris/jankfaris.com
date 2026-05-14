@@ -9,6 +9,167 @@ export interface Post {
 
 export const posts: Post[] = [
   {
+    slug: 'resend-supabase-tracked-email',
+    title: 'Resend + Supabase: making every email a tracked API call',
+    description:
+      'How I wrapped Resend so every send lands in the same Supabase observability table as my Gemini, OpenAI, and Google Places calls — and why "email as a tracked API" changed how I think about transactional infra.',
+    date: 'May 2026',
+    readTime: '7 min',
+    body: `## The realization
+
+I was looking at my Lupa cost dashboard one morning when something annoyed me. I could see exactly how much I'd spent on Gemini 3 Flash that week, broken down by operation. I could see Google Places billing per route. I could see GPT Image 2 per generated image, with the model+size SKU and the source URL it was priced from.
+
+I could not see email.
+
+Email was the one outbound call in the whole product that wasn't accounted for. Resend was *cheap*, so I'd never bothered. But the asymmetry bugged me: every other expensive thing I did was a row in Supabase, and email — the thing that actually reaches my customers — was a fire-and-forget.
+
+That morning I refactored it. Now every \`resend.emails.send()\` in Lupa is a tracked event in the same \`api_usage_events\` table as everything else. Same dashboard. Same daily report. Same observability surface. This essay is about why, how, and what I learned.
+
+## The pattern
+
+The whole thing is about 30 lines. Here's the shape:
+
+\`\`\`ts
+// lib/email.ts
+import { Resend } from "resend";
+import { trackApiUsage } from "./api-usage";
+
+type ResendEmailPayload = Parameters<Resend["emails"]["send"]>[0];
+
+let _resend: Resend | undefined;
+function getResend(): Resend {
+  if (!_resend) {
+    const key = process.env.RESEND_API_KEY?.trim();
+    if (!key) throw new Error("RESEND_API_KEY is not set");
+    _resend = new Resend(key);
+  }
+  return _resend;
+}
+
+async function sendTrackedEmail(
+  operation: string,
+  toEmail: string,
+  payload: ResendEmailPayload,
+): Promise<string | null> {
+  let status = "ok";
+  let resendId: string | null = null;
+  try {
+    const { data, error } = await getResend().emails.send(payload);
+    if (error) throw new Error(error.message ?? JSON.stringify(error));
+    resendId = data?.id ?? null;
+    return resendId;
+  } catch (err) {
+    status = "error";
+    throw err;
+  } finally {
+    await trackApiUsage({
+      provider: "resend",
+      operation,
+      route: \`lib/email.\${operation}\`,
+      quantity: 1,
+      unit: "email",
+      status,
+      metadata: {
+        toDomain: toEmail.split("@")[1]?.toLowerCase() ?? null,
+        subject: typeof payload.subject === "string"
+          ? payload.subject.slice(0, 120)
+          : null,
+        resendId,
+      },
+    });
+  }
+}
+\`\`\`
+
+Three things going on:
+
+**Lazy singleton.** The Resend client is created on first call, not at module load. This matters more than it looks — at module load you don't always have env vars (Next.js build, edge runtime). Lazy init keeps \`RESEND_API_KEY\` errors deferred until you actually try to send, which means a missing key fails the cron job, not the build.
+
+**Try / catch / finally writing to Supabase.** The send happens inside try. The error path re-throws so the caller still knows it failed. The finally block writes a row to \`api_usage_events\` regardless of outcome — including on failure, with \`status: "error"\`. Failed sends become visible in the same dashboard as successful ones.
+
+**No PII in the tracking row.** The recipient email is split — I keep only the domain (\`@gmail.com\`, \`@bylupa.com\`) — and the subject is truncated to 120 chars. The full address never lands in the analytics table. Resend keeps the actual recipient in its own dashboard; I keep the metadata I need for cost and deliverability reporting.
+
+That \`resendId\` going back into the metadata column is the killer feature. It's the join key between my analytics view and Resend's dashboard. When something goes wrong, I can grep my Supabase logs for the operation, get the Resend ID, and jump to Resend's UI for the delivery trace.
+
+## What trackApiUsage actually does
+
+The \`trackApiUsage\` function on the other side of that call is a thin writer over a Supabase table:
+
+\`\`\`sql
+create table api_usage_events (
+  id uuid primary key default gen_random_uuid(),
+  provider text not null,        -- 'resend', 'gemini', 'google_places', 'openai'
+  operation text not null,        -- 'monthly_report', 'text_search', 'image_generation'
+  sku text,
+  model text,
+  unit text not null,             -- 'email', 'request', 'token', 'image'
+  quantity numeric not null,
+  estimated_cost_usd numeric,
+  status text not null,           -- 'ok' | 'error'
+  route text,
+  metadata jsonb,
+  created_at timestamptz default now()
+);
+\`\`\`
+
+Every API call in the system writes to this one table. Gemini text generation writes \`provider: 'gemini', unit: 'token'\`. Google Places writes \`provider: 'google_places', unit: 'request'\`. Resend writes \`provider: 'resend', unit: 'email'\`.
+
+A separate \`provider_price_rules\` table holds the cost per unit by provider+operation+SKU+model, plus the free-tier monthly allowance and a source URL pointing at the official pricing page. \`trackApiUsage\` joins to it to fill \`estimated_cost_usd\` on the way in. Resend's free tier (3,000 emails/month at the time of writing) gets modeled exactly like Google Places' free quota — same schema, same dashboard treatment.
+
+That's the unification I wanted. Cost-per-customer rolls up across email and every other API. When Lupa generates a demo site, I can see the total marginal cost — including the activation confirmation email — in a single row.
+
+## The daily report (which is itself sent via Resend)
+
+The funny part of the build was the daily ops report. Every morning I get an email summarizing the previous 24 hours of API spend across every provider. It tells me the total estimated cost, the day-over-day delta, the per-provider breakdown, the top operations, and the top spending leads.
+
+The email itself goes out through the same \`sendTrackedEmail\` wrapper. Which means Resend reports on its own usage inside the email it sends to report on everything else's usage. The recursion is satisfying.
+
+\`\`\`ts
+await sendTrackedEmail("api_usage_daily_report", toEmail, {
+  from: "Lupa <hola@bylupa.com>",
+  to: toEmail,
+  subject,
+  html,
+});
+\`\`\`
+
+When that send happens, it writes a row with \`operation: "api_usage_daily_report"\`. So the next day's report includes a single Resend event for "delivering yesterday's report." It's a tiny line item, but it's there, and it's correct, and the fact that it's correct is what tells me the whole tracking system is wired right.
+
+## Why I keep emails in HTML tables, not React Email
+
+I love React Email. I use it elsewhere. For Lupa, I write the templates as raw HTML tables.
+
+Two reasons:
+
+**Gmail strips most CSS from \`<div>\`s.** Anyone who's shipped customer-facing email has hit this. Modern CSS in modern Gmail still falls back to table-layout for reliability. React Email handles this for you most of the time, but I had enough edge cases — Outlook desktop, Apple Mail dark mode, Gmail mobile clipping — that I wanted the layout in my hands.
+
+**The template is the brand surface for Lupa.** The header has a Georgia-serif italic glyph (◉) followed by the wordmark. The subject banner uses Lupa's signature terracotta on cream. The footer signs "Hecho en Puerto Rico." This isn't a generic transactional template — it's a brand artifact, and treating it like a hand-tuned HTML document instead of a component tree feels right for the role it plays.
+
+This is *not* a recommendation. For most products, React Email is the right answer and the time savings are real. For Lupa specifically, the brand investment pays back in trust signals that mainland tools don't replicate.
+
+## What I'd build next
+
+I haven't shipped these yet, but the wrapper is ready for them:
+
+**Bounce + complaint hooks.** Resend's webhooks land in a Supabase function, and a bounce event updates the recipient's profile so the next sender check skips them. Same observability table — \`provider: "resend", operation: "bounce"\` — so my dashboard sees deliverability rot the day it starts.
+
+**Per-customer email caps.** I'd rather throttle a misbehaving template than spam someone. The \`api_usage_events\` table already has the data: count \`provider='resend' and metadata->>'toDomain'='x'\` over a window, refuse to send if it exceeds threshold.
+
+**A "last-send" indicator on the customer admin view.** The Resend message ID is already in my table. Three lines of UI and an internal user can click to see the actual delivery, the actual open, the actual click — without ever leaving the admin.
+
+## The general lesson
+
+Most products track email as a feature, not as a cost. That's a mistake. Email is one of the few outbound calls you make every customer is guaranteed to see, and treating it like a tracked API — with the same observability surface as your AI calls and your database queries — pays back in three ways:
+
+1. You see when delivery rates drift before users tell you.
+2. You see the marginal cost of every customer interaction in one row.
+3. You build the habit, early, of treating "external service calls" as a uniform category, not a per-vendor zoo.
+
+Resend earned its way to default in my stack by making the SDK so unobtrusive that wrapping it doesn't cost anything. The API is small, the SDK is correct, and the only thing you ever have to think about is your own product. That's the right shape for infrastructure: it shows up when you call it, and disappears when you don't.
+
+For me, the wrap was 30 lines. For Lupa, it was the difference between "we send some emails" and "email is part of the product, the dashboard, and the budget." That difference is what makes Resend the first integration I reach for now, every time a new product needs to talk to a human.`,
+  },
+  {
     slug: 'dont-patch-fix-prompt',
     title: "Don't patch the output. Fix the prompt.",
     description:
