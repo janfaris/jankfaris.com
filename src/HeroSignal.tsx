@@ -15,7 +15,7 @@ export function HeroSignal() {
       probe.getContext('webgl', { powerPreference: 'high-performance' }),
     )
 
-    if (reduceMotion || !hasWebGL) return
+    if (reduceMotion || isMobile || !hasWebGL) return
 
     let disposed = false
     let frameId = 0

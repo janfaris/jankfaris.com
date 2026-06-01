@@ -11,16 +11,16 @@ interface Props { lang?: Lang }
 
 const typewriterLines: Record<Lang, string[]> = {
   en: [
-    'Building AI tools for founders',
-    'Shipping npm packages and mobile apps',
-    'Designing internal systems at Microsoft',
-    'Turning Spanish-first ideas into software',
+    'AI tools for founders',
+    'npm packages + mobile apps',
+    'internal systems at Microsoft',
+    'Spanish-first software',
   ],
   es: [
-    'Construyendo herramientas de IA para founders',
-    'Lanzando paquetes npm y apps móviles',
-    'Diseñando sistemas internos en Microsoft',
-    'Convirtiendo ideas Spanish-first en software',
+    'herramientas de IA para founders',
+    'paquetes npm + apps móviles',
+    'sistemas internos en Microsoft',
+    'software Spanish-first',
   ],
 }
 
@@ -84,66 +84,15 @@ function splitDesc(desc: string): { title: string; rest: string } {
 }
 
 function TypewriterLine({ phrases }: { phrases: string[] }) {
-  const [phraseIndex, setPhraseIndex] = useState(0)
-  const [visibleChars, setVisibleChars] = useState(0)
-  const [deleting, setDeleting] = useState(false)
-  const [reducedMotion, setReducedMotion] = useState(false)
-  const phrase = phrases[phraseIndex] ?? ''
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const legacyMedia = media as MediaQueryList & {
-      addListener?: (listener: () => void) => void
-      removeListener?: (listener: () => void) => void
-    }
-    const syncPreference = () => setReducedMotion(media.matches)
-    const onPreferenceChange = () => syncPreference()
-    syncPreference()
-
-    if (typeof media.addEventListener === 'function') {
-      media.addEventListener('change', onPreferenceChange)
-      return () => media.removeEventListener('change', onPreferenceChange)
-    }
-
-    legacyMedia.addListener?.(onPreferenceChange)
-    return () => legacyMedia.removeListener?.(onPreferenceChange)
-  }, [])
-
-  useEffect(() => {
-    if (reducedMotion || phrase.length === 0) return
-
-    const delay = !deleting && visibleChars === phrase.length
-      ? 1500
-      : deleting && visibleChars === 0
-        ? 260
-        : deleting
-          ? 34
-          : 48
-
-    const timeout = window.setTimeout(() => {
-      if (!deleting && visibleChars < phrase.length) {
-        setVisibleChars((count) => count + 1)
-        return
-      }
-      if (!deleting) {
-        setDeleting(true)
-        return
-      }
-      if (visibleChars > 0) {
-        setVisibleChars((count) => count - 1)
-        return
-      }
-
-      setDeleting(false)
-      setPhraseIndex((index) => (index + 1) % phrases.length)
-    }, delay)
-
-    return () => window.clearTimeout(timeout)
-  }, [deleting, phrase, phrases.length, reducedMotion, visibleChars])
-
   return (
-    <p className="typewriter-line" aria-label={phrases[0]}>
-      <span aria-hidden="true">{reducedMotion ? phrases[0] : phrase.slice(0, visibleChars)}</span>
+    <p className="typewriter-line" aria-label={phrases.join('. ')}>
+      <span className="typewriter-track" aria-hidden="true">
+        {phrases.map((phrase, index) => (
+          <span className={`typewriter-phrase typewriter-phrase-${index + 1}`} key={phrase}>
+            {phrase}
+          </span>
+        ))}
+      </span>
       <span className="typewriter-cursor" aria-hidden="true" />
     </p>
   )
