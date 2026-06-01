@@ -7,12 +7,15 @@ export function HeroSignal() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const lowPowerPhone = window.innerWidth < 720 && (navigator.hardwareConcurrency || 8) <= 4
     const probe = document.createElement('canvas')
-    const hasWebGL = Boolean(probe.getContext('webgl2') || probe.getContext('webgl'))
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const isMobile = window.innerWidth < 720
+    const hasWebGL = Boolean(
+      probe.getContext('webgl2', { powerPreference: 'high-performance' }) ||
+      probe.getContext('webgl', { powerPreference: 'high-performance' }),
+    )
 
-    if (reduceMotion || lowPowerPhone || !hasWebGL) return
+    if (reduceMotion || !hasWebGL) return
 
     let disposed = false
     let frameId = 0
@@ -22,14 +25,20 @@ export function HeroSignal() {
       const THREE = await import('three')
       if (disposed || !canvas) return
 
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        alpha: true,
-        powerPreference: 'high-performance',
-      })
+      let renderer: InstanceType<typeof THREE.WebGLRenderer>
+      try {
+        renderer = new THREE.WebGLRenderer({
+          canvas,
+          antialias: !isMobile,
+          alpha: true,
+          powerPreference: 'high-performance',
+        })
+      } catch (error) {
+        console.warn('Hero WebGL animation could not start.', error)
+        return
+      }
       renderer.setClearColor(0x000000, 0)
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2))
 
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
@@ -37,23 +46,34 @@ export function HeroSignal() {
 
       const group = new THREE.Group()
       scene.add(group)
+      const coreDetail = isMobile ? 1 : 2
+      const ringSegments = isMobile ? 120 : 180
+      const coreMaterial = isMobile
+        ? new THREE.MeshStandardMaterial({
+            color: 0xfdf8ee,
+            roughness: 0.24,
+            metalness: 0.08,
+            transparent: true,
+            opacity: 0.84,
+          })
+        : new THREE.MeshPhysicalMaterial({
+            color: 0xfdf8ee,
+            roughness: 0.18,
+            metalness: 0.05,
+            transparent: true,
+            opacity: 0.78,
+            iridescence: 0.45,
+            iridescenceIOR: 1.8,
+          })
 
       const core = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.12, 2),
-        new THREE.MeshPhysicalMaterial({
-          color: 0xfdf8ee,
-          roughness: 0.18,
-          metalness: 0.05,
-          transparent: true,
-          opacity: 0.78,
-          iridescence: 0.45,
-          iridescenceIOR: 1.8,
-        }),
+        new THREE.IcosahedronGeometry(1.12, coreDetail),
+        coreMaterial,
       )
       group.add(core)
 
       const wire = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.18, 2),
+        new THREE.IcosahedronGeometry(1.18, coreDetail),
         new THREE.MeshBasicMaterial({
           color: 0x3346d3,
           wireframe: true,
@@ -64,14 +84,14 @@ export function HeroSignal() {
       group.add(wire)
 
       const amberRing = new THREE.Mesh(
-        new THREE.TorusGeometry(1.95, 0.012, 8, 180),
+        new THREE.TorusGeometry(1.95, 0.012, 8, ringSegments),
         new THREE.MeshBasicMaterial({ color: 0xf6a728, transparent: true, opacity: 0.72 }),
       )
       amberRing.rotation.x = Math.PI / 2.7
       group.add(amberRing)
 
       const blueRing = new THREE.Mesh(
-        new THREE.TorusGeometry(2.48, 0.01, 8, 180),
+        new THREE.TorusGeometry(2.48, 0.01, 8, ringSegments),
         new THREE.MeshBasicMaterial({ color: 0x1b9aaa, transparent: true, opacity: 0.42 }),
       )
       blueRing.rotation.x = Math.PI / 1.95
@@ -80,7 +100,7 @@ export function HeroSignal() {
 
       const pointPositions: number[] = []
       const linePositions: number[] = []
-      const pointCount = 76
+      const pointCount = isMobile ? 48 : 76
       for (let i = 0; i < pointCount; i += 1) {
         const ratio = i / pointCount
         const theta = ratio * Math.PI * 8
@@ -145,8 +165,16 @@ export function HeroSignal() {
         camera.aspect = width / height
         camera.updateProjectionMatrix()
       }
-      const resizeObserver = new ResizeObserver(resize)
-      resizeObserver.observe(canvas)
+      let cleanupResize = () => {}
+      const ResizeObserverCtor = (window as Window & { ResizeObserver?: typeof ResizeObserver }).ResizeObserver
+      if (typeof ResizeObserverCtor === 'function') {
+        const resizeObserver = new ResizeObserverCtor(resize)
+        resizeObserver.observe(canvas)
+        cleanupResize = () => resizeObserver.disconnect()
+      } else {
+        window.addEventListener('resize', resize)
+        cleanupResize = () => window.removeEventListener('resize', resize)
+      }
       resize()
 
       const clock = new THREE.Clock()
@@ -169,7 +197,7 @@ export function HeroSignal() {
       cleanupScene = () => {
         window.cancelAnimationFrame(frameId)
         window.removeEventListener('pointermove', onPointerMove)
-        resizeObserver.disconnect()
+        cleanupResize()
         scene.traverse((object) => {
           const disposable = object as typeof object & {
             geometry?: { dispose: () => void }

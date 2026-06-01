@@ -404,26 +404,66 @@
   box-shadow:
     0 0 70px rgba(51, 70, 211, 0.20),
     inset 0 0 42px rgba(255, 255, 255, 0.44);
+  animation: signal-core-breathe 4200ms ease-in-out infinite;
 }
 .signal-orbit {
   width: min(44vw, 390px);
   aspect-ratio: 1;
   border: 1px solid rgba(51, 70, 211, 0.28);
 }
-.signal-orbit-one { transform: rotateX(62deg) rotateZ(-18deg); }
+.signal-orbit-one {
+  transform: rotateX(62deg) rotateZ(-18deg);
+  animation: signal-orbit-one-spin 12000ms linear infinite;
+}
 .signal-orbit-two {
   width: min(52vw, 470px);
   border-color: rgba(232, 144, 20, 0.34);
   transform: rotateX(72deg) rotateZ(34deg);
+  animation: signal-orbit-two-spin 16000ms linear infinite;
 }
 .signal-node {
   width: 10px; height: 10px;
   background: var(--indigo);
   box-shadow: 0 0 30px rgba(51, 70, 211, 0.45);
 }
-.signal-node-one { transform: translate(-165px, -118px); }
-.signal-node-two { transform: translate(156px, -32px); background: var(--sun); }
-.signal-node-three { transform: translate(-86px, 142px); background: var(--teal); }
+.signal-node-one {
+  transform: translate(-165px, -118px);
+  animation: signal-node-one-pulse 2400ms ease-in-out infinite;
+}
+.signal-node-two {
+  transform: translate(156px, -32px);
+  background: var(--sun);
+  animation: signal-node-two-pulse 2400ms ease-in-out 420ms infinite;
+}
+.signal-node-three {
+  transform: translate(-86px, 142px);
+  background: var(--teal);
+  animation: signal-node-three-pulse 2400ms ease-in-out 820ms infinite;
+}
+@keyframes signal-core-breathe {
+  0%, 100% { transform: scale(0.96) rotate(-2deg); }
+  50% { transform: scale(1.04) rotate(2deg); }
+}
+@keyframes signal-orbit-one-spin {
+  from { transform: rotateX(62deg) rotateZ(-18deg); }
+  to { transform: rotateX(62deg) rotateZ(342deg); }
+}
+@keyframes signal-orbit-two-spin {
+  from { transform: rotateX(72deg) rotateZ(34deg); }
+  to { transform: rotateX(72deg) rotateZ(-326deg); }
+}
+@keyframes signal-node-one-pulse {
+  0%, 100% { opacity: 0.56; transform: translate(-165px, -118px) scale(0.84); }
+  50% { opacity: 1; transform: translate(-165px, -118px) scale(1.2); }
+}
+@keyframes signal-node-two-pulse {
+  0%, 100% { opacity: 0.56; transform: translate(156px, -32px) scale(0.84); }
+  50% { opacity: 1; transform: translate(156px, -32px) scale(1.2); }
+}
+@keyframes signal-node-three-pulse {
+  0%, 100% { opacity: 0.56; transform: translate(-86px, 142px) scale(0.84); }
+  50% { opacity: 1; transform: translate(-86px, 142px) scale(1.2); }
+}
 
 .hero-proof-strip {
   grid-column: 1 / -1;

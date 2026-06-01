@@ -92,10 +92,21 @@ function TypewriterLine({ phrases }: { phrases: string[] }) {
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const legacyMedia = media as MediaQueryList & {
+      addListener?: (listener: () => void) => void
+      removeListener?: (listener: () => void) => void
+    }
     const syncPreference = () => setReducedMotion(media.matches)
+    const onPreferenceChange = () => syncPreference()
     syncPreference()
-    media.addEventListener('change', syncPreference)
-    return () => media.removeEventListener('change', syncPreference)
+
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', onPreferenceChange)
+      return () => media.removeEventListener('change', onPreferenceChange)
+    }
+
+    legacyMedia.addListener?.(onPreferenceChange)
+    return () => legacyMedia.removeListener?.(onPreferenceChange)
   }, [])
 
   useEffect(() => {
