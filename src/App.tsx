@@ -84,18 +84,13 @@ function splitDesc(desc: string): { title: string; rest: string } {
 }
 
 function TypewriterLine({ phrases }: { phrases: string[] }) {
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const [display, setDisplay] = useState(() =>
-    prefersReducedMotion ? phrases[0] ?? '' : '',
-  )
+  const [display, setDisplay] = useState('')
   const indexRef = useRef(0)
   const charRef = useRef(0)
   const deletingRef = useRef(false)
 
   useEffect(() => {
-    if (phrases.length === 0 || prefersReducedMotion) return
+    if (phrases.length === 0) return
 
     // Reset so a re-run (incl. React StrictMode double-invoke) starts clean.
     indexRef.current = 0
@@ -128,7 +123,7 @@ function TypewriterLine({ phrases }: { phrases: string[] }) {
     }
     timeout = setTimeout(tick, 600)
     return () => clearTimeout(timeout)
-  }, [phrases, prefersReducedMotion])
+  }, [phrases])
 
   return (
     <p className="typewriter-line" aria-label={phrases.join('. ')}>

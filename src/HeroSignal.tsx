@@ -1,5 +1,11 @@
 import { useEffect, useRef } from 'react'
 
+/**
+ * Lightweight Canvas2D "signal" animation. Runs on every device (including
+ * iOS Safari / Chrome / in-app webviews) with no WebGL or heavy bundle.
+ * Time-delta based so it degrades gracefully under Low Power Mode throttling,
+ * and pauses/resumes on visibility change instead of freezing.
+ */
 export function HeroSignal() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -7,219 +13,154 @@ export function HeroSignal() {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const probe = document.createElement('canvas')
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const isMobile = window.innerWidth < 720
-    const hasWebGL = Boolean(
-      probe.getContext('webgl2', { powerPreference: 'high-performance' }) ||
-      probe.getContext('webgl', { powerPreference: 'high-performance' }),
-    )
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-    if (reduceMotion || isMobile || !hasWebGL) return
+    let width = 0
+    let height = 0
+    let dpr = 1
 
-    let disposed = false
+    const resize = () => {
+      const w = canvas.clientWidth
+      const h = canvas.clientHeight
+      if (w === 0 || h === 0) return
+      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      width = w
+      height = h
+      canvas.width = Math.round(w * dpr)
+      canvas.height = Math.round(h * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+    resize()
+
+    let cleanupResize = () => {}
+    const ResizeObserverCtor = (window as Window & { ResizeObserver?: typeof ResizeObserver }).ResizeObserver
+    if (typeof ResizeObserverCtor === 'function') {
+      const ro = new ResizeObserverCtor(resize)
+      ro.observe(canvas)
+      cleanupResize = () => ro.disconnect()
+    } else {
+      window.addEventListener('resize', resize)
+      cleanupResize = () => window.removeEventListener('resize', resize)
+    }
+
+    const pointer = { x: 0, y: 0 }
+    const onPointerMove = (event: PointerEvent) => {
+      pointer.x = event.clientX / window.innerWidth - 0.5
+      pointer.y = event.clientY / window.innerHeight - 0.5
+    }
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
+
+    // Orbiting nodes: orbit radius factor, angular speed, size, color, phase.
+    const nodes = [
+      { r: 0.34, speed: 0.45, size: 5.5, color: '#f6a728', phase: 0 },
+      { r: 0.34, speed: 0.45, size: 3.5, color: '#3346d3', phase: Math.PI },
+      { r: 0.5, speed: -0.3, size: 4.5, color: '#1b9aaa', phase: 1.1 },
+      { r: 0.5, speed: -0.3, size: 3, color: '#f6a728', phase: 1.1 + Math.PI },
+      { r: 0.64, speed: 0.22, size: 3.5, color: '#273dba', phase: 2.4 },
+    ]
+
+    let elapsed = 0
+    let lastTs = 0
     let frameId = 0
-    let cleanupScene = () => {}
+    let running = true
 
-    async function mountScene() {
-      const THREE = await import('three')
-      if (disposed || !canvas) return
+    const draw = () => {
+      const cx = width / 2
+      const cy = height * 0.46
+      const base = Math.min(width, height)
+      const tilt = pointer.y * 0.12
+      const swing = pointer.x * 0.4
 
-      let renderer: InstanceType<typeof THREE.WebGLRenderer>
-      try {
-        renderer = new THREE.WebGLRenderer({
-          canvas,
-          antialias: !isMobile,
-          alpha: true,
-          powerPreference: 'high-performance',
-        })
-      } catch (error) {
-        console.warn('Hero WebGL animation could not start.', error)
-        return
-      }
-      renderer.setClearColor(0x000000, 0)
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2))
+      ctx.clearRect(0, 0, width, height)
 
-      const scene = new THREE.Scene()
-      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
-      camera.position.set(0, 0.25, 7)
-
-      const group = new THREE.Group()
-      scene.add(group)
-      const coreDetail = isMobile ? 1 : 2
-      const ringSegments = isMobile ? 120 : 180
-      const coreMaterial = isMobile
-        ? new THREE.MeshStandardMaterial({
-            color: 0xfdf8ee,
-            roughness: 0.24,
-            metalness: 0.08,
-            transparent: true,
-            opacity: 0.84,
-          })
-        : new THREE.MeshPhysicalMaterial({
-            color: 0xfdf8ee,
-            roughness: 0.18,
-            metalness: 0.05,
-            transparent: true,
-            opacity: 0.78,
-            iridescence: 0.45,
-            iridescenceIOR: 1.8,
-          })
-
-      const core = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.12, coreDetail),
-        coreMaterial,
-      )
-      group.add(core)
-
-      const wire = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.18, coreDetail),
-        new THREE.MeshBasicMaterial({
-          color: 0x3346d3,
-          wireframe: true,
-          transparent: true,
-          opacity: 0.22,
-        }),
-      )
-      group.add(wire)
-
-      const amberRing = new THREE.Mesh(
-        new THREE.TorusGeometry(1.95, 0.012, 8, ringSegments),
-        new THREE.MeshBasicMaterial({ color: 0xf6a728, transparent: true, opacity: 0.72 }),
-      )
-      amberRing.rotation.x = Math.PI / 2.7
-      group.add(amberRing)
-
-      const blueRing = new THREE.Mesh(
-        new THREE.TorusGeometry(2.48, 0.01, 8, ringSegments),
-        new THREE.MeshBasicMaterial({ color: 0x1b9aaa, transparent: true, opacity: 0.42 }),
-      )
-      blueRing.rotation.x = Math.PI / 1.95
-      blueRing.rotation.y = Math.PI / 5
-      group.add(blueRing)
-
-      const pointPositions: number[] = []
-      const linePositions: number[] = []
-      const pointCount = isMobile ? 48 : 76
-      for (let i = 0; i < pointCount; i += 1) {
-        const ratio = i / pointCount
-        const theta = ratio * Math.PI * 8
-        const radius = 2.25 + Math.sin(i * 1.7) * 0.32
-        const y = (ratio - 0.5) * 2.9
-        const x = Math.cos(theta) * radius
-        const z = Math.sin(theta) * radius
-        pointPositions.push(x, y, z)
-
-        if (i > 0 && i % 3 !== 0) {
-          const prev = pointPositions.length - 6
-          linePositions.push(pointPositions[prev], pointPositions[prev + 1], pointPositions[prev + 2], x, y, z)
-        }
+      const rings = [
+        { rf: 0.34, color: 'rgba(246, 167, 40, 0.55)', w: 1.4 },
+        { rf: 0.5, color: 'rgba(27, 154, 170, 0.38)', w: 1.2 },
+        { rf: 0.64, color: 'rgba(51, 70, 211, 0.26)', w: 1 },
+      ]
+      for (const ring of rings) {
+        const rr = base * ring.rf
+        ctx.save()
+        ctx.translate(cx, cy)
+        ctx.rotate(swing * 0.15)
+        ctx.scale(1, 0.46 + tilt)
+        ctx.beginPath()
+        ctx.arc(0, 0, rr, 0, Math.PI * 2)
+        ctx.strokeStyle = ring.color
+        ctx.lineWidth = ring.w
+        ctx.stroke()
+        ctx.restore()
       }
 
-      const pointsGeometry = new THREE.BufferGeometry()
-      pointsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(pointPositions, 3))
-      const points = new THREE.Points(
-        pointsGeometry,
-        new THREE.PointsMaterial({
-          color: 0x273dba,
-          size: 0.052,
-          transparent: true,
-          opacity: 0.78,
-          sizeAttenuation: true,
-        }),
-      )
-      group.add(points)
+      const pulse = 1 + Math.sin(elapsed * 1.6) * 0.06
+      const coreR = base * 0.12 * pulse
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR)
+      grad.addColorStop(0, 'rgba(253, 248, 238, 0.95)')
+      grad.addColorStop(0.6, 'rgba(246, 167, 40, 0.35)')
+      grad.addColorStop(1, 'rgba(246, 167, 40, 0)')
+      ctx.beginPath()
+      ctx.arc(cx, cy, coreR, 0, Math.PI * 2)
+      ctx.fillStyle = grad
+      ctx.fill()
 
-      const linesGeometry = new THREE.BufferGeometry()
-      linesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3))
-      const lines = new THREE.LineSegments(
-        linesGeometry,
-        new THREE.LineBasicMaterial({
-          color: 0x3346d3,
-          transparent: true,
-          opacity: 0.12,
-        }),
-      )
-      group.add(lines)
+      ctx.beginPath()
+      ctx.arc(cx, cy, base * 0.055, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(253, 248, 238, 0.92)'
+      ctx.fill()
 
-      scene.add(new THREE.AmbientLight(0xffffff, 1.8))
-      const keyLight = new THREE.DirectionalLight(0xffffff, 2.4)
-      keyLight.position.set(2.4, 3.2, 4)
-      scene.add(keyLight)
-      const warmLight = new THREE.PointLight(0xffb45e, 28, 9)
-      warmLight.position.set(-2.8, -1.4, 3.2)
-      scene.add(warmLight)
+      for (const node of nodes) {
+        const ang = node.phase + elapsed * node.speed + swing
+        const rr = base * node.r
+        const nx = cx + Math.cos(ang) * rr
+        const ny = cy + Math.sin(ang) * rr * (0.46 + tilt)
 
-      const pointer = { x: 0, y: 0 }
-      const onPointerMove = (event: PointerEvent) => {
-        pointer.x = event.clientX / window.innerWidth - 0.5
-        pointer.y = event.clientY / window.innerHeight - 0.5
-      }
-      window.addEventListener('pointermove', onPointerMove, { passive: true })
+        ctx.beginPath()
+        ctx.moveTo(cx, cy)
+        ctx.lineTo(nx, ny)
+        ctx.strokeStyle = 'rgba(51, 70, 211, 0.12)'
+        ctx.lineWidth = 1
+        ctx.stroke()
 
-      const resize = () => {
-        const width = canvas.clientWidth
-        const height = canvas.clientHeight
-        if (width === 0 || height === 0) return
-        renderer.setSize(width, height, false)
-        camera.aspect = width / height
-        camera.updateProjectionMatrix()
-      }
-      let cleanupResize = () => {}
-      const ResizeObserverCtor = (window as Window & { ResizeObserver?: typeof ResizeObserver }).ResizeObserver
-      if (typeof ResizeObserverCtor === 'function') {
-        const resizeObserver = new ResizeObserverCtor(resize)
-        resizeObserver.observe(canvas)
-        cleanupResize = () => resizeObserver.disconnect()
-      } else {
-        window.addEventListener('resize', resize)
-        cleanupResize = () => window.removeEventListener('resize', resize)
-      }
-      resize()
-
-      const clock = new THREE.Clock()
-      const animate = () => {
-        const elapsed = clock.getElapsedTime()
-        group.rotation.x = -0.18 + pointer.y * 0.18 + Math.sin(elapsed * 0.7) * 0.045
-        group.rotation.y = elapsed * 0.18 + pointer.x * 0.36
-        group.rotation.z = Math.sin(elapsed * 0.36) * 0.08
-        core.rotation.y = -elapsed * 0.28
-        amberRing.rotation.z = elapsed * 0.33
-        blueRing.rotation.z = -elapsed * 0.22
-        points.rotation.y = -elapsed * 0.045
-        lines.rotation.y = points.rotation.y
-
-        renderer.render(scene, camera)
-        frameId = window.requestAnimationFrame(animate)
-      }
-      animate()
-
-      cleanupScene = () => {
-        window.cancelAnimationFrame(frameId)
-        window.removeEventListener('pointermove', onPointerMove)
-        cleanupResize()
-        scene.traverse((object) => {
-          const disposable = object as typeof object & {
-            geometry?: { dispose: () => void }
-            material?: { dispose: () => void } | { dispose: () => void }[]
-          }
-          disposable.geometry?.dispose()
-          if (Array.isArray(disposable.material)) {
-            disposable.material.forEach((material) => material.dispose())
-          } else {
-            disposable.material?.dispose()
-          }
-        })
-        renderer.dispose()
-        renderer.forceContextLoss()
+        ctx.beginPath()
+        ctx.arc(nx, ny, node.size, 0, Math.PI * 2)
+        ctx.fillStyle = node.color
+        ctx.fill()
       }
     }
 
-    void mountScene()
+    const loop = (ts: number) => {
+      if (!running) return
+      if (lastTs === 0) lastTs = ts
+      // Cap delta so a resumed tab doesn't jump the animation forward.
+      const dt = Math.min((ts - lastTs) / 1000, 0.05)
+      lastTs = ts
+      elapsed += dt
+      draw()
+      frameId = window.requestAnimationFrame(loop)
+    }
+    frameId = window.requestAnimationFrame(loop)
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        if (!running) {
+          running = true
+          lastTs = 0
+          frameId = window.requestAnimationFrame(loop)
+        }
+      } else {
+        running = false
+        window.cancelAnimationFrame(frameId)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
-      disposed = true
-      cleanupScene()
+      running = false
+      window.cancelAnimationFrame(frameId)
+      window.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('visibilitychange', onVisibility)
+      cleanupResize()
     }
   }, [])
 
