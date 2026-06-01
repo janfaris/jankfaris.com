@@ -84,15 +84,55 @@ function splitDesc(desc: string): { title: string; rest: string } {
 }
 
 function TypewriterLine({ phrases }: { phrases: string[] }) {
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const [display, setDisplay] = useState(() =>
+    prefersReducedMotion ? phrases[0] ?? '' : '',
+  )
+  const indexRef = useRef(0)
+  const charRef = useRef(0)
+  const deletingRef = useRef(false)
+
+  useEffect(() => {
+    if (phrases.length === 0 || prefersReducedMotion) return
+
+    // Reset so a re-run (incl. React StrictMode double-invoke) starts clean.
+    indexRef.current = 0
+    charRef.current = 0
+    deletingRef.current = false
+
+    let timeout: ReturnType<typeof setTimeout>
+    const tick = () => {
+      const phrase = phrases[indexRef.current % phrases.length]
+      if (!deletingRef.current) {
+        charRef.current += 1
+        setDisplay(phrase.slice(0, charRef.current))
+        if (charRef.current >= phrase.length) {
+          deletingRef.current = true
+          timeout = setTimeout(tick, 1700)
+          return
+        }
+        timeout = setTimeout(tick, 72)
+      } else {
+        charRef.current -= 1
+        setDisplay(phrase.slice(0, charRef.current))
+        if (charRef.current <= 0) {
+          deletingRef.current = false
+          indexRef.current += 1
+          timeout = setTimeout(tick, 360)
+          return
+        }
+        timeout = setTimeout(tick, 38)
+      }
+    }
+    timeout = setTimeout(tick, 600)
+    return () => clearTimeout(timeout)
+  }, [phrases, prefersReducedMotion])
+
   return (
     <p className="typewriter-line" aria-label={phrases.join('. ')}>
-      <span className="typewriter-track" aria-hidden="true">
-        {phrases.map((phrase, index) => (
-          <span className={`typewriter-phrase typewriter-phrase-${index + 1}`} key={phrase}>
-            {phrase}
-          </span>
-        ))}
-      </span>
+      <span className="typewriter-output" aria-hidden="true">{display}</span>
       <span className="typewriter-cursor" aria-hidden="true" />
     </p>
   )
