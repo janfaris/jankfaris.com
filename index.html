@@ -1,10 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f5f4ed" />
+    <meta name="theme-color" content="#f6f0e5" />
+    <script>
+      document.documentElement.classList.add('light')
+      document.documentElement.style.colorScheme = 'light'
+      try {
+        localStorage.removeItem('theme')
+      } catch {}
+    </script>
 
     <!-- SEO -->
     <title>Jan Faris — AI products from Puerto Rico</title>
@@ -13,7 +20,6 @@
     <meta name="author" content="Jan Faris" />
     <link rel="canonical" href="https://jankfaris.com/" />
     <link rel="alternate" hreflang="en" href="https://jankfaris.com/" />
-    <link rel="alternate" hreflang="es" href="https://jankfaris.com/es" />
     <link rel="alternate" hreflang="x-default" href="https://jankfaris.com/" />
 
     <!-- Open Graph -->
@@ -26,7 +32,6 @@
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="Jan Faris" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:locale:alternate" content="es_PR" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
