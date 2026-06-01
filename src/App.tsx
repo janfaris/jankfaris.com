@@ -11,10 +11,14 @@ interface Props { lang?: Lang }
 
 const typewriterLines: Record<Lang, string[]> = {
   en: [
-    'AI tools for founders',
-    'npm packages + mobile apps',
-    'internal systems at Microsoft',
-    'Spanish-first software',
+    'production AI systems',
+    'Microsoft-grade internal tools',
+    'npm packages that ship',
+    'App Store mobile apps',
+    'Puerto Rico-built product engines',
+    'Spanish-first AI experiences',
+    'automation with taste',
+    'prototype to production',
   ],
   es: [
     'herramientas de IA para founders',
