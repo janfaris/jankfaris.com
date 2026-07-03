@@ -9,25 +9,6 @@ import { content as siteContent, type Lang } from './content'
 
 interface Props { lang?: Lang }
 
-const typewriterLines: Record<Lang, string[]> = {
-  en: [
-    'production AI systems',
-    'Microsoft-grade internal tools',
-    'npm packages that ship',
-    'App Store mobile apps',
-    'Puerto Rico-built product engines',
-    'Spanish-first AI experiences',
-    'automation with taste',
-    'prototype to production',
-  ],
-  es: [
-    'herramientas de IA para founders',
-    'paquetes npm + apps móviles',
-    'sistemas internos en Microsoft',
-    'software Spanish-first',
-  ],
-}
-
 /* ============================================
    Small components
    ============================================ */
@@ -87,57 +68,23 @@ function splitDesc(desc: string): { title: string; rest: string } {
   return { title: match[1].trim(), rest: match[2].trim() }
 }
 
-function TypewriterLine({ phrases }: { phrases: string[] }) {
-  const [display, setDisplay] = useState('')
-  const indexRef = useRef(0)
-  const charRef = useRef(0)
-  const deletingRef = useRef(false)
-
+function useTheme() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'dark'
+    const stored = localStorage.getItem('theme') as 'light' | 'dark' | null
+    if (stored) return stored
+    // Default to dark (per moodboard direction). User can toggle.
+    return 'dark'
+  })
   useEffect(() => {
-    if (phrases.length === 0) return
-
-    // Reset so a re-run (incl. React StrictMode double-invoke) starts clean.
-    indexRef.current = 0
-    charRef.current = 0
-    deletingRef.current = false
-
-    let timeout: ReturnType<typeof setTimeout>
-    const tick = () => {
-      const phrase = phrases[indexRef.current % phrases.length]
-      if (!deletingRef.current) {
-        charRef.current += 1
-        setDisplay(phrase.slice(0, charRef.current))
-        if (charRef.current >= phrase.length) {
-          deletingRef.current = true
-          timeout = setTimeout(tick, 1700)
-          return
-        }
-        timeout = setTimeout(tick, 72)
-      } else {
-        charRef.current -= 1
-        setDisplay(phrase.slice(0, charRef.current))
-        if (charRef.current <= 0) {
-          deletingRef.current = false
-          indexRef.current += 1
-          timeout = setTimeout(tick, 360)
-          return
-        }
-        timeout = setTimeout(tick, 38)
-      }
-    }
-    timeout = setTimeout(tick, 600)
-    return () => clearTimeout(timeout)
-  }, [phrases])
-
-  return (
-    <p className="typewriter-line" aria-label={phrases.join('. ')}>
-      <span className="typewriter-output" aria-hidden="true">{display}</span>
-      <span className="typewriter-cursor" aria-hidden="true" />
-    </p>
-  )
+    document.documentElement.classList.toggle('light', theme === 'light')
+    localStorage.setItem('theme', theme)
+  }, [theme])
+  return { theme, toggle: () => setTheme(t => t === 'dark' ? 'light' : 'dark') }
 }
 
-function TopBar() {
+function TopBar({ lang }: { lang: Lang }) {
+  const { theme, toggle } = useTheme()
   return (
     <div className="topbar">
       <nav className="sitenav">
@@ -146,6 +93,23 @@ function TopBar() {
         <a href="#writing">Writing</a>
         <span className="lang-divider">·</span>
         <a href="#experience">About</a>
+      </nav>
+      <button onClick={toggle} className="theme-toggle" aria-label="Toggle theme">
+        {theme === 'dark' ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        )}
+      </button>
+      <nav className="lang-switch">
+        <Link to="/" className={lang === 'en' ? 'lang-active' : ''} aria-label="English">EN</Link>
+        <span className="lang-divider">·</span>
+        <Link to="/es" className={lang === 'es' ? 'lang-active' : ''} aria-label="Español">ES</Link>
       </nav>
     </div>
   )
@@ -184,17 +148,6 @@ function Wordmark({ slug }: { slug: string }) {
    ============================================ */
 export default function App({ lang = 'en' }: Props) {
   const c = siteContent[lang]
-  const heroProof = lang === 'es'
-    ? [
-        { key: 'Proof', value: 'PRPilot 5.0/5.0', label: 'evaluación interna de IA' },
-        { key: 'Launches', value: '2 npm + App Store', label: 'proyectos reales, no mockups' },
-        { key: 'Market', value: 'EN + ES', label: 'software para PR / LATAM' },
-      ]
-    : [
-        { key: 'Proof', value: 'PRPilot 5.0/5.0', label: 'internal AI evaluation' },
-        { key: 'Launches', value: '2 npm + App Store', label: 'real products, not mockups' },
-        { key: 'Market', value: 'EN + ES', label: 'software for PR / LATAM' },
-      ]
 
   useEffect(() => {
     document.title = c.meta.title
@@ -205,69 +158,36 @@ export default function App({ lang = 'en' }: Props) {
 
   return (
     <div className="app">
-      <TopBar />
+      <TopBar lang={lang} />
 
       <div className="container">
 
         {/* ============ HERO ============ */}
         <section className="hero">
-          <div className="hero-copy">
-            <div className="hero-intro">
-              <img src="/jan-profile.jpg" alt="Jan Faris" className="hero-avatar" />
-              <div>
-                <span className="hero-intro-kicker">{lang === 'es' ? 'San Juan, PR' : 'San Juan, PR'}</span>
-                <strong>{lang === 'es' ? 'Jan Faris' : 'Jan Faris'}</strong>
-              </div>
-            </div>
-
-            <TypewriterLine phrases={typewriterLines[lang]} />
-
-            <h1 className="display">
-              {splitWords(c.hero.display.lead)}
-              <em>{splitWords(c.hero.display.em)}</em>
-              {splitWords(c.hero.display.tail)}
-            </h1>
-
-            <div className="hero-foot">
-              <p className="hero-lede">{c.hero.lede as string}</p>
-              <div className="hero-meta">
-                {c.hero.metaItems.map((m, i) => (
-                  <div key={m.key} className={i === 1 ? 'accent' : ''}>{m.val}</div>
-                ))}
-              </div>
-            </div>
-
-            <div className="hero-actions" aria-label={lang === 'es' ? 'Acciones principales' : 'Primary actions'}>
-              <a className="hero-link hero-link-primary" href="#work">
-                {lang === 'es' ? 'Ver trabajo seleccionado' : 'View selected work'}
-              </a>
-              <a className="hero-link" href="mailto:jankarlo.faris@outlook.com">
-                {lang === 'es' ? 'Escribirle a Jan' : 'Email Jan'}
-              </a>
-            </div>
+          <HeroField />
+          <div className="hero-status">
+            <img src="/jan-profile.jpg" alt="Jan Faris" className="hero-avatar" />
+            <span className="pulse" />
+            <span>
+              {lang === 'es'
+                ? 'Puliendo Lupa y usableai · San Juan, PR'
+                : 'Polishing Lupa & usableai · San Juan, PR'}
+            </span>
           </div>
 
-          <aside className="hero-stage" aria-label={lang === 'es' ? 'Escultura de señal de producto' : 'Product signal sculpture'}>
-            <HeroField />
-            <div className="stage-panel">
-              <span className="stage-kicker">{lang === 'es' ? 'Señal de producto' : 'Product signal'}</span>
-              <strong>{lang === 'es' ? 'Prueba real. Energía técnica.' : 'Real proof. Technical energy.'}</strong>
-              <p>
-                {lang === 'es'
-                  ? 'Microsoft SWE construyendo herramientas de IA, paquetes npm, apps móviles y sistemas internos desde Puerto Rico.'
-                  : 'Microsoft SWE building AI tools, npm packages, mobile apps, and internal systems from Puerto Rico.'}
-              </p>
-            </div>
-          </aside>
+          <h1 className="display">
+            {splitWords(c.hero.display.lead)}
+            <em>{splitWords(c.hero.display.em)}</em>
+            {splitWords(c.hero.display.tail)}
+          </h1>
 
-          <div className="hero-proof-strip">
-            {heroProof.map((item) => (
-              <div className="proof-card" key={item.key}>
-                <span>{item.key}</span>
-                <strong>{item.value}</strong>
-                <p>{item.label}</p>
-              </div>
-            ))}
+          <div className="hero-foot">
+            <p className="hero-lede">{c.hero.lede as string}</p>
+            <div className="hero-meta">
+              {c.hero.metaItems.map((m, i) => (
+                <div key={m.key} className={i === 1 ? 'accent' : ''}>{m.val}</div>
+              ))}
+            </div>
           </div>
         </section>
 

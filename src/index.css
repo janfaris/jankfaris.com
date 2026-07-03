@@ -1,5 +1,5 @@
 /* ============================================
-   jankfaris.com — Signal Paper
+   jankfaris.com — Linear Indigo
    Tokens only. Component styles live in App.css.
    ============================================ */
 
@@ -19,9 +19,6 @@
   --indigo:      #5e6ad2;
   --indigo-soft: #7c87e0;
   --indigo-deep: #4853c4;
-  --sun:         #f6a728;
-  --teal:        #28b3bd;
-  --coral:       #ec6f5f;
 
   /* Hairlines */
   --hairline:        rgba(230, 232, 235, 0.08);
@@ -35,26 +32,24 @@
   color-scheme: dark;
 }
 
-/* Light mode is the default landing experience; dark stays available behind the toggle. */
+/* Light mode — kept available behind .light toggle but dark is default.
+   Light reads as inverted: ink swap, indigo deepens slightly for AA contrast. */
 :root.light {
-  --bg:        #f6f0e5;
-  --bg-elev:   #fffaf1;
-  --bg-card:   #fffdf8;
-  --bg-card-hover: #fff5df;
+  --bg:        #ffffff;
+  --bg-elev:   #fafafa;
+  --bg-card:   #f6f7f8;
+  --bg-card-hover: #f0f1f3;
 
-  --text:      #17130d;
-  --text-dim:  #4d4538;
-  --text-mute: #897d6b;
+  --text:      #0a0a0a;
+  --text-dim:  #4a4f5c;
+  --text-mute: #7a8190;
 
-  --indigo:      #3346d3;
-  --indigo-soft: #5264ef;
-  --indigo-deep: #1f2f99;
-  --sun:         #e89014;
-  --teal:        #0d8e98;
-  --coral:       #cf513f;
+  --indigo:      #4853c4;
+  --indigo-soft: #5e6ad2;
+  --indigo-deep: #3b46aa;
 
-  --hairline:        rgba(42, 32, 18, 0.10);
-  --hairline-strong: rgba(42, 32, 18, 0.18);
+  --hairline:        rgba(10, 10, 10, 0.08);
+  --hairline-strong: rgba(10, 10, 10, 0.14);
 
   color-scheme: light;
 }
@@ -75,7 +70,7 @@ a { color: inherit; text-decoration: none; }
 
 ::selection { background: var(--indigo); color: #fff; }
 
-/* Ambient field behind the portfolio chrome */
+/* Subtle ambient glow on dark canvas */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -85,16 +80,7 @@ body::before {
     radial-gradient(circle at 80% 90%, rgba(94, 106, 210, 0.03), transparent 60%);
   z-index: 0;
 }
-:root.light body::before {
-  background-image:
-    radial-gradient(circle at 14% 8%, rgba(246, 167, 40, 0.20), transparent 34%),
-    radial-gradient(circle at 86% 16%, rgba(51, 70, 211, 0.14), transparent 30%),
-    radial-gradient(circle at 70% 88%, rgba(40, 179, 189, 0.13), transparent 34%),
-    linear-gradient(to right, rgba(23, 19, 13, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(23, 19, 13, 0.028) 1px, transparent 1px);
-  background-size: auto, auto, auto, 44px 44px, 44px 44px;
-  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.58) 62%, transparent 100%);
-}
+:root.light body::before { display: none; }
 
 /* Reduced motion respect */
 @media (prefers-reduced-motion: reduce) {
