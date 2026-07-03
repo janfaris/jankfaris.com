@@ -83,7 +83,7 @@ export const content: Record<Lang, Content> = {
     },
     nav: { en: 'EN', es: 'ES', writing: 'Writing' },
     hero: {
-      display: { lead: 'Software, ', em: 'shipped', tail: '\u00A0from Puerto\u00A0Rico.' },
+      display: { lead: 'Software, ', em: 'shipped', tail: '.' },
       lede:
         'Software Engineer at Microsoft. AI-native products, built end-to-end. EN · ES.',
       metaItems: [
@@ -279,7 +279,7 @@ export const content: Record<Lang, Content> = {
       display: {
         lead: 'Software, ',
         em: 'entregado',
-        tail: '\u00A0desde Puerto\u00A0Rico.',
+        tail: '.',
       },
       lede:
         'Ingeniero de Software en Microsoft. Productos AI-native, de punta a punta. EN · ES.',

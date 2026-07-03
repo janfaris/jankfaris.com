@@ -375,108 +375,19 @@
   color: var(--text-dim);
 }
 
-.signal-stage,
-.signal-fallback,
-.signal-canvas {
+/* three.js interactive particle wave inside the hero stage */
+.hero-field {
   position: absolute;
   inset: 0;
-}
-.signal-stage {
-  pointer-events: none;
-  z-index: 1;
-}
-.signal-canvas {
   z-index: 2;
-  display: block;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 420ms ease;
+  pointer-events: none;
+  opacity: 0.62;
+  /* fade toward the bottom so the stage panel stays legible */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 62%, transparent 96%);
 }
-.signal-canvas-ready {
-  opacity: 1;
-}
-.signal-fallback {
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  transform: translateY(-5%);
-}
-.signal-core,
-.signal-orbit,
-.signal-node {
-  position: absolute;
-  display: block;
-  border-radius: 999px;
-}
-.signal-core {
-  width: min(32vw, 250px);
-  aspect-ratio: 1;
-  background:
-    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.95), transparent 28%),
-    linear-gradient(135deg, rgba(51, 70, 211, 0.22), rgba(246, 167, 40, 0.34));
-  box-shadow:
-    0 0 70px rgba(51, 70, 211, 0.20),
-    inset 0 0 42px rgba(255, 255, 255, 0.44);
-  animation: signal-core-breathe 4200ms ease-in-out infinite;
-}
-.signal-orbit {
-  width: min(44vw, 390px);
-  aspect-ratio: 1;
-  border: 1px solid rgba(51, 70, 211, 0.28);
-}
-.signal-orbit-one {
-  transform: rotateX(62deg) rotateZ(-18deg);
-  animation: signal-orbit-one-spin 12000ms linear infinite;
-}
-.signal-orbit-two {
-  width: min(52vw, 470px);
-  border-color: rgba(232, 144, 20, 0.34);
-  transform: rotateX(72deg) rotateZ(34deg);
-  animation: signal-orbit-two-spin 16000ms linear infinite;
-}
-.signal-node {
-  width: 10px; height: 10px;
-  background: var(--indigo);
-  box-shadow: 0 0 30px rgba(51, 70, 211, 0.45);
-}
-.signal-node-one {
-  transform: translate(-165px, -118px);
-  animation: signal-node-one-pulse 2400ms ease-in-out infinite;
-}
-.signal-node-two {
-  transform: translate(156px, -32px);
-  background: var(--sun);
-  animation: signal-node-two-pulse 2400ms ease-in-out 420ms infinite;
-}
-.signal-node-three {
-  transform: translate(-86px, 142px);
-  background: var(--teal);
-  animation: signal-node-three-pulse 2400ms ease-in-out 820ms infinite;
-}
-@keyframes signal-core-breathe {
-  0%, 100% { transform: scale(0.96) rotate(-2deg); }
-  50% { transform: scale(1.04) rotate(2deg); }
-}
-@keyframes signal-orbit-one-spin {
-  from { transform: rotateX(62deg) rotateZ(-18deg); }
-  to { transform: rotateX(62deg) rotateZ(342deg); }
-}
-@keyframes signal-orbit-two-spin {
-  from { transform: rotateX(72deg) rotateZ(34deg); }
-  to { transform: rotateX(72deg) rotateZ(-326deg); }
-}
-@keyframes signal-node-one-pulse {
-  0%, 100% { opacity: 0.56; transform: translate(-165px, -118px) scale(0.84); }
-  50% { opacity: 1; transform: translate(-165px, -118px) scale(1.2); }
-}
-@keyframes signal-node-two-pulse {
-  0%, 100% { opacity: 0.56; transform: translate(156px, -32px) scale(0.84); }
-  50% { opacity: 1; transform: translate(156px, -32px) scale(1.2); }
-}
-@keyframes signal-node-three-pulse {
-  0%, 100% { opacity: 0.56; transform: translate(-86px, 142px) scale(0.84); }
-  50% { opacity: 1; transform: translate(-86px, 142px) scale(1.2); }
+:root:not(.light) .hero-field { opacity: 0.55; }
+.hero-field-canvas { width: 100%; height: 100%; display: block; }
 }
 
 .hero-proof-strip {
@@ -551,7 +462,6 @@
     font-size: 10px;
     letter-spacing: 0.09em;
   }
-  .signal-canvas { display: block; }
   .display { font-size: clamp(54px, 18vw, 88px); max-width: 8.2ch; }
   .hero-foot { grid-template-columns: 1fr; gap: 24px; margin-top: 30px; }
   .hero-meta { text-align: left; }
@@ -560,7 +470,6 @@
     min-height: 430px;
     border-radius: 28px;
   }
-  .signal-fallback { transform: translateY(-6%) scale(0.66); }
   .stage-panel {
     left: 16px; right: 16px; bottom: 16px;
     padding: 18px;

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import './index.css'
 import './App.css'
 import { JFMark } from './JFMark.tsx'
-import { HeroSignal } from './HeroSignal.tsx'
+import { HeroField } from './HeroField.tsx'
 import { posts } from './posts'
 import { content as siteContent, type Lang } from './content'
 
@@ -248,7 +248,7 @@ export default function App({ lang = 'en' }: Props) {
           </div>
 
           <aside className="hero-stage" aria-label={lang === 'es' ? 'Escultura de señal de producto' : 'Product signal sculpture'}>
-            <HeroSignal />
+            <HeroField />
             <div className="stage-panel">
               <span className="stage-kicker">{lang === 'es' ? 'Señal de producto' : 'Product signal'}</span>
               <strong>{lang === 'es' ? 'Prueba real. Energía técnica.' : 'Real proof. Technical energy.'}</strong>
