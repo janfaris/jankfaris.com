@@ -1,28 +1,66 @@
 import { useEffect, useRef } from 'react'
 
+function isIOSDevice() {
+  return (
+    /iPad|iPhone|iPod/.test(window.navigator.userAgent) ||
+    (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1)
+  )
+}
+
 /**
- * Subtle indigo particle wave behind the hero.
+ * Subtle indigo particle wave behind the hero, with a cursor ripple.
  * three.js is dynamically imported so it never blocks first paint.
- * Skips entirely on prefers-reduced-motion; pauses when offscreen or tab-hidden.
+ * iOS-safe: renderer creation is guarded, pixel ratio is capped, and the
+ * scene remounts on WebGL context loss (Safari drops contexts aggressively).
+ * With prefers-reduced-motion the wave renders one static frame instead.
  */
 export function HeroField() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const hostRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const host = hostRef.current
-    if (!host) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const canvas = canvasRef.current
+    if (!host || !canvas) return
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     let disposed = false
-    let cleanup: (() => void) | undefined
+    let mountToken = 0
+    let restoreTimer: ReturnType<typeof setTimeout> | null = null
+    let cleanupScene = () => {}
 
-    import('three').then((THREE) => {
-      if (disposed || !hostRef.current) return
+    const mountScene = async () => {
+      const token = ++mountToken
+      cleanupScene()
 
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false })
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-      renderer.domElement.className = 'hero-field-canvas'
-      host.appendChild(renderer.domElement)
+      const THREE = await import('three')
+      if (disposed || token !== mountToken) return
+
+      const isIOS = isIOSDevice()
+      const isMobile = window.innerWidth < 720 || window.matchMedia('(pointer: coarse)').matches
+      const isPhoneLike = isIOS || isMobile
+
+      let renderer: InstanceType<typeof THREE.WebGLRenderer>
+      try {
+        renderer = new THREE.WebGLRenderer({
+          canvas,
+          alpha: true,
+          antialias: false,
+          depth: false,
+          stencil: false,
+          failIfMajorPerformanceCaveat: false,
+          powerPreference: isPhoneLike ? 'default' : 'high-performance',
+          preserveDrawingBuffer: false,
+        })
+      } catch (error) {
+        console.warn('Hero wave could not start.', error)
+        return
+      }
+
+      const maxPixelRatio = isIOS ? 1.25 : 1.5
+      renderer.setClearColor(0x000000, 0)
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio))
 
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100)
@@ -30,8 +68,8 @@ export function HeroField() {
       camera.lookAt(0, 0, 0)
 
       // Flat grid of points; the vertex shader lifts them into a moving wave.
-      const COLS = 90
-      const ROWS = 40
+      const COLS = isPhoneLike ? 70 : 90
+      const ROWS = isPhoneLike ? 32 : 40
       const positions = new Float32Array(COLS * ROWS * 3)
       let i = 0
       for (let r = 0; r < ROWS; r++) {
@@ -92,15 +130,34 @@ export function HeroField() {
       })
       scene.add(new THREE.Points(geometry, material))
 
+      const render = () => {
+        if (renderer.getContext().isContextLost()) return
+        renderer.render(scene, camera)
+      }
+
       const resize = () => {
         const { clientWidth: w, clientHeight: h } = host
+        if (!w || !h) return
         renderer.setSize(w, h, false)
         camera.aspect = w / h
         camera.updateProjectionMatrix()
+        if (reducedMotion) render()
       }
       resize()
       const ro = new ResizeObserver(resize)
       ro.observe(host)
+
+      // Reduced motion: draw the wave once, frozen, and skip all animation.
+      if (reducedMotion) {
+        render()
+        cleanupScene = () => {
+          ro.disconnect()
+          geometry.dispose()
+          material.dispose()
+          renderer.dispose()
+        }
+        return
+      }
 
       // Pointer → grid plane (y = 0), eased each frame so the ripple trails the cursor.
       const raycaster = new THREE.Raycaster()
@@ -135,7 +192,7 @@ export function HeroField() {
         uniforms.uMouse.value.lerp(target, 0.08)
         uniforms.uMouseStrength.value +=
           ((pointerActive ? 1 : 0) - uniforms.uMouseStrength.value) * 0.05
-        renderer.render(scene, camera)
+        render()
         raf = requestAnimationFrame(frame)
       }
       const setRunning = (on: boolean) => {
@@ -153,7 +210,10 @@ export function HeroField() {
       const onVisibility = () => setRunning(!document.hidden)
       document.addEventListener('visibilitychange', onVisibility)
 
-      cleanup = () => {
+      render()
+      setRunning(!document.hidden)
+
+      cleanupScene = () => {
         setRunning(false)
         io.disconnect()
         ro.disconnect()
@@ -163,15 +223,36 @@ export function HeroField() {
         geometry.dispose()
         material.dispose()
         renderer.dispose()
-        renderer.domElement.remove()
       }
-    })
+    }
+
+    // iOS Safari drops WebGL contexts under memory pressure; remount when restored.
+    const onContextLost = (event: Event) => {
+      event.preventDefault()
+      cleanupScene()
+      cleanupScene = () => {}
+    }
+    const onContextRestored = () => {
+      if (disposed) return
+      if (restoreTimer) clearTimeout(restoreTimer)
+      restoreTimer = setTimeout(() => { void mountScene() }, 120)
+    }
+    canvas.addEventListener('webglcontextlost', onContextLost, false)
+    canvas.addEventListener('webglcontextrestored', onContextRestored, false)
+    void mountScene()
 
     return () => {
       disposed = true
-      cleanup?.()
+      if (restoreTimer) clearTimeout(restoreTimer)
+      canvas.removeEventListener('webglcontextlost', onContextLost)
+      canvas.removeEventListener('webglcontextrestored', onContextRestored)
+      cleanupScene()
     }
   }, [])
 
-  return <div ref={hostRef} className="hero-field" aria-hidden="true" />
+  return (
+    <div ref={hostRef} className="hero-field" aria-hidden="true">
+      <canvas ref={canvasRef} className="hero-field-canvas" />
+    </div>
+  )
 }
