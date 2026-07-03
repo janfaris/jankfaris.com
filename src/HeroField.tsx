@@ -82,8 +82,13 @@ export function HeroField() {
       const geometry = new THREE.BufferGeometry()
       geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
+      // Phones get a bolder, quicker wave: no hover ripple there, so the
+      // ambient motion has to carry the effect on its own.
+      const waveAmp = isPhoneLike ? 0.8 : 0.55
+      const waveSpeed = isPhoneLike ? 1.5 : 1.0
       const uniforms = {
         uTime: { value: 0 },
+        uAmp: { value: waveAmp },
         uMouse: { value: new THREE.Vector2(0, 0) }, // cursor on the grid plane (x, z)
         uMouseStrength: { value: 0 },               // eases 0→1 while the pointer is over the hero
       }
@@ -93,13 +98,14 @@ export function HeroField() {
         depthWrite: false,
         vertexShader: /* glsl */ `
           uniform float uTime;
+          uniform float uAmp;
           uniform vec2 uMouse;
           uniform float uMouseStrength;
           varying float vFade;
           varying float vGlow;
           void main() {
             vec3 p = position;
-            p.y = sin(p.x * 0.55 + uTime * 0.6) * cos(p.z * 0.7 + uTime * 0.4) * 0.55;
+            p.y = sin(p.x * 0.55 + uTime * 0.6) * cos(p.z * 0.7 + uTime * 0.4) * uAmp;
 
             // cursor ripple: a gaussian swell with a trailing ring around the pointer
             float d = distance(position.xz, uMouse);
@@ -183,12 +189,18 @@ export function HeroField() {
       const onPointerLeave = () => { pointerActive = false }
       window.addEventListener('pointermove', onPointerMove, { passive: true })
       document.addEventListener('pointerleave', onPointerLeave)
+      // touch: no leave event fires after the finger lifts, so release the ripple explicitly
+      const onPointerUp = (e: PointerEvent) => {
+        if (e.pointerType !== 'mouse') pointerActive = false
+      }
+      window.addEventListener('pointerup', onPointerUp, { passive: true })
+      window.addEventListener('pointercancel', onPointerUp, { passive: true })
 
       let raf = 0
       let running = false
       const start = performance.now()
       const frame = () => {
-        uniforms.uTime.value = (performance.now() - start) / 1000
+        uniforms.uTime.value = ((performance.now() - start) / 1000) * waveSpeed
         uniforms.uMouse.value.lerp(target, 0.08)
         uniforms.uMouseStrength.value +=
           ((pointerActive ? 1 : 0) - uniforms.uMouseStrength.value) * 0.05
@@ -220,6 +232,8 @@ export function HeroField() {
         document.removeEventListener('visibilitychange', onVisibility)
         window.removeEventListener('pointermove', onPointerMove)
         document.removeEventListener('pointerleave', onPointerLeave)
+        window.removeEventListener('pointerup', onPointerUp)
+        window.removeEventListener('pointercancel', onPointerUp)
         geometry.dispose()
         material.dispose()
         renderer.dispose()
