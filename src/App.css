@@ -919,3 +919,82 @@
 
 /* Prevent horizontal scroll edge cases */
 html, body { overflow-x: hidden; }
+
+/* ============================================
+   PROOF BAR — hard numbers under the hero
+   ============================================ */
+.proofbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--hairline);
+  opacity: 0;
+  animation: soft-fade 640ms cubic-bezier(0.16, 1, 0.3, 1) 760ms forwards;
+}
+.proofbar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.proofbar-value {
+  font-family: var(--serif);
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.proofbar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+@media (max-width: 720px) {
+  .proofbar { gap: 16px 28px; padding-top: 22px; }
+  .proofbar-value { font-size: 18px; }
+}
+
+/* ============================================
+   STACK, PROVEN — claim → evidence rows
+   ============================================ */
+.stack-proof {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.stack-row {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 32px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.stack-row:last-child { border-bottom: none; }
+.stack-claim {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  color: var(--indigo);
+}
+.stack-evidence {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 62ch;
+}
+@media (max-width: 720px) {
+  .stack-row { grid-template-columns: 1fr; gap: 6px; padding: 18px 0; }
+}
+
+/* ============================================
+   DOT WAVE — 2D echo of the hero wave
+   ============================================ */
+.dot-wave {
+  display: block;
+  width: min(480px, 70%);
+  margin: 8px auto 0;
+}

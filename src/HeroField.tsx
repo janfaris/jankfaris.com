@@ -89,6 +89,7 @@ export function HeroField() {
       const uniforms = {
         uTime: { value: 0 },
         uAmp: { value: waveAmp },
+        uEnergy: { value: 0 },                      // scroll velocity → temporary swell
         uMouse: { value: new THREE.Vector2(0, 0) }, // cursor on the grid plane (x, z)
         uMouseStrength: { value: 0 },               // eases 0→1 while the pointer is over the hero
       }
@@ -99,13 +100,15 @@ export function HeroField() {
         vertexShader: /* glsl */ `
           uniform float uTime;
           uniform float uAmp;
+          uniform float uEnergy;
           uniform vec2 uMouse;
           uniform float uMouseStrength;
           varying float vFade;
           varying float vGlow;
           void main() {
             vec3 p = position;
-            p.y = sin(p.x * 0.55 + uTime * 0.6) * cos(p.z * 0.7 + uTime * 0.4) * uAmp;
+            float amp = uAmp * (1.0 + uEnergy * 0.6);
+            p.y = sin(p.x * 0.55 + uTime * 0.6) * cos(p.z * 0.7 + uTime * 0.4) * amp;
 
             // cursor ripple: a gaussian swell with a trailing ring around the pointer
             float d = distance(position.xz, uMouse);
@@ -198,9 +201,25 @@ export function HeroField() {
 
       let raf = 0
       let running = false
-      const start = performance.now()
+      let waveTime = 0
+      let lastFrame = performance.now()
+      let lastScrollY = window.scrollY
+      let energy = 0
       const frame = () => {
-        uniforms.uTime.value = ((performance.now() - start) / 1000) * waveSpeed
+        const now = performance.now()
+        const dt = Math.min((now - lastFrame) / 1000, 0.05)
+        lastFrame = now
+
+        // scroll velocity → energy kick (rises fast, decays slow)
+        const y = window.scrollY
+        const kick = Math.min(Math.abs(y - lastScrollY) / Math.max(dt, 0.001) / 2400, 1)
+        lastScrollY = y
+        energy += (kick - energy) * (kick > energy ? 0.3 : 0.04)
+        uniforms.uEnergy.value = energy
+
+        // energetic scrolling also speeds the wave up
+        waveTime += dt * waveSpeed * (1 + energy * 1.5)
+        uniforms.uTime.value = waveTime
         uniforms.uMouse.value.lerp(target, 0.08)
         uniforms.uMouseStrength.value +=
           ((pointerActive ? 1 : 0) - uniforms.uMouseStrength.value) * 0.05

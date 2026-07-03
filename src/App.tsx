@@ -68,6 +68,66 @@ function splitDesc(desc: string): { title: string; rest: string } {
   return { title: match[1].trim(), rest: match[2].trim() }
 }
 
+/** Hard-numbers strip under the hero. Adds a live npm-downloads item
+ *  once the packages clear a number worth showing. */
+const NPM_PACKAGES = ['demotape', 'spanish-tone-spec']
+const NPM_SHOW_THRESHOLD = 100 // weekly downloads
+
+function ProofBar({ items, lang }: { items: { value: string; label: string }[]; lang: Lang }) {
+  const [npmWeekly, setNpmWeekly] = useState<number | null>(null)
+  useEffect(() => {
+    Promise.all(
+      NPM_PACKAGES.map((p) =>
+        fetch(`https://api.npmjs.org/downloads/point/last-week/${p}`)
+          .then((r) => r.json())
+          .then((d: { downloads?: number }) => d.downloads ?? 0)
+      )
+    )
+      .then((counts) => {
+        const total = counts.reduce((s, n) => s + n, 0)
+        if (total >= NPM_SHOW_THRESHOLD) setNpmWeekly(total)
+      })
+      .catch(() => {})
+  }, [])
+  return (
+    <div className="proofbar">
+      {items.map((item) => (
+        <div key={item.label} className="proofbar-item">
+          <span className="proofbar-value">{item.value}</span>
+          <span className="proofbar-label">{item.label}</span>
+        </div>
+      ))}
+      {npmWeekly !== null && (
+        <div className="proofbar-item">
+          <span className="proofbar-value">{npmWeekly.toLocaleString()} / wk</span>
+          <span className="proofbar-label">
+            {lang === 'es' ? 'descargas npm esta semana' : 'npm downloads this week'}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Static dot-wave motif — the hero wave's signature, echoed in 2D. */
+function DotWave() {
+  const dots = Array.from({ length: 56 }, (_, i) => {
+    const t = i / 55
+    return {
+      x: 8 + t * 464,
+      y: 16 + Math.sin(t * Math.PI * 2.4) * 8,
+      o: (0.25 + 0.75 * Math.sin(t * Math.PI)) * 0.8,
+    }
+  })
+  return (
+    <svg className="dot-wave" viewBox="0 0 480 32" aria-hidden="true">
+      {dots.map((d, i) => (
+        <circle key={i} cx={d.x} cy={d.y} r="1.6" fill="var(--indigo)" opacity={d.o} />
+      ))}
+    </svg>
+  )
+}
+
 function useTheme() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window === 'undefined') return 'dark'
@@ -189,6 +249,8 @@ export default function App({ lang = 'en' }: Props) {
               ))}
             </div>
           </div>
+
+          <ProofBar items={c.proofBar} lang={lang} />
         </section>
 
         {/* ============ NOW ============ */}
@@ -284,7 +346,21 @@ export default function App({ lang = 'en' }: Props) {
           </ol>
         </section>
 
+        {/* ============ STACK, PROVEN ============ */}
+        <section className="section" id="proof">
+          <Eyebrow index="05" label={c.sections.proof} />
+          <dl className="stack-proof">
+            {c.stackProof.map((row) => (
+              <div key={row.claim} className="stack-row">
+                <dt className="stack-claim">{row.claim}</dt>
+                <dd className="stack-evidence">{row.evidence}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
         {/* ============ FOOTER ============ */}
+        <DotWave />
         <footer className="footer">
           <span className="foot-mark">
             <JFMark size={20} />
