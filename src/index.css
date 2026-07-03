@@ -24,9 +24,10 @@
   --hairline:        rgba(230, 232, 235, 0.08);
   --hairline-strong: rgba(230, 232, 235, 0.16);
 
-  /* Type stacks */
-  --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-  --sans:  'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* Type stacks — Claude/Anthropic-style pairing:
+     Source Serif 4 stands in for Tiempos, Archivo for Styrene B. */
+  --serif: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+  --sans:  'Archivo', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --mono:  'Geist Mono', ui-monospace, SFMono-Regular, monospace;
 
   color-scheme: dark;
