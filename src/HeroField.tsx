@@ -12,7 +12,8 @@ function isIOSDevice() {
  * three.js is dynamically imported so it never blocks first paint.
  * iOS-safe: renderer creation is guarded, pixel ratio is capped, and the
  * scene remounts on WebGL context loss (Safari drops contexts aggressively).
- * With prefers-reduced-motion the wave renders one static frame instead.
+ * With prefers-reduced-motion the wave drifts slowly with no ripple or
+ * scroll kicks instead of animating at full energy.
  */
 export function HeroField() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -150,23 +151,10 @@ export function HeroField() {
         renderer.setSize(w, h, false)
         camera.aspect = w / h
         camera.updateProjectionMatrix()
-        if (reducedMotion) render()
       }
       resize()
       const ro = new ResizeObserver(resize)
       ro.observe(host)
-
-      // Reduced motion: draw the wave once, frozen, and skip all animation.
-      if (reducedMotion) {
-        render()
-        cleanupScene = () => {
-          ro.disconnect()
-          geometry.dispose()
-          material.dispose()
-          renderer.dispose()
-        }
-        return
-      }
 
       // Pointer → grid plane (y = 0), eased each frame so the ripple trails the cursor.
       const raycaster = new THREE.Raycaster()
@@ -190,14 +178,17 @@ export function HeroField() {
         if (raycaster.ray.intersectPlane(plane, hit)) target.set(hit.x, hit.z)
       }
       const onPointerLeave = () => { pointerActive = false }
-      window.addEventListener('pointermove', onPointerMove, { passive: true })
-      document.addEventListener('pointerleave', onPointerLeave)
       // touch: no leave event fires after the finger lifts, so release the ripple explicitly
       const onPointerUp = (e: PointerEvent) => {
         if (e.pointerType !== 'mouse') pointerActive = false
       }
-      window.addEventListener('pointerup', onPointerUp, { passive: true })
-      window.addEventListener('pointercancel', onPointerUp, { passive: true })
+      // Reduced motion: no ripple interaction — the wave only drifts slowly.
+      if (!reducedMotion) {
+        window.addEventListener('pointermove', onPointerMove, { passive: true })
+        document.addEventListener('pointerleave', onPointerLeave)
+        window.addEventListener('pointerup', onPointerUp, { passive: true })
+        window.addEventListener('pointercancel', onPointerUp, { passive: true })
+      }
 
       let raf = 0
       let running = false
@@ -212,13 +203,15 @@ export function HeroField() {
 
         // scroll velocity → energy kick (rises fast, decays slow)
         const y = window.scrollY
-        const kick = Math.min(Math.abs(y - lastScrollY) / Math.max(dt, 0.001) / 2400, 1)
+        const kick = reducedMotion
+          ? 0
+          : Math.min(Math.abs(y - lastScrollY) / Math.max(dt, 0.001) / 2400, 1)
         lastScrollY = y
         energy += (kick - energy) * (kick > energy ? 0.3 : 0.04)
         uniforms.uEnergy.value = energy
 
-        // energetic scrolling also speeds the wave up
-        waveTime += dt * waveSpeed * (1 + energy * 1.5)
+        // energetic scrolling speeds the wave up; reduced motion drifts slowly
+        waveTime += dt * waveSpeed * (reducedMotion ? 0.35 : 1 + energy * 1.5)
         uniforms.uTime.value = waveTime
         uniforms.uMouse.value.lerp(target, 0.08)
         uniforms.uMouseStrength.value +=
