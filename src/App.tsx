@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './index.css'
 import './App.css'
 import { JFMark } from './JFMark.tsx'
@@ -13,33 +13,43 @@ interface Props { lang?: Lang }
    Small components
    ============================================ */
 
-function Eyebrow({ index, label }: { index: string; label: string }) {
-  const [visible, setVisible] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!ref.current) return
-    const obs = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setVisible(true)
-            obs.disconnect()
-            break
-          }
-        }
-      },
-      { threshold: 0.5, rootMargin: '0px 0px -40px 0px' }
+function SectionTitle({ label }: { label: string }) {
+  return <h2 className="section-title">{label}</h2>
+}
+
+/** Demo media available in /public/demos per project slug. */
+const DEMO_MEDIA: Record<string, 'video' | 'image'> = {
+  lupa: 'video',
+  demotape: 'video',
+  blok: 'video',
+  vantage: 'video',
+  wandr: 'video',
+  janga: 'image',
+  usableai: 'image',
+}
+
+function CardMedia({ slug, name }: { slug: string; name: string }) {
+  const kind = DEMO_MEDIA[slug]
+  if (kind === 'video') {
+    return (
+      <video
+        className="card-demo"
+        src={`/demos/${slug}.mp4`}
+        poster={`/demos/${slug}.jpg`}
+        muted
+        loop
+        playsInline
+        preload="none"
+        aria-label={`${name} demo`}
+        onMouseEnter={(e) => { void e.currentTarget.play() }}
+        onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0 }}
+      />
     )
-    obs.observe(ref.current)
-    return () => obs.disconnect()
-  }, [])
-  return (
-    <div ref={ref} className={`eyebrow ${visible ? 'is-visible' : ''}`}>
-      <span className="eyebrow-num">{index}</span>
-      <span className="eyebrow-rule" />
-      <span className="eyebrow-label">{label}</span>
-    </div>
-  )
+  }
+  if (kind === 'image') {
+    return <img className="card-demo" src={`/demos/${slug}.jpg`} alt={`${name} preview`} loading="lazy" />
+  }
+  return <Wordmark slug={slug} />
 }
 
 /** Returns the grid-span class for a project based on its tier. */
@@ -149,10 +159,9 @@ function TopBar({ lang }: { lang: Lang }) {
     <div className="topbar">
       <nav className="sitenav">
         <a href="#work">Work</a>
-        <span className="lang-divider">·</span>
         <a href="#writing">Writing</a>
-        <span className="lang-divider">·</span>
         <a href="#experience">About</a>
+        <a href="#contact">Contact</a>
       </nav>
       <button onClick={toggle} className="theme-toggle" aria-label="Toggle theme">
         {theme === 'dark' ? (
@@ -227,12 +236,17 @@ export default function App({ lang = 'en' }: Props) {
           <HeroField />
           <div className="hero-status">
             <img src="/jan-profile.jpg" alt="Jan Faris" className="hero-avatar" />
-            <span className="pulse" />
-            <span>
-              {lang === 'es'
-                ? 'Puliendo Lupa y usableai · San Juan, PR'
-                : 'Polishing Lupa & usableai · San Juan, PR'}
-            </span>
+            <div className="hero-id">
+              <strong className="hero-name">Jan Faris</strong>
+              <span className="hero-status-line">
+                <span className="pulse" />
+                <span>
+                  {lang === 'es'
+                    ? 'Puliendo Lupa y usableai · San Juan, PR'
+                    : 'Polishing Lupa & usableai · San Juan, PR'}
+                </span>
+              </span>
+            </div>
           </div>
 
           <h1 className="display">
@@ -250,18 +264,21 @@ export default function App({ lang = 'en' }: Props) {
             </div>
           </div>
 
+          <div className="hero-cta">
+            <a className="btn-primary" href="#contact">
+              {lang === 'es' ? 'Trabaja conmigo' : 'Work with me'}
+            </a>
+          </div>
+
           <ProofBar items={c.proofBar} lang={lang} />
         </section>
 
         {/* ============ NOW ============ */}
         <section className="section">
-          <Eyebrow index="01" label={c.sections.now} />
+          <SectionTitle label={c.sections.now} />
           <div className="now">
-            <div className="now-pulse-frame">
-              <span className="pulse" />
-            </div>
             <div>
-              <h2 className="now-headline">{c.now.headline}</h2>
+              <h3 className="now-headline">{c.now.headline}</h3>
               <ul className="now-lines">
                 {c.now.lines.map((l) => <li key={l}>{l}</li>)}
               </ul>
@@ -272,7 +289,7 @@ export default function App({ lang = 'en' }: Props) {
 
         {/* ============ WORK ============ */}
         <section className="section" id="work">
-          <Eyebrow index="02" label={c.sections.work} />
+          <SectionTitle label={c.sections.work} />
           <div className="work-grid">
             {c.projects.map((p) => {
               const { title, rest } = splitDesc(p.description)
@@ -286,7 +303,7 @@ export default function App({ lang = 'en' }: Props) {
                 className={`card ${spanClass}`}
               >
                 <div className="card-mark">
-                  <Wordmark slug={p.media || p.name.toLowerCase()} />
+                  <CardMedia slug={p.media || p.name.toLowerCase()} name={p.name} />
                 </div>
                 <div className="card-body">
                   <div className="card-head">
@@ -296,7 +313,7 @@ export default function App({ lang = 'en' }: Props) {
                   <h3 className="card-title">{title}</h3>
                   {rest && <p className="card-desc">{rest}</p>}
                   <div className="card-foot">
-                    <span className="card-stack">{p.tech.slice(0, 4).join(' · ')}</span>
+                    <span className="card-stack">{p.tech.slice(0, 4).join(', ')}</span>
                     <span className="card-arrow">↗</span>
                   </div>
                 </div>
@@ -308,7 +325,7 @@ export default function App({ lang = 'en' }: Props) {
 
         {/* ============ WRITING ============ */}
         <section className="section" id="writing">
-          <Eyebrow index="03" label={c.sections.writing} />
+          <SectionTitle label={c.sections.writing} />
           <div className="writing-list">
             {posts.slice(0, 5).map((p) => (
               <Link key={p.slug} to={`/writing/${p.slug}`} className="writing-row">
@@ -328,7 +345,7 @@ export default function App({ lang = 'en' }: Props) {
 
         {/* ============ EXPERIENCE ============ */}
         <section className="section" id="experience">
-          <Eyebrow index="04" label={c.sections.experience} />
+          <SectionTitle label={c.sections.experience} />
           <ol className="experience">
             {c.experience.map((e) => (
               <li key={e.company} className="exp-row">
@@ -348,7 +365,7 @@ export default function App({ lang = 'en' }: Props) {
 
         {/* ============ STACK, PROVEN ============ */}
         <section className="section" id="proof">
-          <Eyebrow index="05" label={c.sections.proof} />
+          <SectionTitle label={c.sections.proof} />
           <dl className="stack-proof">
             {c.stackProof.map((row) => (
               <div key={row.claim} className="stack-row">
@@ -357,6 +374,26 @@ export default function App({ lang = 'en' }: Props) {
               </div>
             ))}
           </dl>
+        </section>
+
+        {/* ============ CONTACT ============ */}
+        <section className="section" id="contact">
+          <SectionTitle label={c.sections.available} />
+          <p className="contact-lede">{c.available.body}</p>
+          <div className="contact-grid">
+            {c.available.channels.map((ch) => (
+              <a
+                key={ch.key}
+                href={ch.href}
+                className={`contact-card ${ch.key === 'hire' ? 'contact-card-primary' : ''}`}
+                {...(ch.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+              >
+                <h3 className="contact-title">{ch.title}</h3>
+                <p className="contact-desc">{ch.desc}</p>
+                <span className="contact-cta">{ch.cta} →</span>
+              </a>
+            ))}
+          </div>
         </section>
 
         {/* ============ FOOTER ============ */}
@@ -368,11 +405,8 @@ export default function App({ lang = 'en' }: Props) {
           </span>
           <span className="foot-text">
             <span>San Juan, PR</span>
-            <span>·</span>
             <a href="mailto:jankarlo.faris@outlook.com">jankarlo.faris@outlook.com</a>
-            <span>·</span>
             <a href="https://github.com/janfaris" target="_blank" rel="noreferrer">GitHub</a>
-            <span>·</span>
             <a href="https://linkedin.com/in/jan-faris-garcia" target="_blank" rel="noreferrer">LinkedIn</a>
           </span>
         </footer>

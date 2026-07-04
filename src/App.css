@@ -105,35 +105,16 @@
 }
 .lang-divider { color: var(--text-mute); opacity: 0.4; }
 
-/* ---------- Section eyebrow ---------- */
-.eyebrow {
-  display: flex; align-items: center; gap: 16px;
-  margin-bottom: 56px;
-  font-family: var(--mono);
-}
-.eyebrow-num {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  color: var(--indigo);
-  font-variant-numeric: tabular-nums;
-}
-.eyebrow-rule {
-  flex: 0 0 56px;
-  height: 1px;
-  background: var(--indigo);
-  opacity: 0.6;
-  transform-origin: left center;
-  transform: scaleX(0);
-  transition: transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.eyebrow.is-visible .eyebrow-rule { transform: scaleX(1); }
-.eyebrow-label {
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--text-dim);
+/* ---------- Section title ---------- */
+.section-title {
+  font-family: var(--serif);
+  font-weight: 450;
+  font-size: clamp(26px, 3vw, 34px);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 48px;
+  font-variation-settings: "opsz" 40;
 }
 
 /* ---------- Section block ---------- */
@@ -175,15 +156,31 @@
 }
 
 .hero-status {
+  display: inline-flex; align-items: center; gap: 14px;
+}
+.hero-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hero-name {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text);
+}
+.hero-status-line {
   font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.20em;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-dim);
-  display: inline-flex; align-items: center; gap: 12px;
+  display: inline-flex; align-items: center; gap: 10px;
 }
 .hero-avatar {
-  width: 44px; height: 44px;
+  width: 48px; height: 48px;
   border-radius: 50%;
   object-fit: cover;
   object-position: center top;
@@ -474,7 +471,7 @@
   border-radius: 16px;
   padding: 32px 36px;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr;
   gap: 28px;
   background:
     linear-gradient(160deg, rgba(255,255,255,0.04), transparent 45%),
@@ -490,13 +487,6 @@
 @media (max-width: 720px) {
   .now { padding: 24px; gap: 20px; grid-template-columns: 1fr; }
 }
-.now-pulse-frame {
-  width: 48px; height: 48px;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(94, 106, 210, 0.08);
-  border-radius: 50%;
-}
-.now-pulse-frame .pulse { width: 10px; height: 10px; }
 .now-headline {
   font-family: var(--serif);
   font-size: 22px;
@@ -835,9 +825,9 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     0 8px 24px rgba(0, 0, 0, 0.35);
-  padding: 8px 14px;
+  padding: 8px 18px;
   border-radius: 999px;
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center; gap: 20px;
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -1017,37 +1007,33 @@ html, body { overflow-x: hidden; }
 }
 
 /* ============================================
-   STACK, PROVEN — claim → evidence rows
+   STACK, PROVEN — claim → evidence grid
    ============================================ */
 .stack-proof {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px 64px;
   margin: 0;
 }
-.stack-row {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 32px;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--hairline);
-}
-.stack-row:last-child { border-bottom: none; }
+.stack-row { display: flex; flex-direction: column; gap: 8px; }
 .stack-claim {
   font-family: var(--serif);
   font-style: italic;
-  font-size: 19px;
+  font-size: 20px;
   letter-spacing: -0.01em;
+  line-height: 1.2;
   color: var(--indigo);
+  padding-bottom: 2px;
 }
 .stack-evidence {
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-dim);
-  max-width: 62ch;
+  max-width: 52ch;
 }
 @media (max-width: 720px) {
-  .stack-row { grid-template-columns: 1fr; gap: 6px; padding: 18px 0; }
+  .stack-proof { grid-template-columns: 1fr; gap: 28px; }
 }
 
 /* ============================================
@@ -1057,4 +1043,101 @@ html, body { overflow-x: hidden; }
   display: block;
   width: min(480px, 70%);
   margin: 8px auto 0;
+}
+
+/* ============================================
+   HERO CTA
+   ============================================ */
+.hero-cta {
+  opacity: 0;
+  animation: soft-fade 640ms cubic-bezier(0.16, 1, 0.3, 1) 680ms forwards;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 28px;
+  border-radius: 999px;
+  background: var(--indigo-deep);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), background 200ms ease;
+}
+.btn-primary:hover { background: var(--indigo); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0) scale(0.98); }
+
+/* ============================================
+   CONTACT — three ways to work together
+   ============================================ */
+.contact-lede {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  max-width: 52ch;
+  margin: -20px 0 40px;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: var(--bg-elev);
+  transition:
+    border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.contact-card:hover {
+  border-color: rgba(94, 106, 210, 0.45);
+  transform: translateY(-2px);
+}
+.contact-card-primary {
+  background:
+    linear-gradient(160deg, rgba(94, 106, 210, 0.14), rgba(94, 106, 210, 0.04)),
+    var(--bg-elev);
+  border-color: rgba(94, 106, 210, 0.3);
+}
+.contact-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.contact-desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  flex: 1;
+}
+.contact-cta {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--indigo);
+}
+@media (max-width: 900px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================
+   CARD DEMO MEDIA
+   ============================================ */
+.card-demo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
 }

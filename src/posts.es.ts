@@ -5,7 +5,7 @@ export const postsEs: Post[] = [
     slug: 'lupa-tone-spec',
     title: 'Cómo logramos que Lupa hable español puertorriqueño sin regex',
     description:
-      'Tres meses tratando de arreglar el tono con regex, reglas en el prompt y post-procesamiento — y lo único que realmente funcionó.',
+      'Tres meses tratando de arreglar el tono con regex, reglas en el prompt y post-procesamiento, y lo único que realmente funcionó.',
     date: 'Mayo 2026',
     readTime: '9 min',
     body: `## El veredicto de Carmen

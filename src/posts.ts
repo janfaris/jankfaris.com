@@ -12,7 +12,7 @@ export const posts: Post[] = [
     slug: 'resend-supabase-tracked-email',
     title: 'Resend + Supabase: making every email a tracked API call',
     description:
-      'How I wrapped Resend so every send lands in the same Supabase observability table as my Gemini, OpenAI, and Google Places calls — and why "email as a tracked API" changed how I think about transactional infra.',
+      'How I wrapped Resend so every send lands in the same Supabase observability table as my Gemini, OpenAI, and Google Places calls, and why "email as a tracked API" changed how I think about transactional infra.',
     date: 'May 2026',
     readTime: '7 min',
     body: `## The realization
