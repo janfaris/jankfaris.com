@@ -1141,3 +1141,67 @@ html, body { overflow-x: hidden; }
   object-position: top center;
   display: block;
 }
+
+/* ============================================
+   PIPELINE — dot-and-line project flow
+   ============================================ */
+.pipeline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  margin-top: 18px;
+}
+.pipe-seg { display: inline-flex; align-items: center; flex: 0 1 auto; }
+.pipe-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.pipe-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--indigo);
+  flex-shrink: 0;
+}
+.pipe-line {
+  display: inline-block;
+  width: 22px;
+  height: 1px;
+  margin: 0 10px;
+  background: linear-gradient(90deg, rgba(94, 106, 210, 0.55), var(--hairline-strong));
+}
+
+/* ============================================
+   TAG ICON — real platform marks
+   ============================================ */
+.tag-icon {
+  width: 13px; height: 13px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 7px;
+  opacity: 0.75;
+}
+
+/* ============================================
+   PR DOT MAP — the island in wave particles
+   ============================================ */
+.contact-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 48px;
+  margin: -20px 0 40px;
+}
+.contact-head .contact-lede { margin: 0; }
+.pr-map { width: 250px; display: block; }
+@media (max-width: 720px) {
+  .contact-head { grid-template-columns: 1fr; gap: 28px; }
+  .pr-map { width: 210px; margin: 0 auto; }
+}

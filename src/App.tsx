@@ -17,6 +17,89 @@ function SectionTitle({ label }: { label: string }) {
   return <h2 className="section-title">{label}</h2>
 }
 
+/** Dot-and-line flow diagram: how a project actually works, one glance. */
+function Pipeline({ steps }: { steps: string[] }) {
+  return (
+    <div className="pipeline" aria-label={steps.join(' to ')}>
+      {steps.map((step, i) => (
+        <span key={step} className="pipe-seg">
+          {i > 0 && <span className="pipe-line" aria-hidden="true" />}
+          <span className="pipe-step">
+            <span className="pipe-dot" aria-hidden="true" />
+            {step}
+          </span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
+/** Puerto Rico rendered in the hero wave's particle language.
+ *  Outlines are real lon/lat coastline points, projected to the viewBox,
+ *  so the silhouette (and Vieques / Culebra placement) matches the map. */
+const PR_COAST: [number, number][] = [
+  // clockwise from the northwest corner (Aguadilla)
+  [-67.16, 18.47], [-66.95, 18.49], [-66.70, 18.485], [-66.45, 18.475],
+  [-66.20, 18.465], [-66.10, 18.47], [-65.99, 18.455], [-65.83, 18.425],
+  [-65.65, 18.38], [-65.59, 18.30], [-65.62, 18.22], [-65.72, 18.05],
+  [-65.85, 17.97], [-66.05, 17.955], [-66.30, 17.94], [-66.55, 17.985],
+  [-66.85, 17.95], [-67.05, 17.93], [-67.20, 17.935], [-67.17, 18.05],
+  [-67.16, 18.18], [-67.21, 18.26], [-67.27, 18.36], [-67.23, 18.43],
+]
+const VIEQUES: [number, number][] = [
+  [-65.57, 18.11], [-65.45, 18.16], [-65.30, 18.15], [-65.27, 18.10],
+  [-65.40, 18.05], [-65.53, 18.07],
+]
+const CULEBRA: [number, number][] = [
+  [-65.34, 18.32], [-65.27, 18.35], [-65.22, 18.31], [-65.28, 18.27], [-65.33, 18.28],
+]
+// project lon/lat to viewBox units (equal-ish aspect at PR's latitude)
+const prX = (lon: number) => ((lon + 67.27) / 1.68) * 100
+const prY = (lat: number) => ((18.52 - lat) / 0.59) * 39
+
+function inPolygon(x: number, y: number, poly: [number, number][]) {
+  let inside = false
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = prX(poly[i][0]), yi = prY(poly[i][1])
+    const xj = prX(poly[j][0]), yj = prY(poly[j][1])
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+const PR_DOTS: { x: number; y: number; o: number }[] = (() => {
+  const dots: { x: number; y: number; o: number }[] = []
+  for (const isle of [PR_COAST, VIEQUES, CULEBRA]) {
+    for (let y = 0; y <= 39; y += 2.2) {
+      for (let x = 0; x <= 123; x += 2.2) {
+        if (inPolygon(x, y, isle)) {
+          // deterministic pseudo-random opacity per dot
+          const h = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1
+          dots.push({ x, y, o: 0.35 + h * 0.55 })
+        }
+      }
+    }
+  }
+  return dots
+})()
+
+function PRDotMap() {
+  return (
+    <svg className="pr-map" viewBox="-2 -2 127 43" aria-hidden="true">
+      {PR_DOTS.map((d, i) => (
+        <circle key={i} cx={d.x} cy={d.y} r="0.8" fill="var(--indigo)" opacity={d.o} />
+      ))}
+    </svg>
+  )
+}
+
+/** Small platform mark shown next to a card tag when the claim has a real home. */
+function tagIcon(tag: string, link: string): { src: string; alt: string } | null {
+  if (tag.includes('npm')) return { src: '/icons/npm.svg', alt: 'npm' }
+  if (tag.includes('iOS') || tag.includes('App Store')) return { src: '/icons/appstore.svg', alt: 'App Store' }
+  if (link.includes('github.com')) return { src: '/icons/github.svg', alt: 'GitHub' }
+  return null
+}
+
 /** Demo media available in /public/demos per project slug. */
 const DEMO_MEDIA: Record<string, 'video' | 'image'> = {
   lupa: 'video',
@@ -307,11 +390,18 @@ export default function App({ lang = 'en' }: Props) {
                 </div>
                 <div className="card-body">
                   <div className="card-head">
-                    <span className="card-tag">{p.tag}</span>
+                    <span className="card-tag">
+                      {(() => {
+                        const icon = tagIcon(p.tag, p.link)
+                        return icon ? <img className="tag-icon" src={icon.src} alt={icon.alt} /> : null
+                      })()}
+                      {p.tag}
+                    </span>
                     <span className="card-year">{p.year}</span>
                   </div>
                   <h3 className="card-title">{title}</h3>
                   {rest && <p className="card-desc">{rest}</p>}
+                  {p.pipeline && <Pipeline steps={p.pipeline} />}
                   <div className="card-foot">
                     <span className="card-stack">{p.tech.slice(0, 4).join(', ')}</span>
                     <span className="card-arrow">↗</span>
@@ -379,7 +469,10 @@ export default function App({ lang = 'en' }: Props) {
         {/* ============ CONTACT ============ */}
         <section className="section" id="contact">
           <SectionTitle label={c.sections.available} />
-          <p className="contact-lede">{c.available.body}</p>
+          <div className="contact-head">
+            <p className="contact-lede">{c.available.body}</p>
+            <PRDotMap />
+          </div>
           <div className="contact-grid">
             {c.available.channels.map((ch) => (
               <a

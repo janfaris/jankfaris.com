@@ -14,6 +14,8 @@ export interface Project {
   span?: 'wide'
   /** Slug for /demos/<slug>.{mp4,jpg} — when set, card renders an autoplaying muted loop with poster fallback */
   media?: string
+  /** Ordered pipeline steps, rendered as a dot-and-line flow diagram in the card. */
+  pipeline?: string[]
 }
 export interface ExperienceItem {
   company: string
@@ -145,6 +147,7 @@ export const content: Record<Lang, Content> = {
           'Internal tool I built to land website clients in Puerto Rico. From a Maps search, it audits local businesses, generates a personalized Spanish demo site per lead, and ships the pitch over WhatsApp. Used only by me and my partner, not a SaaS.',
         link: 'https://lupa-seven.vercel.app',
         tech: ['Next.js 16', 'React 19', 'Gemini 3', 'Supabase', 'Stripe'],
+        pipeline: ['Maps search', 'AI audit', 'Spanish demo site', 'WhatsApp pitch'],
         metrics: [
           { label: 'Demos generated', value: '120+' },
           { label: 'Categories', value: '7' },
@@ -162,6 +165,7 @@ export const content: Record<Lang, Content> = {
           'CLI that records production-quality demo videos of web apps from a JSON config. Auth-aware, skeleton-free, multi-format. Replaces an entire category of $30/mo SaaS tools.',
         link: 'https://github.com/janfaris/demotape',
         tech: ['TypeScript', 'Playwright', 'FFmpeg', 'Zod', 'MIT'],
+        pipeline: ['JSON config', 'Headless browser', 'Production video'],
         featured: true,
         span: 'wide',
       },
@@ -174,6 +178,7 @@ export const content: Record<Lang, Content> = {
           'My private content engine. Runs the @usableai Instagram account: RSS + curated X → GPT-5.5 → vision-QA Spanish carousels, fully automated. Built for me, not for sale.',
         link: 'https://instagram.com/usableai',
         tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
+        pipeline: ['RSS + X', 'GPT-5.5', 'Vision QA', 'Instagram'],
       },
       {
         name: 'spanish-tone-spec',
@@ -371,6 +376,7 @@ export const content: Record<Lang, Content> = {
           'Descubre negocios locales en Puerto Rico con Gemini 3 + Google Maps, audita sus webs con PageSpeed y genera una página demo personalizada en español para cada lead. Pitch directo por WhatsApp con tracking de vistas.',
         link: 'https://lupa-seven.vercel.app',
         tech: ['Next.js 16', 'React 19', 'Gemini 3', 'Supabase', 'Stripe'],
+        pipeline: ['Búsqueda en Maps', 'Auditoría IA', 'Demo en español', 'Pitch por WhatsApp'],
         metrics: [
           { label: 'Demos generados', value: '120+' },
           { label: 'Categorías', value: '7' },
@@ -388,6 +394,7 @@ export const content: Record<Lang, Content> = {
           'CLI que graba videos demo de calidad producción para apps web desde un config en JSON. Maneja autenticación, evita estados de loading, y exporta múltiples formatos. Reemplaza toda una categoría de SaaS de $30/mes.',
         link: 'https://github.com/janfaris/demotape',
         tech: ['TypeScript', 'Playwright', 'FFmpeg', 'Zod', 'MIT'],
+        pipeline: ['Config JSON', 'Browser headless', 'Video final'],
         featured: true,
         span: 'wide',
       },
@@ -400,6 +407,7 @@ export const content: Record<Lang, Content> = {
           'Digest diario de IA en español para LATAM. Pipeline automatizado: RSS + X curado → GPT-5.5 → carruseles de Instagram con QA visual.',
         link: 'https://instagram.com/usableai',
         tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
+        pipeline: ['RSS + X', 'GPT-5.5', 'QA visual', 'Instagram'],
       },
       {
         name: 'spanish-tone-spec',
