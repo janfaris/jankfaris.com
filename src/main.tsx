@@ -8,6 +8,7 @@ import Writing from './Writing.tsx'
 import Post from './Post.tsx'
 import WritingEs from './WritingEs.tsx'
 import PostEs from './PostEs.tsx'
+import Resume from './Resume.tsx'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -28,6 +29,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/writing/:slug" element={<Post />} />
         <Route path="/es/writing" element={<WritingEs />} />
         <Route path="/es/writing/:slug" element={<PostEs />} />
+        <Route path="/resume" element={<Resume lang="en" />} />
+        <Route path="/es/resume" element={<Resume lang="es" />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

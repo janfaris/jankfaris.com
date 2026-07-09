@@ -351,9 +351,9 @@ export default function App({ lang = 'en' }: Props) {
             <a className="btn-primary" href="#contact">
               {lang === 'es' ? 'Contrátame' : 'Hire me'}
             </a>
-            <a className="btn-secondary" href="/resume.pdf" target="_blank" rel="noopener">
-              {lang === 'es' ? 'Résumé (PDF)' : 'Résumé (PDF)'}
-            </a>
+            <Link className="btn-secondary" to={lang === 'es' ? '/es/resume' : '/resume'}>
+              Résumé
+            </Link>
           </div>
 
           <ProofBar items={c.proofBar} lang={lang} />
