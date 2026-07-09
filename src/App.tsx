@@ -325,8 +325,8 @@ export default function App({ lang = 'en' }: Props) {
                 <span className="pulse" />
                 <span>
                   {lang === 'es'
-                    ? 'Puliendo Lupa y usableai · San Juan, PR'
-                    : 'Polishing Lupa & usableai · San Juan, PR'}
+                    ? 'Disponible para roles remotos · San Juan, PR'
+                    : 'Open to remote roles · San Juan, PR'}
                 </span>
               </span>
             </div>
@@ -349,7 +349,10 @@ export default function App({ lang = 'en' }: Props) {
 
           <div className="hero-cta">
             <a className="btn-primary" href="#contact">
-              {lang === 'es' ? 'Trabaja conmigo' : 'Work with me'}
+              {lang === 'es' ? 'Contrátame' : 'Hire me'}
+            </a>
+            <a className="btn-secondary" href="/resume.pdf" target="_blank" rel="noopener">
+              {lang === 'es' ? 'Résumé (PDF)' : 'Résumé (PDF)'}
             </a>
           </div>
 

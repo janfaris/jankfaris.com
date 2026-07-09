@@ -86,15 +86,15 @@ export const content: Record<Lang, Content> = {
     meta: {
       title: 'Jan Faris — AI products from Puerto Rico',
       description:
-        'Software engineer building Spanish-first AI products from Puerto Rico. Microsoft engineer. Creator of Lupa, demotape, and usableai.',
+        'Software engineer building Spanish-first AI products from Puerto Rico. Ex-Microsoft. Creator of Lupa, demotape, and usableai.',
     },
     nav: { en: 'EN', es: 'ES', writing: 'Writing' },
     hero: {
       display: { lead: 'Software, ', em: 'shipped', tail: '.' },
       lede:
-        'Software Engineer at Microsoft. AI-native products, built end-to-end. EN · ES.',
+        'Ex-Microsoft software engineer. AI-native products, built end-to-end. Open to remote roles. EN · ES.',
       metaItems: [
-        { key: 'role', val: 'SWE II @ Microsoft' },
+        { key: 'status', val: 'open to work · ex-SWE II @ Microsoft' },
         { key: 'shipped', val: '2 npm, 1 App Store, internal tools' },
         { key: 'languages', val: 'EN · ES' },
       ],
@@ -233,7 +233,7 @@ export const content: Record<Lang, Content> = {
       {
         company: 'Microsoft',
         role: 'Software Engineer II',
-        period: '2025 - Present',
+        period: '2025 - 2026',
         note: 'Commerce Core / Compliance Analytics. Shipped PRPilot, an internal Claude-powered PR-review tool that scored 5.0/5.0 on internal AI evaluations across 7+ repos.',
       },
       {
@@ -263,12 +263,12 @@ export const content: Record<Lang, Content> = {
     },
     available: {
       headline: {
-        lead: 'Three ways to ',
-        em: 'work with me',
+        lead: 'I’m open to work — ',
+        em: 'hire me',
         tail: '.',
       },
       body:
-        'I split my time between Microsoft, my own AI products, and a small amount of work for founders and teams who want to ship something real. If any of these fit, let\u2019s talk.',
+        'I\u2019m looking for my next full-time role, building my own AI products, and taking a small amount of work for founders and teams who want to ship something real. If any of these fit, let\u2019s talk.',
       channels: [
         {
           key: 'hire',
@@ -311,7 +311,7 @@ export const content: Record<Lang, Content> = {
     meta: {
       title: 'Jan Faris — Productos de IA desde Puerto Rico',
       description:
-        'Ingeniero de software construyendo productos de IA en español desde Puerto Rico. Ingeniero en Microsoft. Creador de Lupa, demotape y usableai.',
+        'Ingeniero de software construyendo productos de IA en español desde Puerto Rico. Ex-Microsoft. Creador de Lupa, demotape y usableai.',
     },
     nav: { en: 'EN', es: 'ES', writing: 'Ensayos' },
     hero: {
@@ -321,9 +321,9 @@ export const content: Record<Lang, Content> = {
         tail: '.',
       },
       lede:
-        'Ingeniero de Software en Microsoft. Productos AI-native, de punta a punta. EN · ES.',
+        'Ingeniero de software, ex-Microsoft. Productos AI-native, de punta a punta. Disponible para roles remotos. EN · ES.',
       metaItems: [
-        { key: 'rol', val: 'SWE II @ Microsoft' },
+        { key: 'estado', val: 'disponible · ex-SWE II @ Microsoft' },
         { key: 'lanzados', val: '2 npm, 1 App Store, herramientas internas' },
         { key: 'idiomas', val: 'EN · ES' },
       ],
@@ -462,7 +462,7 @@ export const content: Record<Lang, Content> = {
       {
         company: 'Microsoft',
         role: 'Software Engineer II',
-        period: '2025 - Presente',
+        period: '2025 - 2026',
         note: 'Ingeniería full-time en Microsoft. Sistemas de producción a escala.',
       },
       {
@@ -492,12 +492,12 @@ export const content: Record<Lang, Content> = {
     },
     available: {
       headline: {
-        lead: 'Tres formas de ',
-        em: 'trabajar conmigo',
+        lead: 'Estoy disponible — ',
+        em: 'contrátame',
         tail: '.',
       },
       body:
-        'Divido mi tiempo entre Microsoft, mis propios productos de IA, y una pequeña cantidad de trabajo para founders y equipos que quieren lanzar algo real. Si encajas en alguna, hablemos.',
+        'Estoy buscando mi próximo rol full-time, construyendo mis propios productos de IA, y tomando una pequeña cantidad de trabajo para founders y equipos que quieren lanzar algo real. Si encajas en alguna, hablemos.',
       channels: [
         {
           key: 'hire',
