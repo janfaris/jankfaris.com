@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './index.css'
 import './App.css'
 import { JFMark } from './JFMark.tsx'
 import { HeroField } from './HeroField.tsx'
 import { posts } from './posts'
-import { content as siteContent, type Lang } from './content'
+import { postsEs } from './posts.es'
+import { content as siteContent, type Lang, type Project } from './content'
 
 interface Props { lang?: Lang }
 
@@ -92,14 +93,6 @@ function PRDotMap() {
   )
 }
 
-/** Small platform mark shown next to a card tag when the claim has a real home. */
-function tagIcon(tag: string, link: string): { src: string; alt: string } | null {
-  if (tag.includes('npm')) return { src: '/icons/npm.svg', alt: 'npm' }
-  if (tag.includes('iOS') || tag.includes('App Store')) return { src: '/icons/appstore.svg', alt: 'App Store' }
-  if (link.includes('github.com')) return { src: '/icons/github.svg', alt: 'GitHub' }
-  return null
-}
-
 /** Demo media available in /public/demos per project slug. */
 const DEMO_MEDIA: Record<string, 'video' | 'image'> = {
   lupa: 'video',
@@ -111,38 +104,73 @@ const DEMO_MEDIA: Record<string, 'video' | 'image'> = {
   usableai: 'image',
 }
 
-function CardMedia({ slug, name }: { slug: string; name: string }) {
+function CardMedia({
+  slug,
+  name,
+  playInView = false,
+}: {
+  slug: string
+  name: string
+  playInView?: boolean
+}) {
   const kind = DEMO_MEDIA[slug]
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !playInView) return
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reducedMotion) return
+
+    const play = () => {
+      void video.play().catch((error: DOMException) => {
+        if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
+          console.warn(`Could not play the ${name} preview.`, error)
+        }
+      })
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) play()
+        else video.pause()
+      },
+      { threshold: 0.55 },
+    )
+    observer.observe(video)
+
+    return () => {
+      observer.disconnect()
+      video.pause()
+    }
+  }, [name, playInView])
+
   if (kind === 'video') {
     return (
       <video
+        ref={videoRef}
         className="card-demo"
         src={`/demos/${slug}.mp4`}
         poster={`/demos/${slug}.jpg`}
         muted
         loop
         playsInline
-        preload="none"
+        preload="metadata"
         aria-label={`${name} demo`}
-        onMouseEnter={(e) => { void e.currentTarget.play() }}
-        onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0 }}
       />
     )
   }
   if (kind === 'image') {
-    return <img className="card-demo" src={`/demos/${slug}.jpg`} alt={`${name} preview`} loading="lazy" />
+    return (
+      <img
+        className="card-demo"
+        src={`/demos/${slug}.jpg`}
+        alt={`${name} preview`}
+        loading={playInView ? 'eager' : 'lazy'}
+      />
+    )
   }
   return <Wordmark slug={slug} />
-}
-
-/** Returns the grid-span class for a project based on its tier. */
-function cardSpan(slug: string): string {
-  // Tier 1 — flagship anchor (full row)
-  if (slug === 'lupa') return 'card-wide'
-  // Tier 2 — current / active (3 per row)
-  if (['demotape', 'usableai', 'spanish-tone-spec'].includes(slug)) return 'card-third'
-  // Tier 3 — previous / archive (4 per row)
-  return 'card-quarter'
 }
 
 /** Split a string into individual words for staggered animation. */
@@ -151,14 +179,6 @@ function splitWords(text: string) {
     if (/^\s+$/.test(tok)) return <span key={i}>{tok}</span>
     return <span key={i} className="reveal-word">{tok}</span>
   })
-}
-
-/** Split description into a short title (first sentence) and remainder for desc.
- *  If the description is a single sentence, return title only and no desc. */
-function splitDesc(desc: string): { title: string; rest: string } {
-  const match = desc.match(/^([^.]+\.)\s*(.*)$/s)
-  if (!match) return { title: desc, rest: '' }
-  return { title: match[1].trim(), rest: match[2].trim() }
 }
 
 /** Hard-numbers strip under the hero. Adds a live npm-downloads item
@@ -180,7 +200,9 @@ function ProofBar({ items, lang }: { items: { value: string; label: string }[]; 
         const total = counts.reduce((s, n) => s + n, 0)
         if (total >= NPM_SHOW_THRESHOLD) setNpmWeekly(total)
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.warn('Could not load current npm download counts.', error)
+      })
   }, [])
   return (
     <div className="proofbar">
@@ -223,11 +245,10 @@ function DotWave() {
 
 function useTheme() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'dark'
+    if (typeof window === 'undefined') return 'light'
     const stored = localStorage.getItem('theme') as 'light' | 'dark' | null
     if (stored) return stored
-    // Default to dark (per moodboard direction). User can toggle.
-    return 'dark'
+    return 'light'
   })
   useEffect(() => {
     document.documentElement.classList.toggle('light', theme === 'light')
@@ -238,15 +259,20 @@ function useTheme() {
 
 function TopBar({ lang }: { lang: Lang }) {
   const { theme, toggle } = useTheme()
+  const labels = siteContent[lang].nav
+  const themeLabel = theme === 'dark'
+    ? (lang === 'es' ? 'Usar tema claro' : 'Use light theme')
+    : (lang === 'es' ? 'Usar tema oscuro' : 'Use dark theme')
+
   return (
     <div className="topbar">
       <nav className="sitenav">
-        <a href="#work">Work</a>
-        <a href="#writing">Writing</a>
-        <a href="#experience">About</a>
-        <a href="#contact">Contact</a>
+        <a href="#work">{labels.work}</a>
+        <a href="#writing">{labels.writing}</a>
+        <a href="#experience">{labels.about}</a>
+        <a href="#contact" className="nav-hire">{labels.hire}</a>
       </nav>
-      <button onClick={toggle} className="theme-toggle" aria-label="Toggle theme">
+      <button onClick={toggle} className="theme-toggle" aria-label={themeLabel} title={themeLabel}>
         {theme === 'dark' ? (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="4" />
@@ -295,11 +321,103 @@ function Wordmark({ slug }: { slug: string }) {
   }
 }
 
+function FeaturedProject({
+  project,
+  lang,
+}: {
+  project: Project
+  lang: Lang
+}) {
+  const labels = siteContent[lang].workUi
+  const slug = project.media || project.name.toLowerCase()
+
+  return (
+    <article className="case-study">
+      <div className="case-media">
+        <CardMedia slug={slug} name={project.name} playInView />
+      </div>
+
+      <div className="case-copy">
+        <div className="case-meta">
+          <span>{project.tag}</span>
+          <span>{project.year}</span>
+        </div>
+        <h3 className="case-name">{project.name}</h3>
+        <p className="case-summary">{project.description}</p>
+
+        {project.metrics && project.metrics.length > 0 ? (
+          <dl className="case-metrics" aria-label={labels.evidence}>
+            {project.metrics.map((metric) => (
+              <div key={metric.label}>
+                <dt>{metric.label}</dt>
+                <dd>{metric.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+
+        {project.pipeline ? <Pipeline steps={project.pipeline} /> : null}
+
+        <div className="case-footer">
+          <span className="case-stack">{project.tech.slice(0, 5).join(' · ')}</span>
+          <a href={project.link} target="_blank" rel="noreferrer" className="case-link">
+            {labels.openProject} <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function ProjectArchive({ projects, lang }: { projects: Project[]; lang: Lang }) {
+  const labels = siteContent[lang].workUi
+
+  return (
+    <div className="project-archive">
+      <div className="archive-heading">
+        <h3>{labels.archiveTitle}</h3>
+        <p>{labels.archiveBody}</p>
+      </div>
+      <div className="archive-list">
+        {projects.map((project) => (
+          <a
+            key={project.name}
+            href={project.link}
+            target="_blank"
+            rel="noreferrer"
+            className="archive-row"
+          >
+            <span className="archive-name">{project.name}</span>
+            <span className="archive-desc">{project.description}</span>
+            <span className="archive-tech">{project.tech.slice(0, 3).join(' · ')}</span>
+            <span className="archive-year">{project.year}</span>
+            <span className="archive-arrow" aria-hidden="true">↗</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MobileDock({ lang }: { lang: Lang }) {
+  const labels = siteContent[lang]
+
+  return (
+    <nav className="mobile-dock" aria-label={lang === 'es' ? 'Acciones principales' : 'Primary actions'}>
+      <Link to={lang === 'es' ? '/es/resume' : '/resume'}>{labels.mobileDock.resume}</Link>
+      <a href="#contact" className="mobile-dock-primary">{labels.mobileDock.hire}</a>
+    </nav>
+  )
+}
+
 /* ============================================
    Main App
    ============================================ */
 export default function App({ lang = 'en' }: Props) {
   const c = siteContent[lang]
+  const featuredProjects = c.projects.filter((project) => project.featured)
+  const archiveProjects = c.projects.filter((project) => !project.featured)
+  const writingPosts = lang === 'es' ? postsEs : posts
 
   useEffect(() => {
     document.title = c.meta.title
@@ -309,10 +427,13 @@ export default function App({ lang = 'en' }: Props) {
   }, [c, lang])
 
   return (
-    <div className="app">
+    <div className="app" id="top">
+      <a className="skip-link" href="#main-content">
+        {c.skipToContent}
+      </a>
       <TopBar lang={lang} />
 
-      <div className="container">
+      <main className="container" id="main-content" tabIndex={-1}>
 
         {/* ============ HERO ============ */}
         <section className="hero">
@@ -359,81 +480,28 @@ export default function App({ lang = 'en' }: Props) {
           <ProofBar items={c.proofBar} lang={lang} />
         </section>
 
-        {/* ============ NOW ============ */}
-        <section className="section">
-          <SectionTitle label={c.sections.now} />
-          <div className="now">
-            <div>
-              <h3 className="now-headline">{c.now.headline}</h3>
-              <ul className="now-lines">
-                {c.now.lines.map((l) => <li key={l}>{l}</li>)}
-              </ul>
-              <span className="now-updated">{c.now.updated}</span>
-            </div>
-          </div>
-        </section>
-
         {/* ============ WORK ============ */}
         <section className="section" id="work">
           <SectionTitle label={c.sections.work} />
-          <div className="work-grid">
-            {c.projects.map((p) => {
-              const { title, rest } = splitDesc(p.description)
-              const spanClass = cardSpan(p.media || p.name.toLowerCase())
-              return (
-              <a
-                key={p.name}
-                href={p.link}
-                target="_blank"
-                rel="noreferrer"
-                className={`card ${spanClass}`}
-              >
-                <div className="card-mark">
-                  <CardMedia slug={p.media || p.name.toLowerCase()} name={p.name} />
-                </div>
-                <div className="card-body">
-                  <div className="card-head">
-                    <span className="card-tag">
-                      {(() => {
-                        const icon = tagIcon(p.tag, p.link)
-                        return icon ? <img className="tag-icon" src={icon.src} alt={icon.alt} /> : null
-                      })()}
-                      {p.tag}
-                    </span>
-                    <span className="card-year">{p.year}</span>
-                  </div>
-                  <h3 className="card-title">{title}</h3>
-                  {rest && <p className="card-desc">{rest}</p>}
-                  {p.pipeline && <Pipeline steps={p.pipeline} />}
-                  <div className="card-foot">
-                    <span className="card-stack">{p.tech.slice(0, 4).join(', ')}</span>
-                    <span className="card-arrow">↗</span>
-                  </div>
-                </div>
-              </a>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* ============ WRITING ============ */}
-        <section className="section" id="writing">
-          <SectionTitle label={c.sections.writing} />
-          <div className="writing-list">
-            {posts.slice(0, 5).map((p) => (
-              <Link key={p.slug} to={`/writing/${p.slug}`} className="writing-row">
-                <span className="writing-date">{p.date}</span>
-                <div>
-                  <div className="writing-title">{p.title}</div>
-                  <p className="writing-desc">{p.description}</p>
-                </div>
-                <span className="writing-time">{p.readTime}</span>
-              </Link>
+          <div className="featured-work">
+            {featuredProjects.map((project) => (
+              <FeaturedProject key={project.name} project={project} lang={lang} />
             ))}
           </div>
-          <Link to="/writing" className="writing-cta">
-            {c.allWriting} <span>→</span>
-          </Link>
+          <ProjectArchive projects={archiveProjects} lang={lang} />
+        </section>
+
+        {/* ============ STACK, PROVEN ============ */}
+        <section className="section" id="proof">
+          <SectionTitle label={c.sections.proof} />
+          <dl className="stack-proof">
+            {c.stackProof.map((row) => (
+              <div key={row.claim} className="stack-row">
+                <dt className="stack-claim">{row.claim}</dt>
+                <dd className="stack-evidence">{row.evidence}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
         {/* ============ EXPERIENCE ============ */}
@@ -456,17 +524,42 @@ export default function App({ lang = 'en' }: Props) {
           </ol>
         </section>
 
-        {/* ============ STACK, PROVEN ============ */}
-        <section className="section" id="proof">
-          <SectionTitle label={c.sections.proof} />
-          <dl className="stack-proof">
-            {c.stackProof.map((row) => (
-              <div key={row.claim} className="stack-row">
-                <dt className="stack-claim">{row.claim}</dt>
-                <dd className="stack-evidence">{row.evidence}</dd>
-              </div>
+        {/* ============ NOW ============ */}
+        <section className="section section-now">
+          <SectionTitle label={c.sections.now} />
+          <div className="now">
+            <div>
+              <h3 className="now-headline">{c.now.headline}</h3>
+              <ul className="now-lines">
+                {c.now.lines.map((l) => <li key={l}>{l}</li>)}
+              </ul>
+              <span className="now-updated">{c.now.updated}</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ WRITING ============ */}
+        <section className="section" id="writing">
+          <SectionTitle label={c.sections.writing} />
+          <div className="writing-list">
+            {writingPosts.slice(0, 5).map((p) => (
+              <Link
+                key={p.slug}
+                to={lang === 'es' ? `/es/writing/${p.slug}` : `/writing/${p.slug}`}
+                className="writing-row"
+              >
+                <span className="writing-date">{p.date}</span>
+                <div>
+                  <div className="writing-title">{p.title}</div>
+                  <p className="writing-desc">{p.description}</p>
+                </div>
+                <span className="writing-time">{p.readTime}</span>
+              </Link>
             ))}
-          </dl>
+          </div>
+          <Link to={lang === 'es' ? '/es/writing' : '/writing'} className="writing-cta">
+            {c.allWriting} <span>→</span>
+          </Link>
         </section>
 
         {/* ============ CONTACT ============ */}
@@ -507,7 +600,8 @@ export default function App({ lang = 'en' }: Props) {
           </span>
         </footer>
 
-      </div>
+      </main>
+      <MobileDock lang={lang} />
     </div>
   )
 }
