@@ -10,6 +10,9 @@ import WritingEs from './WritingEs.tsx'
 import PostEs from './PostEs.tsx'
 import Resume from './Resume.tsx'
 
+const storedTheme = localStorage.getItem('theme')
+document.documentElement.classList.toggle('light', storedTheme !== 'dark')
+
 function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {

@@ -38,12 +38,23 @@ export interface Content {
   nav: {
     en: string
     es: string
+    work: string
     writing: string
+    about: string
+    hire: string
   }
+  skipToContent: string
+  mobileDock: { resume: string; hire: string }
   hero: {
     display: { lead: string; em: string; tail: string }
     lede: React.ReactNode | string
     metaItems: { key: string; val: string }[]
+  }
+  workUi: {
+    evidence: string
+    archiveTitle: string
+    archiveBody: string
+    openProject: string
   }
   /** Hard numbers strip under the hero. */
   proofBar: { value: string; label: string }[]
@@ -88,16 +99,31 @@ export const content: Record<Lang, Content> = {
       description:
         'Software engineer building Spanish-first AI products from Puerto Rico. Ex-Microsoft. Creator of Lupa, demotape, and usableai.',
     },
-    nav: { en: 'EN', es: 'ES', writing: 'Writing' },
+    nav: {
+      en: 'EN',
+      es: 'ES',
+      work: 'Work',
+      writing: 'Writing',
+      about: 'About',
+      hire: 'Hire',
+    },
+    skipToContent: 'Skip to content',
+    mobileDock: { resume: 'Résumé', hire: 'Hire Jan' },
     hero: {
       display: { lead: 'Software, ', em: 'shipped', tail: '.' },
       lede:
-        'Ex-Microsoft software engineer. AI-native products, built end-to-end. Open to remote roles. EN · ES.',
+        'AI product engineer for agents, developer tools, and Spanish-first products. Ex-Microsoft. I build and ship end to end.',
       metaItems: [
         { key: 'status', val: 'open to work · ex-SWE II @ Microsoft' },
         { key: 'shipped', val: '2 npm, 1 App Store, internal tools' },
         { key: 'languages', val: 'EN · ES' },
       ],
+    },
+    workUi: {
+      evidence: 'Project evidence',
+      archiveTitle: 'More shipped work',
+      archiveBody: 'Smaller products and experiments, kept concise for a faster scan.',
+      openProject: 'Open project',
     },
     proofBar: [
       { value: '08', label: 'products shipped' },
@@ -313,7 +339,16 @@ export const content: Record<Lang, Content> = {
       description:
         'Ingeniero de software construyendo productos de IA en español desde Puerto Rico. Ex-Microsoft. Creador de Lupa, demotape y usableai.',
     },
-    nav: { en: 'EN', es: 'ES', writing: 'Ensayos' },
+    nav: {
+      en: 'EN',
+      es: 'ES',
+      work: 'Trabajo',
+      writing: 'Ensayos',
+      about: 'Experiencia',
+      hire: 'Contrátame',
+    },
+    skipToContent: 'Saltar al contenido',
+    mobileDock: { resume: 'Résumé', hire: 'Contrátame' },
     hero: {
       display: {
         lead: 'Software, ',
@@ -321,12 +356,18 @@ export const content: Record<Lang, Content> = {
         tail: '.',
       },
       lede:
-        'Ingeniero de software, ex-Microsoft. Productos AI-native, de punta a punta. Disponible para roles remotos. EN · ES.',
+        'Ingeniero de producto de IA para agentes, herramientas de desarrollo y productos pensados primero en español. Ex-Microsoft. Construyo y lanzo de punta a punta.',
       metaItems: [
         { key: 'estado', val: 'disponible · ex-SWE II @ Microsoft' },
         { key: 'lanzados', val: '2 npm, 1 App Store, herramientas internas' },
         { key: 'idiomas', val: 'EN · ES' },
       ],
+    },
+    workUi: {
+      evidence: 'Evidencia del proyecto',
+      archiveTitle: 'Más trabajo lanzado',
+      archiveBody: 'Productos y experimentos más pequeños, resumidos para recorrerlos rápido.',
+      openProject: 'Abrir proyecto',
     },
     proofBar: [
       { value: '08', label: 'productos lanzados' },
