@@ -110,7 +110,7 @@ export const content: Record<Lang, Content> = {
     skipToContent: 'Skip to content',
     mobileDock: { resume: 'Résumé', hire: 'Hire Jan' },
     hero: {
-      display: { lead: 'Software, ', em: 'shipped', tail: '.' },
+      display: { lead: 'From idea to ', em: 'production', tail: '.' },
       lede:
         'AI product engineer for agents, developer tools, and Spanish-first products. Ex-Microsoft. I build and ship end to end.',
       metaItems: [
@@ -351,8 +351,8 @@ export const content: Record<Lang, Content> = {
     mobileDock: { resume: 'Résumé', hire: 'Contrátame' },
     hero: {
       display: {
-        lead: 'Software, ',
-        em: 'entregado',
+        lead: 'De idea a ',
+        em: 'producción',
         tail: '.',
       },
       lede:
