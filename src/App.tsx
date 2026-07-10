@@ -4,7 +4,7 @@ import './index.css'
 import './App.css'
 import { JFMark } from './JFMark.tsx'
 import { HeroField } from './HeroField.tsx'
-import { posts } from './posts'
+import { formatNoteNumber, posts } from './posts'
 import { postsEs } from './posts.es'
 import { content as siteContent, type Lang, type Project } from './content'
 
@@ -541,6 +541,21 @@ export default function App({ lang = 'en' }: Props) {
         {/* ============ WRITING ============ */}
         <section className="section" id="writing">
           <SectionTitle label={c.sections.writing} />
+          <Link
+            to={lang === 'es' ? '/es/ai-readiness?utm_source=portfolio&utm_medium=owned&utm_campaign=ai_readiness' : '/ai-readiness?utm_source=portfolio&utm_medium=owned&utm_campaign=ai_readiness'}
+            className="readiness-promo"
+          >
+            <span className="readiness-promo-index">
+              <strong>10</strong>
+              <small>{lang === 'es' ? 'preguntas' : 'checks'}</small>
+            </span>
+            <div>
+              <span className="readiness-promo-eyebrow">{c.readiness.eyebrow}</span>
+              <h3>{c.readiness.title}</h3>
+              <p>{c.readiness.body}</p>
+            </div>
+            <span className="readiness-promo-cta">{c.readiness.cta} <span aria-hidden="true">↗</span></span>
+          </Link>
           <div className="writing-list">
             {writingPosts.slice(0, 5).map((p) => (
               <Link
@@ -548,7 +563,12 @@ export default function App({ lang = 'en' }: Props) {
                 to={lang === 'es' ? `/es/writing/${p.slug}` : `/writing/${p.slug}`}
                 className="writing-row"
               >
-                <span className="writing-date">{p.date}</span>
+                <span className="writing-index">
+                  <span className="writing-note-id">
+                    {lang === 'es' ? 'Nota' : 'Ship Note'} {formatNoteNumber(p.noteNumber)}
+                  </span>
+                  <span className="writing-date">{p.date}</span>
+                </span>
                 <div>
                   <div className="writing-title">{p.title}</div>
                   <p className="writing-desc">{p.description}</p>

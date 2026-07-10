@@ -1,8 +1,11 @@
 import { Link, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
 import './index.css'
 import './App.css'
 import { getPostEs } from './posts.es'
+import { formatNoteNumber } from './posts'
 import { JFMark } from './JFMark.tsx'
+import { ShipNoteShare } from './ShipNoteShare.tsx'
 
 function renderMarkdown(body: string) {
   const blocks = body.split(/\n\n+/).map((b) => b.trim()).filter(Boolean)
@@ -47,14 +50,20 @@ export default function PostEs() {
   const { slug } = useParams<{ slug: string }>()
   const post = slug ? getPostEs(slug) : undefined
 
+  useEffect(() => {
+    if (!post) return
+    document.title = `${post.title} — Jan Faris`
+    document.querySelector('meta[name="description"]')?.setAttribute('content', post.description)
+  }, [post])
+
   if (!post) {
     return (
       <div className="app">
         <div className="container">
           <header className="post-hero">
-            <Link to="/es/writing" className="back-link">← Volver a ensayos</Link>
+            <Link to="/es/writing" className="back-link">← Volver a Ship Notes</Link>
             <h1 className="post-display">No encontrado.</h1>
-            <p className="post-lede">Ese ensayo aún no existe.</p>
+            <p className="post-lede">Esa Ship Note aún no existe.</p>
           </header>
         </div>
       </div>
@@ -64,8 +73,10 @@ export default function PostEs() {
   return (
     <div className="app">
       <article className="post container">
-        <Link to="/es/writing" className="back-link">← Todos los ensayos</Link>
+        <Link to="/es/writing" className="back-link">← Todas las Ship Notes</Link>
         <div className="post-meta">
+          <span className="post-note-id">Nota {formatNoteNumber(post.noteNumber)}</span>
+          <span className="post-meta-dot">·</span>
           <span>{post.date}</span>
           <span className="post-meta-dot">·</span>
           <span>{post.readTime} lectura</span>
@@ -74,6 +85,7 @@ export default function PostEs() {
         <p className="post-lede">{post.description}</p>
         <hr className="post-rule" />
         <div className="prose">{renderMarkdown(post.body)}</div>
+        <ShipNoteShare post={post} lang="es" />
       </article>
 
       <footer className="footer container">

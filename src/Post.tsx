@@ -1,8 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
 import './index.css'
 import './App.css'
-import { getPost } from './posts'
+import { formatNoteNumber, getPost } from './posts'
 import { JFMark } from './JFMark.tsx'
+import { ShipNoteShare } from './ShipNoteShare.tsx'
 
 // Tiny markdown renderer for our limited subset.
 function renderMarkdown(body: string) {
@@ -56,14 +58,20 @@ export default function Post() {
   const { slug } = useParams<{ slug: string }>()
   const post = slug ? getPost(slug) : undefined
 
+  useEffect(() => {
+    if (!post) return
+    document.title = `${post.title} — Jan Faris`
+    document.querySelector('meta[name="description"]')?.setAttribute('content', post.description)
+  }, [post])
+
   if (!post) {
     return (
       <div className="app">
         <div className="container">
           <header className="post-hero">
-            <Link to="/writing" className="back-link">← Back to writing</Link>
+            <Link to="/writing" className="back-link">← Back to Ship Notes</Link>
             <h1 className="post-display">Not found.</h1>
-            <p className="post-lede">That post doesn't exist (yet).</p>
+            <p className="post-lede">That Ship Note doesn't exist yet.</p>
           </header>
         </div>
       </div>
@@ -73,8 +81,10 @@ export default function Post() {
   return (
     <div className="app">
       <article className="post container">
-        <Link to="/writing" className="back-link">← All writing</Link>
+        <Link to="/writing" className="back-link">← All Ship Notes</Link>
         <div className="post-meta">
+          <span className="post-note-id">Ship Note {formatNoteNumber(post.noteNumber)}</span>
+          <span className="post-meta-dot">·</span>
           <span>{post.date}</span>
           <span className="post-meta-dot">·</span>
           <span>{post.readTime} read</span>
@@ -83,6 +93,7 @@ export default function Post() {
         <p className="post-lede">{post.description}</p>
         <hr className="post-rule" />
         <div className="prose">{renderMarkdown(post.body)}</div>
+        <ShipNoteShare post={post} lang="en" />
       </article>
 
       <footer className="footer container">
