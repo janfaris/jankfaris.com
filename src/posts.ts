@@ -1,18 +1,26 @@
 export interface Post {
   slug: string
+  noteNumber: number
   title: string
   description: string
+  socialHook: string
   date: string
   readTime: string
   body: string // markdown-lite (paragraphs separated by blank lines, supports ## headings, > quotes, `code`, **bold**, *italic*, - lists)
 }
 
+export function formatNoteNumber(noteNumber: number) {
+  return String(noteNumber).padStart(3, '0')
+}
+
 export const posts: Post[] = [
   {
     slug: 'resend-supabase-tracked-email',
+    noteNumber: 8,
     title: 'Resend + Supabase: making every email a tracked API call',
     description:
       'How I wrapped Resend so every send lands in the same Supabase observability table as my Gemini, OpenAI, and Google Places calls, and why "email as a tracked API" changed how I think about transactional infra.',
+    socialHook: 'Email stopped being a side effect when I gave every send the same observability as an AI model call.',
     date: 'May 2026',
     readTime: '7 min',
     body: `## The realization
@@ -171,9 +179,11 @@ For me, the wrap was 30 lines. For Lupa, it was the difference between "we send 
   },
   {
     slug: 'dont-patch-fix-prompt',
+    noteNumber: 7,
     title: "Don't patch the output. Fix the prompt.",
     description:
       'Lessons from shipping an AI pull-request reviewer to 7 repos at Microsoft. Why diagnostic validators beat post-hoc regex, why the eval set is the product, and why trust compounds in both directions.',
+    socialHook: 'After an AI reviewer left 11 wrong comments on one PR, the tempting fix was regex. The right fix was the system.',
     date: 'May 2026',
     readTime: '8 min',
     body: `*Lessons from shipping an AI pull-request reviewer to 7 repos at Microsoft.*
@@ -276,9 +286,11 @@ Everything else is decoration.`,
   },
   {
     slug: 'first-npm-publish-2fa',
+    noteNumber: 6,
     title: 'Publishing my first npm package and the 2FA wall that almost killed it',
     description:
       'A two-line problem: my npm account had a passkey, my CLI wanted a 6-digit code, and the publish kept failing. The fix is one flag.',
+    socialHook: 'My first npm package was ready. One mismatch between passkeys and the CLI kept it from shipping.',
     date: 'May 2026',
     readTime: '4 min',
     body: `## The situation
@@ -335,9 +347,11 @@ This is the third time this pattern has saved me. The first two were not as easy
   },
   {
     slug: 'spa-routing-vercel-404',
+    noteNumber: 5,
     title: 'Why my /writing route was returning 404 on Vercel (and the one-file fix)',
     description:
       'I had the route in source. The build was clean. Production returned 404. The reason: a missing file Vite doesn\'t generate by default.',
+    socialHook: 'The route existed, the build passed, and production still returned 404. The missing piece was one deployment file.',
     date: 'May 2026',
     readTime: '3 min',
     body: `## The symptom
@@ -403,9 +417,11 @@ Most "deploy bugs" aren't bugs. They're the absence of a config file that the fr
   },
   {
     slug: 'lupa-tone-spec',
+    noteNumber: 4,
     title: 'How we made Lupa speak Puerto Rican Spanish without regex',
     description:
       'Three months of trying to fix tone with regex, prompt rules, and post-processing — and the one thing that finally worked.',
+    socialHook: 'A business owner told me our AI spoke Spanish, but it did not sound Puerto Rican. She was right.',
     date: 'May 2026',
     readTime: '9 min',
     body: `## Carmen's verdict
@@ -549,9 +565,11 @@ The fix isn't a bigger model. It's upstream prompt engineering with a real corpu
   },
   {
     slug: 'building-lupa',
+    noteNumber: 3,
     title: 'Building Lupa: A 7-day AI sales tool for Puerto Rico',
     description:
       'How I built an AI sales assistant that finds local businesses, audits their websites, and auto-generates a Spanish demo site per lead — in one week with Gemini 3, Next.js 16, and Supabase.',
+    socialHook: 'I kept losing the same sales pitch, so I built a tool that lets Puerto Rican business owners see the answer before the call.',
     date: 'February 2026',
     readTime: '6 min',
     body: `## The pitch I kept losing
@@ -599,9 +617,11 @@ If you're building for Puerto Rico — or any underserved Spanish-language marke
   },
   {
     slug: 'shipping-demotape',
+    noteNumber: 2,
     title: 'Shipping demotape: from script to npm in a weekend',
     description:
       'I was sick of re-recording demo videos every time my UI changed. So I extracted the recording infra from Vantage, generalized it, and shipped it as an npm package.',
+    socialHook: 'I was tired of re-recording product demos after every UI change, so I turned the workflow into an npm package.',
     date: 'January 2026',
     readTime: '4 min',
     body: `## The problem nobody talks about
@@ -663,9 +683,11 @@ If you've shipped a demo video this month and hated it, try \`npx demotape init\
   },
   {
     slug: 'ai-products-puerto-rico',
+    noteNumber: 1,
     title: 'Why I build AI products for Puerto Rico',
     description:
       'A note on local moats, Spanish-first markets, and why being from somewhere is an unfair advantage every founder underrates.',
+    socialHook: 'Puerto Rico is not a smaller version of the mainland market. That is exactly why it is an AI product advantage.',
     date: 'December 2025',
     readTime: '3 min',
     body: `## The thesis

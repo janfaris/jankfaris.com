@@ -87,6 +87,12 @@ export interface Content {
     }[]
     aside: { key: string; val: string }[]
   }
+  readiness: {
+    eyebrow: string
+    title: string
+    body: string
+    cta: string
+  }
   writingCta: string
   allWriting: string
   footer: string
@@ -103,7 +109,7 @@ export const content: Record<Lang, Content> = {
       en: 'EN',
       es: 'ES',
       work: 'Work',
-      writing: 'Writing',
+      writing: 'Ship Notes',
       about: 'About',
       hire: 'Hire',
     },
@@ -155,7 +161,7 @@ export const content: Record<Lang, Content> = {
     ],
     sections: {
       work: 'Selected Work',
-      writing: 'Writing',
+      writing: 'Ship Notes',
       press: 'Press & Speaking',
       now: 'Currently Building',
       experience: 'Experience',
@@ -328,8 +334,14 @@ export const content: Record<Lang, Content> = {
         { key: 'Languages', val: 'English · Spanish (PR / LATAM register)' },
       ],
     },
-    writingCta: 'All writing →',
-    allWriting: 'All writing',
+    readiness: {
+      eyebrow: 'Product decision tool · 3 minutes',
+      title: 'Should this be AI?',
+      body: 'Answer 10 production questions and get a clear recommendation: validate, prototype, pilot, or launch.',
+      cta: 'Score your product idea',
+    },
+    writingCta: 'All Ship Notes →',
+    allWriting: 'All Ship Notes',
     footer: 'Built in Puerto Rico · © 2026 Jan Faris',
   },
 
@@ -343,7 +355,7 @@ export const content: Record<Lang, Content> = {
       en: 'EN',
       es: 'ES',
       work: 'Trabajo',
-      writing: 'Ensayos',
+      writing: 'Ship Notes',
       about: 'Experiencia',
       hire: 'Contrátame',
     },
@@ -399,7 +411,7 @@ export const content: Record<Lang, Content> = {
     ],
     sections: {
       work: 'Trabajo Seleccionado',
-      writing: 'Ensayos',
+      writing: 'Ship Notes',
       press: 'Prensa y Charlas',
       now: 'Actualmente Construyendo',
       experience: 'Experiencia',
@@ -572,8 +584,14 @@ export const content: Record<Lang, Content> = {
         { key: 'Idiomas', val: 'Español (registro PR / LATAM) · Inglés' },
       ],
     },
-    writingCta: 'Todos los ensayos →',
-    allWriting: 'Todos los ensayos',
+    readiness: {
+      eyebrow: 'Herramienta de decisión · 3 minutos',
+      title: '¿Esto debería usar IA?',
+      body: 'Contesta 10 preguntas de producción y recibe una recomendación clara: valida, prototipa, haz un piloto o lanza.',
+      cta: 'Evalúa tu idea de producto',
+    },
+    writingCta: 'Todas las Ship Notes →',
+    allWriting: 'Todas las Ship Notes',
     footer: 'Hecho en Puerto Rico · © 2026 Jan Faris',
   },
 }
