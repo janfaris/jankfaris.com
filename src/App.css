@@ -122,7 +122,6 @@ main:focus { outline: none; }
   border-bottom: 1px solid var(--hairline-strong);
 }
 .section#work { padding-top: 88px; padding-bottom: 144px; }
-.section#proof { padding-top: 88px; padding-bottom: 108px; }
 .section#experience { padding-top: 112px; padding-bottom: 128px; }
 .section-now { padding-top: 72px; padding-bottom: 88px; }
 .section#writing { padding-top: 120px; padding-bottom: 132px; }
@@ -1331,7 +1330,6 @@ main:focus { outline: none; }
   /* Section rhythm */
   .section { padding: 72px 0 84px; }
   .section#work { padding-top: 72px; padding-bottom: 104px; }
-  .section#proof { padding-top: 64px; padding-bottom: 80px; }
   .section#experience { padding-top: 80px; padding-bottom: 88px; }
   .section-now { padding-top: 56px; padding-bottom: 68px; }
   .section#writing { padding-top: 88px; padding-bottom: 96px; }
@@ -1480,36 +1478,6 @@ main:focus { outline: none; }
   }
   .proofbar-value { font-size: 20px; }
   .proofbar-label { font-size: 10.5px; }
-}
-
-/* ============================================
-   STACK, PROVEN — claim → evidence grid
-   ============================================ */
-.stack-proof {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px 64px;
-  margin: 0;
-}
-.stack-row { display: flex; flex-direction: column; gap: 8px; }
-.stack-claim {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 20px;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  color: var(--indigo);
-  padding-bottom: 2px;
-}
-.stack-evidence {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-dim);
-  max-width: 52ch;
-}
-@media (max-width: 720px) {
-  .stack-proof { grid-template-columns: 1fr; gap: 28px; }
 }
 
 /* ============================================

@@ -709,19 +709,6 @@ export default function App({ lang = 'en' }: Props) {
           <ProjectArchive projects={archiveProjects} lang={lang} />
         </section>
 
-        {/* ============ STACK, PROVEN ============ */}
-        <section className="section" id="proof">
-          <SectionTitle label={c.sections.proof} />
-          <dl className="stack-proof">
-            {c.stackProof.map((row) => (
-              <div key={row.claim} className="stack-row">
-                <dt className="stack-claim">{row.claim}</dt>
-                <dd className="stack-evidence">{row.evidence}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-
         {/* ============ EXPERIENCE ============ */}
         <section className="section" id="experience">
           <SectionTitle label={c.sections.experience} />
