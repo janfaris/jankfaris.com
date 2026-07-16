@@ -22,6 +22,7 @@ export interface ExperienceItem {
   role: string
   period: string
   note: string
+  highlights?: string[]
 }
 export interface PressItem {
   date: string
@@ -266,19 +267,34 @@ export const content: Record<Lang, Content> = {
         company: 'Microsoft',
         role: 'Software Engineer II',
         period: '2025 - 2026',
-        note: 'Commerce Core / Compliance Analytics. Shipped PRPilot, an internal Claude-powered PR-review tool that scored 5.0/5.0 on internal AI evaluations across 7+ repos.',
+        note: 'Trust Platform (Commerce Core) · fraud and abuse prevention systems for Microsoft’s commerce ecosystem.',
+        highlights: [
+          'Built PRPilot, an autonomous AI PR-review agent using Copilot CLI, Microsoft Scout, custom skills, and MCP servers across 7+ repositories.',
+          'Maintained compliance-critical transaction-risk APIs serving multiple Microsoft products and countries.',
+          'Shipped TypeScript, React, Python, and AKS features from prototype through production.',
+          'Co-designed a 21-session org-wide AI program and onboarded roughly 15 PMs to agentic tooling.',
+        ],
       },
       {
         company: 'Xtillion',
         role: 'Associate Engineer',
         period: '2024 - 2025',
-        note: 'Full-stack TypeScript / React / Node for U.S. enterprise clients. Led the Snowflake migration. First taste of real production scale.',
+        note: 'Enterprise healthcare reporting, analytics, and data-platform delivery from system design through operation.',
+        highlights: [
+          'Led a 12-month migration from SQL Server and SSRS to Retool, Snowflake, dbt, and GitHub Actions — generating 5,000+ reports daily.',
+          'Solo-built HIPAA-compliant delivery over encrypted AWS SES email and OpenText Fax API.',
+          'Built conversational analytics with Databricks Genie and eliminated an entire SQL Server instance.',
+        ],
       },
       {
         company: 'Pratt & Whitney',
-        role: 'Co-Op Software Engineer',
+        role: 'Software Engineer',
         period: '2021 - 2023',
-        note: 'Two-year co-op writing production code in the aerospace propulsion stack. Learned how shipping under regulation works.',
+        note: 'Production software and DevSecOps work in the regulated F-135 aerospace propulsion stack.',
+        highlights: [
+          'Cut build time 90% by automating and securing CI/CD for the F-135 DevSecOps transformation.',
+          'Modernized a legacy database with Perl, Python, and SQL, then built C code-generation and blade-assembly validation tooling.',
+        ],
       },
     ],
     press: [],
@@ -516,19 +532,34 @@ export const content: Record<Lang, Content> = {
         company: 'Microsoft',
         role: 'Software Engineer II',
         period: '2025 - 2026',
-        note: 'Ingeniería full-time en Microsoft. Sistemas de producción a escala.',
+        note: 'Trust Platform (Commerce Core) · sistemas de prevención de fraude y abuso para el ecosistema de comercio de Microsoft.',
+        highlights: [
+          'Construí PRPilot, un agente autónomo para revisar PRs con Copilot CLI, Microsoft Scout, skills y servidores MCP en 7+ repositorios.',
+          'Mantuve APIs críticas de riesgo transaccional para múltiples productos y países.',
+          'Llevé features en TypeScript, React, Python y AKS de prototipo a producción.',
+          'Co-diseñé un programa de IA de 21 sesiones y capacité a unos 15 PMs en tooling agéntico.',
+        ],
       },
       {
         company: 'Xtillion',
         role: 'Associate Engineer',
         period: '2024 - 2025',
-        note: 'Full-stack TypeScript / React / Node para clientes empresariales en EE.UU. Lideré la migración a Snowflake. Primer contacto con escala real.',
+        note: 'Entrega end-to-end de reportes de salud, analytics y plataformas de datos empresariales.',
+        highlights: [
+          'Lideré una migración de 12 meses de SQL Server y SSRS a Retool, Snowflake, dbt y GitHub Actions — generando 5,000+ reportes diarios.',
+          'Construí solo la entrega HIPAA-compliant por AWS SES y OpenText Fax API.',
+          'Desarrollé analytics conversacional con Databricks Genie y eliminé una instancia completa de SQL Server.',
+        ],
       },
       {
         company: 'Pratt & Whitney',
-        role: 'Co-Op Software Engineer',
+        role: 'Software Engineer',
         period: '2021 - 2023',
-        note: 'Dos años de co-op escribiendo código de producción para sistemas aeroespaciales.',
+        note: 'Software de producción y DevSecOps para la plataforma regulada de propulsión aeroespacial F-135.',
+        highlights: [
+          'Reduje el build time 90% automatizando y asegurando CI/CD para la transformación DevSecOps del F-135.',
+          'Modernicé una base de datos legacy con Perl, Python y SQL, y construí tooling de generación en C y validación de ensamblaje.',
+        ],
       },
     ],
     press: [],
