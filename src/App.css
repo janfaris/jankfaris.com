@@ -256,9 +256,11 @@ main:focus { outline: none; }
 .tech-track-2 {
   animation: tech-scroll-left 156s linear infinite;
 }
-.tech-rails:hover .tech-track { animation-play-state: paused; }
-.tech-rails:focus-within .tech-track { animation-play-state: paused; }
+.tech-rails:has(.tech-mark:focus-visible) .tech-track { animation-play-state: paused; }
 .tech-rails.is-paused .tech-track { animation-play-state: paused; }
+@media (hover: hover) and (pointer: fine) {
+  .tech-rails:hover .tech-track { animation-play-state: paused; }
+}
 .tech-mark {
   appearance: none;
   position: relative;
