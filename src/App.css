@@ -245,10 +245,14 @@ main:focus { outline: none; }
 .tech-track {
   display: flex;
   width: max-content;
+  transform: translate3d(0, 0, 0);
   will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .tech-list {
   display: flex;
+  flex: 0 0 auto;
   gap: 0;
   list-style: none;
 }
@@ -256,9 +260,9 @@ main:focus { outline: none; }
 .tech-track-2 {
   animation: tech-scroll-left 156s linear infinite;
 }
-.tech-rails:has(.tech-mark:focus-visible) .tech-track { animation-play-state: paused; }
 .tech-rails.is-paused .tech-track { animation-play-state: paused; }
 @media (hover: hover) and (pointer: fine) {
+  .tech-rails:has(.tech-mark:focus-visible) .tech-track { animation-play-state: paused; }
   .tech-rails:hover .tech-track { animation-play-state: paused; }
 }
 .tech-mark {
@@ -385,7 +389,8 @@ main:focus { outline: none; }
     0 14px 36px rgba(44, 49, 82, 0.08);
 }
 @keyframes tech-scroll-left {
-  to { transform: translateX(-50%); }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
 }
 @media (max-width: 720px) {
   .tech-marquee { padding: 64px 0 72px; }
@@ -416,16 +421,9 @@ main:focus { outline: none; }
   .tech-context-value { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .tech-rails {
-    overflow-x: auto;
-  }
-  .tech-rail { overflow: visible; -webkit-mask-image: none; mask-image: none; }
-  .tech-track-1,
-  .tech-track-2 {
-    animation: none !important;
-    transform: none;
-  }
-  .tech-list[aria-hidden="true"] { display: none; }
+  /* This marquee is intentionally very slow and has its own pause control. */
+  .tech-track-1 { animation-duration: 138s !important; }
+  .tech-track-2 { animation-duration: 156s !important; }
 }
 
 /* ============================================
