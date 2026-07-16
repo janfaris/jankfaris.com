@@ -181,46 +181,260 @@ function splitWords(text: string) {
   })
 }
 
-/** Hard-numbers strip under the hero. Adds a live npm-downloads item
- *  once the packages clear a number worth showing. */
-const NPM_PACKAGES = ['demotape', 'spanish-tone-spec']
-const NPM_SHOW_THRESHOLD = 100 // weekly downloads
+type TechMark = { name: string; kind: string }
 
-function ProofBar({ items, lang }: { items: { value: string; label: string }[]; lang: Lang }) {
-  const [npmWeekly, setNpmWeekly] = useState<number | null>(null)
-  useEffect(() => {
-    Promise.all(
-      NPM_PACKAGES.map((p) =>
-        fetch(`https://api.npmjs.org/downloads/point/last-week/${p}`)
-          .then((r) => r.json())
-          .then((d: { downloads?: number }) => d.downloads ?? 0)
-      )
-    )
-      .then((counts) => {
-        const total = counts.reduce((s, n) => s + n, 0)
-        if (total >= NPM_SHOW_THRESHOLD) setNpmWeekly(total)
-      })
-      .catch((error) => {
-        console.warn('Could not load current npm download counts.', error)
-      })
-  }, [])
+const TECH_LOGOS: Record<string, string> = {
+  Claude: 'claude',
+  Gemini: 'googlegemini',
+  'GitHub Copilot': 'githubcopilot',
+  ElevenLabs: 'elevenlabs',
+  TypeScript: 'typescript',
+  Python: 'python',
+  JavaScript: 'javascript',
+  C: 'c',
+  Perl: 'perl',
+  React: 'react',
+  'Next.js': 'nextdotjs',
+  'Node.js': 'nodedotjs',
+  Expo: 'expo',
+  'Tailwind CSS': 'tailwindcss',
+  Zod: 'zod',
+  FFmpeg: 'ffmpeg',
+  AKS: 'kubernetes',
+  PostgreSQL: 'postgresql',
+  Supabase: 'supabase',
+  Snowflake: 'snowflake',
+  'Databricks Genie': 'databricks',
+  Retool: 'retool',
+  'GitHub Actions': 'githubactions',
+  OpenTelemetry: 'opentelemetry',
+  Vercel: 'vercel',
+  npm: 'npm',
+  Stripe: 'stripe',
+  'WhatsApp API': 'whatsapp',
+  PageSpeed: 'pagespeedinsights',
+  'Google Maps': 'googlemaps',
+}
+
+const TECH_USAGE: Record<string, string[]> = {
+  Claude: ['Vantage', 'Blok'],
+  'OpenAI GPT': ['usableai'],
+  Gemini: ['Lupa', 'Wandr'],
+  'GitHub Copilot': ['Microsoft'],
+  'Copilot CLI': ['Microsoft · PRPilot'],
+  'Microsoft Scout': ['Microsoft · PRPilot'],
+  WorkIQ: ['Microsoft · PRPilot'],
+  MCP: ['Microsoft · PRPilot', 'agent tooling'],
+  ElevenLabs: ['Vantage'],
+  'Vision QA': ['usableai'],
+  'GPT Image': ['usableai'],
+  TypeScript: ['Microsoft', 'Xtillion', 'Lupa', 'demotape'],
+  Python: ['Microsoft', 'Pratt & Whitney'],
+  JavaScript: ['AI products', 'client platforms'],
+  SQL: ['Xtillion', 'Pratt & Whitney'],
+  'C#': ['Xtillion'],
+  C: ['Pratt & Whitney'],
+  Perl: ['Pratt & Whitney'],
+  React: ['Microsoft', 'Xtillion', 'Lupa'],
+  'Next.js': ['Lupa', 'Vantage', 'Blok'],
+  'Node.js': ['Xtillion', 'demotape', 'usableai'],
+  'React Native': ['Janga'],
+  Expo: ['Janga'],
+  'Tailwind CSS': ['Lupa', 'AI products'],
+  Zod: ['demotape', 'spanish-tone-spec'],
+  Playwright: ['demotape'],
+  FFmpeg: ['demotape'],
+  Azure: ['Microsoft'],
+  AKS: ['Microsoft'],
+  'AWS Lambda': ['production infrastructure'],
+  'Amazon S3': ['production infrastructure'],
+  'AWS SES': ['Xtillion'],
+  PostgreSQL: ['Lupa', 'Janga', 'Wandr'],
+  Supabase: ['Lupa', 'Janga', 'Wandr'],
+  Snowflake: ['Xtillion'],
+  'Databricks Genie': ['Xtillion'],
+  'SQL Server': ['Xtillion'],
+  dbt: ['Xtillion'],
+  Retool: ['Xtillion'],
+  'GitHub Actions': ['Xtillion', 'Pratt & Whitney'],
+  OpenTelemetry: ['Microsoft'],
+  Geneva: ['Microsoft'],
+  'Azure DevOps': ['Microsoft'],
+  Vercel: ['Lupa', 'Vantage', 'Wandr', 'this portfolio'],
+  npm: ['demotape', 'spanish-tone-spec'],
+  Stripe: ['Lupa', 'Vantage'],
+  Twilio: ['Blok'],
+  'WhatsApp API': ['Lupa', 'Blok'],
+  PageSpeed: ['Lupa'],
+  'Google Maps': ['Lupa'],
+  'Google Places': ['Lupa'],
+  SerpAPI: ['Wandr'],
+  'REST APIs': ['Microsoft', 'Xtillion', 'AI products'],
+  'OpenText Fax': ['Xtillion'],
+}
+
+function techMonogram(name: string) {
+  if (name.length <= 3) return name
+  const words = name.replace(/[^a-zA-Z0-9 ]/g, ' ').split(/\s+/).filter(Boolean)
+  return words.length > 1 ? words.slice(0, 2).map((word) => word[0]).join('') : name.slice(0, 2)
+}
+
+const TECH_ROWS: TechMark[][] = [
+  [
+    { name: 'Claude', kind: 'LLM' },
+    { name: 'OpenAI GPT', kind: 'LLM' },
+    { name: 'Gemini', kind: 'LLM' },
+    { name: 'GitHub Copilot', kind: 'Agent' },
+    { name: 'Copilot CLI', kind: 'Agent runtime' },
+    { name: 'Microsoft Scout', kind: 'Agent' },
+    { name: 'WorkIQ', kind: 'Agent tools' },
+    { name: 'MCP', kind: 'Protocol' },
+    { name: 'ElevenLabs', kind: 'Voice' },
+    { name: 'Vision QA', kind: 'Multimodal' },
+    { name: 'GPT Image', kind: 'Image gen' },
+    { name: 'TypeScript', kind: 'Language' },
+    { name: 'Python', kind: 'Language' },
+    { name: 'JavaScript', kind: 'Language' },
+    { name: 'SQL', kind: 'Language' },
+    { name: 'C#', kind: 'Language' },
+    { name: 'C', kind: 'Language' },
+    { name: 'Perl', kind: 'Language' },
+    { name: 'React', kind: 'Frontend' },
+    { name: 'Next.js', kind: 'Full-stack' },
+    { name: 'Node.js', kind: 'Runtime' },
+    { name: 'React Native', kind: 'Mobile' },
+    { name: 'Expo', kind: 'Mobile' },
+    { name: 'Tailwind CSS', kind: 'Frontend' },
+    { name: 'Zod', kind: 'Validation' },
+    { name: 'Playwright', kind: 'Automation' },
+    { name: 'FFmpeg', kind: 'Media' },
+  ],
+  [
+    { name: 'Azure', kind: 'Cloud' },
+    { name: 'AKS', kind: 'Kubernetes' },
+    { name: 'AWS Lambda', kind: 'Compute' },
+    { name: 'Amazon S3', kind: 'Storage' },
+    { name: 'AWS SES', kind: 'Email' },
+    { name: 'PostgreSQL', kind: 'Database' },
+    { name: 'Supabase', kind: 'Platform' },
+    { name: 'Snowflake', kind: 'Warehouse' },
+    { name: 'Databricks Genie', kind: 'Data + AI' },
+    { name: 'SQL Server', kind: 'Database' },
+    { name: 'dbt', kind: 'Transformation' },
+    { name: 'Retool', kind: 'Internal tools' },
+    { name: 'GitHub Actions', kind: 'CI/CD' },
+    { name: 'OpenTelemetry', kind: 'Observability' },
+    { name: 'Geneva', kind: 'Telemetry' },
+    { name: 'Azure DevOps', kind: 'DevOps' },
+    { name: 'Vercel', kind: 'Deployment' },
+    { name: 'npm', kind: 'Open source' },
+    { name: 'Stripe', kind: 'Payments' },
+    { name: 'Twilio', kind: 'Messaging' },
+    { name: 'WhatsApp API', kind: 'Messaging' },
+    { name: 'PageSpeed', kind: 'Web quality' },
+    { name: 'Google Maps', kind: 'Location' },
+    { name: 'Google Places', kind: 'Location' },
+    { name: 'SerpAPI', kind: 'Search' },
+    { name: 'REST APIs', kind: 'Backend' },
+    { name: 'OpenText Fax', kind: 'Enterprise' },
+  ],
+]
+
+/** A client-logo-style marquee for the complete production toolchain. */
+function TechMarquee({ lang }: { lang: Lang }) {
+  const [paused, setPaused] = useState(false)
+  const [activeTech, setActiveTech] = useState<string | null>(null)
+  const copy = lang === 'es'
+    ? {
+        eyebrow: 'Stack de producción',
+        title: 'De modelos a producción.',
+        body: 'Un stack usado de verdad — en productos de IA lanzados y sistemas empresariales en producción.',
+        pause: 'Pausar movimiento',
+        play: 'Reanudar movimiento',
+        usageLabel: 'Dónde lo usé',
+        usedIn: 'Usado en',
+        usageHint: 'Pasa el cursor o toca una tecnología para ver la evidencia.',
+      }
+    : {
+        eyebrow: 'Production stack',
+        title: 'From models to production.',
+        body: 'A working stack, not a keyword list — used across shipped AI products and production systems.',
+        pause: 'Pause motion',
+        play: 'Resume motion',
+        usageLabel: 'Where it shipped',
+        usedIn: 'Used in',
+        usageHint: 'Hover, focus, or tap a technology to see the evidence.',
+      }
+
+  const activeUsage = activeTech ? TECH_USAGE[activeTech] ?? ['production work'] : null
+
   return (
-    <div className="proofbar">
-      {items.map((item) => (
-        <div key={item.label} className="proofbar-item">
-          <span className="proofbar-value">{item.value}</span>
-          <span className="proofbar-label">{item.label}</span>
+    <section className="tech-marquee" aria-labelledby="tech-marquee-title">
+      <div className="tech-marquee-head">
+        <div>
+          <span className="tech-marquee-eyebrow">{copy.eyebrow}</span>
+          <h2 id="tech-marquee-title" className="tech-marquee-title">{copy.title}</h2>
         </div>
-      ))}
-      {npmWeekly !== null && (
-        <div className="proofbar-item">
-          <span className="proofbar-value">{npmWeekly.toLocaleString()} / wk</span>
-          <span className="proofbar-label">
-            {lang === 'es' ? 'descargas npm esta semana' : 'npm downloads this week'}
+        <div className="tech-marquee-aside">
+          <p className="tech-marquee-copy">{copy.body}</p>
+          <button
+            type="button"
+            className="tech-motion-toggle"
+            onClick={() => setPaused((value) => !value)}
+            aria-label={paused ? copy.play : copy.pause}
+            aria-pressed={paused}
+          >
+            <span aria-hidden="true">{paused ? '▶' : 'Ⅱ'}</span>
+            {paused ? copy.play : copy.pause}
+          </button>
+        </div>
+      </div>
+
+      <div className={`tech-rails${paused ? ' is-paused' : ''}`} aria-label={TECH_ROWS.flat().map((tech) => tech.name).join(', ')}>
+        {TECH_ROWS.map((row, rowIndex) => (
+          <div className="tech-rail" key={rowIndex}>
+            <div className={`tech-track tech-track-${rowIndex + 1}`}>
+              {[0, 1].map((copyIndex) => (
+                <ul className="tech-list" key={copyIndex} aria-hidden={copyIndex === 1 ? 'true' : undefined}>
+                  {row.map((tech) => (
+                    <li className="tech-item" key={tech.name}>
+                      <button
+                        type="button"
+                        className="tech-mark"
+                        tabIndex={copyIndex === 1 ? -1 : 0}
+                        aria-pressed={activeTech === tech.name}
+                        aria-label={`${tech.name}. ${copy.usedIn} ${(TECH_USAGE[tech.name] ?? ['production work']).join(', ')}`}
+                        onMouseEnter={() => setActiveTech(tech.name)}
+                        onFocus={() => setActiveTech(tech.name)}
+                        onClick={() => setActiveTech((current) => current === tech.name ? null : tech.name)}
+                      >
+                        <span className="tech-mark-logo" aria-hidden="true">
+                          {TECH_LOGOS[tech.name] ? (
+                            <img src={`/icons/tech/${TECH_LOGOS[tech.name]}.svg`} alt="" />
+                          ) : (
+                            <span className="tech-mark-monogram">{techMonogram(tech.name)}</span>
+                          )}
+                        </span>
+                        <span className="tech-mark-copy">
+                          <span className="tech-mark-name">{tech.name}</span>
+                          <span className="tech-mark-kind">{tech.kind}</span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="tech-context" aria-live="polite">
+          <span className="tech-context-label">{activeTech ?? copy.usageLabel}</span>
+          <span className="tech-context-value">
+            {activeTech && activeUsage ? `${copy.usedIn} ${activeUsage.join(' · ')}` : copy.usageHint}
           </span>
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   )
 }
 
@@ -477,8 +691,10 @@ export default function App({ lang = 'en' }: Props) {
             </Link>
           </div>
 
-          <ProofBar items={c.proofBar} lang={lang} />
         </section>
+
+        {/* ============ PRODUCTION TOOLCHAIN ============ */}
+        <TechMarquee lang={lang} />
 
         {/* ============ WORK ============ */}
         <section className="section" id="work">
@@ -518,24 +734,18 @@ export default function App({ lang = 'en' }: Props) {
                     <span className="exp-role">{e.role}</span>
                   </div>
                   <p className="exp-note">{e.note}</p>
+                  {e.highlights && (
+                    <ul className="exp-highlights">
+                      {e.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+                    </ul>
+                  )}
                 </div>
               </li>
             ))}
           </ol>
-        </section>
-
-        {/* ============ NOW ============ */}
-        <section className="section section-now">
-          <SectionTitle label={c.sections.now} />
-          <div className="now">
-            <div>
-              <h3 className="now-headline">{c.now.headline}</h3>
-              <ul className="now-lines">
-                {c.now.lines.map((l) => <li key={l}>{l}</li>)}
-              </ul>
-              <span className="now-updated">{c.now.updated}</span>
-            </div>
-          </div>
+          <Link className="experience-cta" to={lang === 'es' ? '/es/resume' : '/resume'}>
+            {lang === 'es' ? 'Ver résumé completo' : 'View full résumé'} <span>→</span>
+          </Link>
         </section>
 
         {/* ============ WRITING ============ */}
