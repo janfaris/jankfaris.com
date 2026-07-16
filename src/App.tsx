@@ -120,10 +120,9 @@ function CardMedia({
     const video = videoRef.current
     if (!video || !playInView) return
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reducedMotion) return
-
     const play = () => {
+      // Keep the property set explicitly for iOS Safari's autoplay policy.
+      video.muted = true
       void video.play().catch((error: DOMException) => {
         if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
           console.warn(`Could not play the ${name} preview.`, error)
@@ -135,12 +134,14 @@ function CardMedia({
         if (entry.isIntersecting) play()
         else video.pause()
       },
-      { threshold: 0.55 },
+      { threshold: 0.2, rootMargin: '48px 0px' },
     )
     observer.observe(video)
+    video.addEventListener('canplay', play)
 
     return () => {
       observer.disconnect()
+      video.removeEventListener('canplay', play)
       video.pause()
     }
   }, [name, playInView])
@@ -152,10 +153,11 @@ function CardMedia({
         className="card-demo"
         src={`/demos/${slug}.mp4`}
         poster={`/demos/${slug}.jpg`}
+        autoPlay={playInView}
         muted
         loop
         playsInline
-        preload="metadata"
+        preload={playInView ? 'auto' : 'metadata'}
         aria-label={`${name} demo`}
       />
     )

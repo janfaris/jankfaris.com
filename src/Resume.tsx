@@ -27,11 +27,9 @@ const copy = {
     eyebrow: 'AI Engineer / Software Engineer',
     summary: 'Full-stack AI engineer operating across the entire product lifecycle — design, build, deploy, and operate. Ex-Microsoft, with 8 AI products shipped in 18 months as a solo engineer.',
     experience: 'Professional experience',
-    portfolio: 'AI product portfolio',
     managers: 'What managers say',
     education: 'Education & certification',
     numbers: 'The numbers',
-    stack: 'Stack',
     current: {
       period: '2026 - Now',
       org: 'Independent',
@@ -48,11 +46,9 @@ const copy = {
     eyebrow: 'Ingeniero de IA / Ingeniero de Software',
     summary: 'Ingeniero full-stack de IA trabajando en todo el ciclo del producto — diseñar, construir, desplegar y operar. Ex-Microsoft, con 8 productos de IA lanzados en 18 meses como ingeniero independiente.',
     experience: 'Experiencia profesional',
-    portfolio: 'Portafolio de productos de IA',
     managers: 'Lo que dicen mis managers',
     education: 'Educación y certificación',
     numbers: 'Los números',
-    stack: 'Stack',
     current: {
       period: '2026 - Hoy',
       org: 'Independiente',
@@ -268,34 +264,6 @@ export default function Resume({ lang = 'en' }: Props) {
               </div>
             ))}
           </div>
-        </section>
-
-        <section className="resume-block">
-          <h2 className="section-title">{t.portfolio}</h2>
-          <div className="resume-projects">
-            {c.projects.map((project) => (
-              <a key={project.name} className="resume-project" href={project.link} target="_blank" rel="noreferrer">
-                <div className="resume-project-head">
-                  <h3>{project.name}</h3>
-                  <span>{project.year} ↗</span>
-                </div>
-                <p>{project.description}</p>
-                <span className="resume-project-tech">{project.tech.join(' · ')}</span>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section className="resume-block">
-          <h2 className="section-title">{t.stack}</h2>
-          <dl className="stack-proof">
-            {c.stackProof.map((row) => (
-              <div key={row.claim} className="stack-row">
-                <dt className="stack-claim">{row.claim}</dt>
-                <dd className="stack-evidence">{row.evidence}</dd>
-              </div>
-            ))}
-          </dl>
         </section>
 
         <section className="resume-block">
