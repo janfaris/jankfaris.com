@@ -408,16 +408,15 @@ main:focus { outline: none; }
     mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
   }
   .tech-mark { padding: 0 24px; gap: 9px; }
+  .tech-mark {
+    pointer-events: none;
+    cursor: default;
+  }
+  .tech-mark:hover { opacity: 1; }
   .tech-mark-logo { width: 24px; height: 24px; }
   .tech-mark-logo img { width: 21px; height: 21px; }
   .tech-mark-name { font-size: 14px; }
-  .tech-context {
-    grid-template-columns: 1fr;
-    gap: 4px;
-    min-height: 76px;
-    padding: 14px 20px 16px;
-  }
-  .tech-context-value { font-size: 13px; }
+  .tech-context { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   /* This marquee is intentionally very slow and has its own pause control. */
