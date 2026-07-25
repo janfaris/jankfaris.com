@@ -20,6 +20,9 @@
   --indigo:      oklch(58% 0.16 275);
   --indigo-soft: oklch(69% 0.13 275);
   --indigo-deep: oklch(51% 0.17 275);
+  /* Peak colour for the dot-map glint. On the dark canvas a lit dot reads by
+     getting brighter; on the light canvas it has to get deeper instead. */
+  --glint:       oklch(74% 0.14 275);
   --accent-ink:  oklch(98% 0.004 265);
   --focus:       oklch(76% 0.15 275);
 
@@ -36,9 +39,18 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 180ms;
   --dur-base: 280ms;
+  --dur-slow: 620ms;
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-pill: 999px;
+
+  /* Vertical rhythm — three tiers, strictly ordered so the page reads as a
+     hierarchy: sections are further apart than blocks, blocks further than
+     a title from its content. Fluid, so the beat holds from phone to desktop
+     without a separate set of mobile values. */
+  --space-section: clamp(76px, 8.5vw, 124px);
+  --space-block:   clamp(52px, 6vw, 92px);
+  --space-lead:    clamp(34px, 3.6vw, 56px);
 
   color-scheme: dark;
 }
@@ -58,6 +70,7 @@
   --indigo:      oklch(50% 0.18 275);
   --indigo-soft: oklch(58% 0.16 275);
   --indigo-deep: oklch(43% 0.18 275);
+  --glint:       oklch(38% 0.20 275);
   --accent-ink:  oklch(99% 0.003 265);
   --focus:       oklch(46% 0.2 275);
 
@@ -98,11 +111,41 @@ body::before {
 }
 :root.light body::before { display: none; }
 
-/* Reduced motion respect */
+/* Reduced motion respect.
+   Decorative loops stop outright; hover/state feedback keeps a short
+   transition so controls still read as responsive. Entrance animations are
+   neutralised rather than fast-forwarded, so nothing flickers. */
 @media (prefers-reduced-motion: reduce) {
   html, body { scroll-behavior: auto; }
+  :root {
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+  }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+  /* The dot motifs stop outright and hold their resting shape. Letting the
+     blanket rule above fast-forward them would land every wave dot on
+     translateY(0) — a straight line instead of a wave. */
+  .pr-map circle { animation: none; }
+  .dot-wave circle {
+    animation: none;
+    transform: translateY(var(--y));
+  }
+
+  /* Entrance states resolve to their finished form with no travel. */
+  [data-reveal],
+  .display .reveal-word,
+  .hero-foot,
+  .hero-status,
+  .hero-cta,
+  .proofbar {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

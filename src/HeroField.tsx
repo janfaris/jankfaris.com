@@ -120,7 +120,7 @@ export function HeroField() {
 
             vec4 mv = modelViewMatrix * vec4(p, 1.0);
             gl_Position = projectionMatrix * mv;
-            gl_PointSize = (2.2 + vGlow * 2.4) * (7.0 / -mv.z);
+            gl_PointSize = (3.4 + vGlow * 2.8) * (7.0 / -mv.z);
             // fade points toward the horizontal edges
             vFade = (1.0 - smoothstep(6.0, 11.0, abs(position.x))) * (0.35 + 0.65 * (p.y + 0.55));
           }
@@ -134,7 +134,7 @@ export function HeroField() {
             vec3 indigo = vec3(0.369, 0.416, 0.824);      // --indigo #5e6ad2
             vec3 soft   = vec3(0.486, 0.529, 0.878);      // --indigo-soft #7c87e0
             vec3 color = mix(indigo, soft, min(vGlow, 1.0));
-            gl_FragColor = vec4(color, min(vFade * 0.55 + vGlow * 0.5, 0.95));
+            gl_FragColor = vec4(color, min(vFade * 0.85 + vGlow * 0.5, 0.95));
           }
         `,
       })

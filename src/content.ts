@@ -120,7 +120,7 @@ export const content: Record<Lang, Content> = {
       metaItems: [
         { key: 'status', val: 'open to work · ex-SWE II @ Microsoft' },
         { key: 'shipped', val: '2 npm, 1 App Store, internal tools' },
-        { key: 'languages', val: 'EN · ES' },
+        { key: 'languages', val: 'bilingual · English + Spanish' },
       ],
     },
     workUi: {
@@ -362,7 +362,7 @@ export const content: Record<Lang, Content> = {
       metaItems: [
         { key: 'estado', val: 'disponible · ex-SWE II @ Microsoft' },
         { key: 'lanzados', val: '2 npm, 1 App Store, herramientas internas' },
-        { key: 'idiomas', val: 'EN · ES' },
+        { key: 'idiomas', val: 'bilingüe · español + inglés' },
       ],
     },
     workUi: {

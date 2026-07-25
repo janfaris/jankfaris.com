@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import './index.css'
 import './App.css'
 import { JFMark } from './JFMark.tsx'
@@ -15,7 +15,7 @@ interface Props { lang?: Lang }
    ============================================ */
 
 function SectionTitle({ label }: { label: string }) {
-  return <h2 className="section-title">{label}</h2>
+  return <h2 className="section-title" data-reveal>{label}</h2>
 }
 
 /** Dot-and-line flow diagram: how a project actually works, one glance. */
@@ -67,15 +67,23 @@ function inPolygon(x: number, y: number, poly: [number, number][]) {
   }
   return inside
 }
-const PR_DOTS: { x: number; y: number; o: number }[] = (() => {
-  const dots: { x: number; y: number; o: number }[] = []
+const PR_DOTS: { x: number; y: number; o: number; p: number }[] = (() => {
+  const dots: { x: number; y: number; o: number; p: number }[] = []
   for (const isle of [PR_COAST, VIEQUES, CULEBRA]) {
     for (let y = 0; y <= 39; y += 2.2) {
       for (let x = 0; x <= 123; x += 2.2) {
         if (inPolygon(x, y, isle)) {
           // deterministic pseudo-random opacity per dot
           const h = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1
-          dots.push({ x, y, o: 0.35 + h * 0.55 })
+          // A second, decorrelated hash scatters where each dot sits in the
+          // glint cycle. Without it the highlight sweeps as a clean vertical
+          // front; with it, single dots light up ahead of and behind the
+          // front, which is what reads as an island coming alive.
+          const j = Math.abs(Math.sin(x * 39.3468 + y * 11.135) * 24634.6345) % 1
+          // Dots to the west sit later in the cycle, so they fire first and
+          // the front travels Aguadilla → Vieques.
+          const phase = 0.94 * (1 - x / 123) + (j - 0.5) * 0.2
+          dots.push({ x, y, o: 0.35 + h * 0.55, p: ((phase % 1) + 1) % 1 })
         }
       }
     }
@@ -87,7 +95,13 @@ function PRDotMap() {
   return (
     <svg className="pr-map" viewBox="-2 -2 127 43" aria-hidden="true">
       {PR_DOTS.map((d, i) => (
-        <circle key={i} cx={d.x} cy={d.y} r="0.8" fill="var(--indigo)" opacity={d.o} />
+        <circle
+          key={i}
+          cx={d.x}
+          cy={d.y}
+          r="0.8"
+          style={{ '--o': d.o, '--p': d.p } as CSSProperties}
+        />
       ))}
     </svg>
   )
@@ -175,12 +189,60 @@ function CardMedia({
   return <Wordmark slug={slug} />
 }
 
-/** Split a string into individual words for staggered animation. */
-function splitWords(text: string) {
+/** Split a string into individual words for staggered animation.
+ *  `offset` continues the stagger across the lead/em/tail fragments of the
+ *  headline so the rise reads as one sweep rather than three restarts. */
+function splitWords(text: string, offset = 0) {
+  let word = 0
   return text.split(/(\s+)/).map((tok, i) => {
+    // Splitting on a capture group yields empty strings at the edges when the
+    // fragment starts or ends with a space; they must not consume an index.
+    if (tok === '') return null
     if (/^\s+$/.test(tok)) return <span key={i}>{tok}</span>
-    return <span key={i} className="reveal-word">{tok}</span>
+    const index = offset + word++
+    return (
+      <span key={i} className="reveal-word" style={{ '--i': index } as CSSProperties}>
+        {tok}
+      </span>
+    )
   })
+}
+
+/** Number of animatable words in a fragment, for continuing the stagger. */
+function countWords(text: string) {
+  return text.split(/\s+/).filter(Boolean).length
+}
+
+/** Settle [data-reveal] elements as they scroll into view, once each.
+ *  Under reduced motion everything is revealed immediately and no observer
+ *  is created. */
+function useScrollReveal(deps: unknown[] = []) {
+  useEffect(() => {
+    const targets = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'))
+    if (!targets.length) return
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      targets.forEach((el) => el.classList.add('is-in'))
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue
+          entry.target.classList.add('is-in')
+          observer.unobserve(entry.target)
+        }
+      },
+      // Fire a little before the element is fully in view, and treat anything
+      // already on screen at load as visible.
+      { threshold: 0.08, rootMargin: '0px 0px -8% 0px' },
+    )
+    targets.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps)
 }
 
 type TechMark = { name: string; kind: string }
@@ -344,7 +406,13 @@ const TECH_ROWS: TechMark[][] = [
 
 /** A client-logo-style marquee for the complete production toolchain. */
 function TechMarquee({ lang }: { lang: Lang }) {
-  const [paused, setPaused] = useState(false)
+  // Reduced motion parks the rails; the toggle still offers to start them,
+  // so the control and what's on screen always agree.
+  const [paused, setPaused] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
   const [activeTech, setActiveTech] = useState<string | null>(null)
   const copy = lang === 'es'
     ? {
@@ -372,7 +440,7 @@ function TechMarquee({ lang }: { lang: Lang }) {
 
   return (
     <section className="tech-marquee" aria-labelledby="tech-marquee-title">
-      <div className="tech-marquee-head">
+      <div className="tech-marquee-head" data-reveal>
         <div>
           <span className="tech-marquee-eyebrow">{copy.eyebrow}</span>
           <h2 id="tech-marquee-title" className="tech-marquee-title">{copy.title}</h2>
@@ -440,20 +508,35 @@ function TechMarquee({ lang }: { lang: Lang }) {
   )
 }
 
-/** Static dot-wave motif — the hero wave's signature, echoed in 2D. */
+/** Dot-wave motif — the hero wave's signature, echoed in 2D.
+ *  Every dot runs the same vertical sine; the per-dot phase offset is what
+ *  makes the shape a wave, and offsetting it against the clock is what makes
+ *  that wave travel. `--y` is the resting offset (the animation's first
+ *  frame), used when motion is reduced. */
 function DotWave() {
   const dots = Array.from({ length: 56 }, (_, i) => {
     const t = i / 55
+    // 2.4π across the strip = 1.2 cycles; negated so the wave travels right.
+    const p = (((-1.2 * t) % 1) + 1) % 1
     return {
       x: 8 + t * 464,
-      y: 16 + Math.sin(t * Math.PI * 2.4) * 8,
+      y: Math.sin(p * Math.PI * 2) * 8,
+      p,
       o: (0.25 + 0.75 * Math.sin(t * Math.PI)) * 0.8,
     }
   })
   return (
     <svg className="dot-wave" viewBox="0 0 480 32" aria-hidden="true">
       {dots.map((d, i) => (
-        <circle key={i} cx={d.x} cy={d.y} r="1.6" fill="var(--indigo)" opacity={d.o} />
+        <circle
+          key={i}
+          cx={d.x}
+          cy="16"
+          r="1.6"
+          fill="var(--indigo)"
+          opacity={d.o}
+          style={{ '--y': `${d.y}px`, '--p': d.p } as CSSProperties}
+        />
       ))}
     </svg>
   )
@@ -548,7 +631,7 @@ function FeaturedProject({
   const slug = project.media || project.name.toLowerCase()
 
   return (
-    <article className="case-study">
+    <article className="case-study" data-reveal>
       <div className="case-media">
         <CardMedia slug={slug} name={project.name} playInView />
       </div>
@@ -590,18 +673,20 @@ function ProjectArchive({ projects, lang }: { projects: Project[]; lang: Lang })
 
   return (
     <div className="project-archive">
-      <div className="archive-heading">
+      <div className="archive-heading" data-reveal>
         <h3>{labels.archiveTitle}</h3>
         <p>{labels.archiveBody}</p>
       </div>
       <div className="archive-list">
-        {projects.map((project) => (
+        {projects.map((project, i) => (
           <a
             key={project.name}
             href={project.link}
             target="_blank"
             rel="noreferrer"
             className="archive-row"
+            data-reveal
+            style={{ '--i': i } as CSSProperties}
           >
             <span className="archive-name">{project.name}</span>
             <span className="archive-desc">{project.description}</span>
@@ -634,6 +719,10 @@ export default function App({ lang = 'en' }: Props) {
   const featuredProjects = c.projects.filter((project) => project.featured)
   const archiveProjects = c.projects.filter((project) => !project.featured)
   const writingPosts = lang === 'es' ? postsEs : posts
+  const leadWords = countWords(c.hero.display.lead)
+  const emWords = countWords(c.hero.display.em)
+
+  useScrollReveal([lang])
 
   useEffect(() => {
     document.title = c.meta.title
@@ -671,8 +760,8 @@ export default function App({ lang = 'en' }: Props) {
 
           <h1 className="display">
             {splitWords(c.hero.display.lead)}
-            <em>{splitWords(c.hero.display.em)}</em>
-            {splitWords(c.hero.display.tail)}
+            <em>{splitWords(c.hero.display.em, leadWords)}</em>
+            {splitWords(c.hero.display.tail, leadWords + emWords)}
           </h1>
 
           <div className="hero-foot">
@@ -713,8 +802,8 @@ export default function App({ lang = 'en' }: Props) {
         <section className="section" id="experience">
           <SectionTitle label={c.sections.experience} />
           <ol className="experience">
-            {c.experience.map((e) => (
-              <li key={e.company} className="exp-row">
+            {c.experience.map((e, i) => (
+              <li key={e.company} className="exp-row" data-reveal style={{ '--i': i } as CSSProperties}>
                 <span className="exp-period">{e.period}</span>
                 <div className="exp-body">
                   <div className="exp-head">
@@ -743,6 +832,7 @@ export default function App({ lang = 'en' }: Props) {
           <Link
             to={lang === 'es' ? '/es/ai-readiness?utm_source=portfolio&utm_medium=owned&utm_campaign=ai_readiness' : '/ai-readiness?utm_source=portfolio&utm_medium=owned&utm_campaign=ai_readiness'}
             className="readiness-promo"
+            data-reveal
           >
             <span className="readiness-promo-index">
               <strong>10</strong>
@@ -756,11 +846,13 @@ export default function App({ lang = 'en' }: Props) {
             <span className="readiness-promo-cta">{c.readiness.cta} <span aria-hidden="true">↗</span></span>
           </Link>
           <div className="writing-list">
-            {writingPosts.slice(0, 5).map((p) => (
+            {writingPosts.slice(0, 5).map((p, i) => (
               <Link
                 key={p.slug}
                 to={lang === 'es' ? `/es/writing/${p.slug}` : `/writing/${p.slug}`}
                 className="writing-row"
+                data-reveal
+                style={{ '--i': i } as CSSProperties}
               >
                 <span className="writing-index">
                   <span className="writing-note-id">
@@ -784,16 +876,18 @@ export default function App({ lang = 'en' }: Props) {
         {/* ============ CONTACT ============ */}
         <section className="section" id="contact">
           <SectionTitle label={c.sections.available} />
-          <div className="contact-head">
+          <div className="contact-head" data-reveal>
             <p className="contact-lede">{c.available.body}</p>
             <PRDotMap />
           </div>
           <div className="contact-grid">
-            {c.available.channels.map((ch) => (
+            {c.available.channels.map((ch, i) => (
               <a
                 key={ch.key}
                 href={ch.href}
                 className={`contact-card ${ch.key === 'hire' ? 'contact-card-primary' : ''}`}
+                data-reveal
+                style={{ '--i': i } as CSSProperties}
                 {...(ch.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
               >
                 <h3 className="contact-title">{ch.title}</h3>
