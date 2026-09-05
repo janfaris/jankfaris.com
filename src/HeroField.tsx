@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Lang } from './content'
 
 const labels = {
-  en: { title: 'Orbit', hint: 'Move or touch to explore', pause: 'Pause sculpture', play: 'Play sculpture' },
-  es: { title: 'Órbita', hint: 'Mueve o toca para explorar', pause: 'Pausar escultura', play: 'Animar escultura' },
+  en: { title: 'Orbit', hint: 'Move or touch to explore' },
+  es: { title: 'Órbita', hint: 'Mueve o toca para explorar' },
 }
 
 /** A single GPU-deformed orbital ribbon. No textures or postprocessing.
@@ -12,9 +12,6 @@ const labels = {
 export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; interactive?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const hostRef = useRef<HTMLDivElement>(null)
-  const controller = useRef<{ pause: (value: boolean) => void } | null>(null)
-  const [paused, setPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  const preferences = useRef({ paused })
   const text = labels[lang]
 
   useEffect(() => {
@@ -139,7 +136,6 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
       let running = false
       let visible = false
       let lost = false
-      let isPaused = preferences.current.paused
       let reduced = media.matches
       let elapsed = 0
       let last = 0
@@ -154,7 +150,9 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         host.dataset.state = 'ready'
       }
       const setPose = () => {
-        group.rotation.set(-.3 + tilt.y * .16, -.3 + tilt.x * .25 + Math.sin(elapsed * .14) * .16, -.18)
+        // One complete turn about every 35 seconds, with no reset or reversal.
+        const turn = (elapsed * .18) % (Math.PI * 2)
+        group.rotation.set(-.3 + tilt.y * .16, -.3 + tilt.x * .25 + turn, -.18)
       }
       const frame = (now: number) => {
         if (!running) return
@@ -175,15 +173,12 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         render()
       }
       const sync = () => {
-        const next = visible && !document.hidden && !lost && !isPaused && !disposed
+        const next = visible && !document.hidden && !lost && !reduced && !disposed
         host.dataset.motion = next ? 'running' : 'paused'
         if (next === running) return
         running = next
         if (running) { last = performance.now(); raf = requestAnimationFrame(frame) }
         else cancelAnimationFrame(raf)
-      }
-      controller.current = {
-        pause(value) { isPaused = value; inside = false; sync() },
       }
       const resize = () => {
         const w = host.clientWidth, h = host.clientHeight
@@ -203,7 +198,7 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         render()
       }
       const onPointer = (event: PointerEvent) => {
-        if (isPaused || reduced) return
+        if (reduced) return
         const rect = host.getBoundingClientRect()
         pointer.set(((event.clientX - rect.left) / rect.width - .5) * 4.8, (.5 - (event.clientY - rect.top) / rect.height) * 4.8)
         inside = true
@@ -212,9 +207,8 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
       const release = () => { inside = false }
       const onMotion = () => {
         reduced = media.matches
-        isPaused = reduced
-        preferences.current.paused = reduced
-        setPaused(reduced)
+        inside = false
+        lastTouch = -10
         if (reduced) {
           uniforms.uStrength.value = 0
           tilt.set(0, 0)
@@ -262,7 +256,6 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
       cleanup = () => {
         running = false
         cancelAnimationFrame(raf)
-        controller.current = null
         resizeObserver.disconnect()
         intersectionObserver.disconnect()
         themeObserver.disconnect()
@@ -302,12 +295,6 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
       {interactive && (
         <div className="sculpture-caption">
           <div className="sculpture-description"><span>{text.title}</span><span>{text.hint}</span></div>
-            <button className="sculpture-pause" type="button" aria-label={paused ? text.play : text.pause} aria-pressed={paused}
-              onClick={() => { preferences.current.paused = !paused; setPaused(!paused); controller.current?.pause(!paused) }}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
-                {paused ? <path d="M3 1.5 10 6 3 10.5Z" /> : <path d="M2 1h3v10H2zm5 0h3v10H7z" />}
-              </svg>
-            </button>
         </div>
       )}
     </div>

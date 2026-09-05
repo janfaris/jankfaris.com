@@ -35,27 +35,25 @@ test('current role is consistent in both languages and resumes', async ({ page }
   }
 })
 
-test('Orbit renders, animates, pauses, and resumes without a form selector', async ({ page }) => {
+test('Orbit starts automatically and continues without playback controls', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
   await ready(page)
-  await page.getByRole('button', { name: 'Pause sculpture', exact: true }).click()
+  await page.locator('.sculpture-stage').scrollIntoViewIfNeeded()
+  await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-motion', 'running')
+  await expect(page.locator('.hero-field button')).toHaveCount(0)
   const orbit = await renderedFrames(page)
   expect(orbit).toBeGreaterThan(0)
-  await page.waitForTimeout(200)
-  expect(await renderedFrames(page)).toBe(orbit)
-  await expect(page.getByRole('button', { name: /^(Tide|Orbit|Signal)$/ })).toHaveCount(0)
-  await page.getByRole('button', { name: 'Play sculpture', exact: true }).click()
-  await page.waitForTimeout(250)
-  await expect.poll(() => renderedFrames(page)).toBeGreaterThan(orbit)
+  await expect.poll(() => renderedFrames(page)).toBeGreaterThan(orbit + 10)
   expect(errors).toEqual([])
 })
 
 test('reduced motion is static and reacts to preference changes', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await ready(page)
-  await expect(page.getByRole('button', { name: 'Play sculpture', exact: true })).toBeVisible()
+  await page.locator('.sculpture-stage').scrollIntoViewIfNeeded()
+  await expect(page.locator('.hero-field button')).toHaveCount(0)
   const before = await renderedFrames(page)
   expect(before).toBeGreaterThan(0)
   await page.waitForTimeout(200)
@@ -76,7 +74,7 @@ test('suspends offscreen and does not restart offscreen on tab return', async ({
   await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-motion', 'running')
 })
 
-test('restores the actual WebGL context without losing controls', async ({ page }) => {
+test('restores the actual WebGL context and automatically resumes', async ({ page }) => {
   await ready(page)
   await page.evaluate(() => {
     const canvas = document.querySelector<HTMLCanvasElement>('.hero-field-canvas')!
@@ -88,11 +86,9 @@ test('restores the actual WebGL context without losing controls', async ({ page 
   })
   await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-state', 'fallback')
   await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-state', 'ready')
-  await page.getByRole('button', { name: 'Pause sculpture', exact: true }).click()
+  await page.locator('.sculpture-stage').scrollIntoViewIfNeeded()
   const before = await renderedFrames(page)
-  expect(before).toBeGreaterThan(0)
-  await page.waitForTimeout(200)
-  expect(await renderedFrames(page)).toBe(before)
+  await expect.poll(() => renderedFrames(page)).toBeGreaterThan(before)
 })
 
 test('WebGL unavailable keeps readable content, art, and navigation', async ({ page }) => {
@@ -116,7 +112,6 @@ test('portrait, landscape, narrow phones, and both themes retain artwork and rea
   await ready(page)
   for (const [width, height] of [[320, 740], [390, 844], [844, 390], [768, 1024], [1440, 1000]]) {
     await page.setViewportSize({ width, height })
-    await page.getByRole('button', { name: 'Pause sculpture', exact: true }).click()
     for (const theme of ['dark', 'light']) {
       await page.evaluate(theme => {
         document.documentElement.classList.toggle('light', theme === 'light')
@@ -129,16 +124,12 @@ test('portrait, landscape, narrow phones, and both themes retain artwork and rea
       const overlapping = stage!.x < lede!.x + lede!.width && stage!.x + stage!.width > lede!.x && stage!.y < lede!.y + lede!.height && stage!.y + stage!.height > lede!.y
       expect(overlapping, JSON.stringify({ width, height, stage, lede })).toBe(false)
     }
-    await page.getByRole('button', { name: 'Play sculpture', exact: true }).click()
   }
 })
 
 test('touch can change the sculpture and scroll remains native', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'Touch interaction only')
   await ready(page)
-  await page.getByRole('button', { name: 'Pause sculpture', exact: true }).tap()
-  await expect(page.getByRole('button', { name: 'Play sculpture', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByRole('button', { name: 'Play sculpture', exact: true }).tap()
   await page.locator('.sculpture-stage').tap()
   expect(await page.locator('.sculpture-stage').evaluate(el => getComputedStyle(el).touchAction)).toBe('pan-y pinch-zoom')
   const cancelled = await page.locator('.sculpture-stage').evaluate(el => !el.dispatchEvent(new PointerEvent('pointermove', { pointerType: 'touch', clientX: 160, clientY: 410, bubbles: true, cancelable: true })))
