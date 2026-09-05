@@ -10,6 +10,8 @@ export interface Project {
   link: string
   tech: string[]
   metrics?: Metric[]
+  /** Shipped result or actual use, without speculative impact metrics. */
+  outcome?: string
   featured?: boolean
   span?: 'wide'
   /** Slug for /demos/<slug>.{mp4,jpg} — when set, card renders an autoplaying muted loop with poster fallback */
@@ -53,6 +55,7 @@ export interface Content {
   }
   workUi: {
     evidence: string
+    outcome: string
     archiveTitle: string
     archiveBody: string
     openProject: string
@@ -101,7 +104,7 @@ export const content: Record<Lang, Content> = {
     meta: {
       title: 'Jan Faris — AI products from Puerto Rico',
       description:
-        'Software engineer building Spanish-first AI products from Puerto Rico. Ex-Microsoft. Creator of Lupa, demotape, and usableai.',
+        'Lead AI Engineer at Cencora. Building reliable AI products for healthcare, and independent tools from Puerto Rico. Previously Microsoft.',
     },
     nav: {
       en: 'EN',
@@ -109,22 +112,23 @@ export const content: Record<Lang, Content> = {
       work: 'Work',
       writing: 'Ship Notes',
       about: 'About',
-      hire: 'Hire',
+      hire: 'Connect',
     },
     skipToContent: 'Skip to content',
-    mobileDock: { resume: 'Résumé', hire: 'Hire Jan' },
+    mobileDock: { resume: 'Résumé', hire: 'Say hello' },
     hero: {
       display: { lead: 'From idea to ', em: 'production', tail: '.' },
       lede:
-        'AI product engineer for agents, developer tools, and Spanish-first products. Ex-Microsoft. I build and ship end to end.',
+        'I build AI products that hold up in the real world. Lead AI Engineer at Cencora, working across healthcare, agents, and the path from idea to production.',
       metaItems: [
-        { key: 'status', val: 'open to work · ex-SWE II @ Microsoft' },
+        { key: 'status', val: 'Lead AI Engineer @ Cencora' },
         { key: 'shipped', val: '2 npm, 1 App Store, internal tools' },
         { key: 'languages', val: 'bilingual · English + Spanish' },
       ],
     },
     workUi: {
       evidence: 'Project evidence',
+      outcome: 'In practice',
       archiveTitle: 'More shipped work',
       archiveBody: 'Smaller products and experiments, kept concise for a faster scan.',
       openProject: 'Open project',
@@ -141,7 +145,7 @@ export const content: Record<Lang, Content> = {
       press: 'Press & Speaking',
       now: 'Currently Building',
       experience: 'Experience',
-      available: 'Work With Me',
+      available: 'Good work starts with a conversation.',
       connect: 'Connect',
     },
     projects: [
@@ -151,14 +155,14 @@ export const content: Record<Lang, Content> = {
         tag: 'Internal · Client Acquisition',
         year: '2026',
         description:
-          'Internal tool I built to land website clients in Puerto Rico. From a Maps search, it audits local businesses, generates a personalized Spanish demo site per lead, and ships the pitch over WhatsApp. Used only by me and my partner, not a SaaS.',
+          'Turn a weak website into a concrete sales conversation. Lupa audits local businesses, builds a personalized Spanish demo for each lead, and sends the pitch over WhatsApp.',
+        outcome: 'Used by me and my partner to pitch local businesses in Puerto Rico. An internal tool, not a public SaaS.',
         link: 'https://lupa-seven.vercel.app',
         tech: ['Next.js 16', 'React 19', 'Gemini 3', 'Supabase', 'Stripe'],
         pipeline: ['Maps search', 'AI audit', 'Spanish demo site', 'WhatsApp pitch'],
         metrics: [
           { label: 'Demos generated', value: '120+' },
           { label: 'Categories', value: '7' },
-          { label: 'Avg. fixability score', value: '6.4 / 10' },
         ],
         featured: true,
         span: 'wide',
@@ -169,7 +173,8 @@ export const content: Record<Lang, Content> = {
         tag: 'Open Source · npm',
         year: '2026',
         description:
-          'CLI that records production-quality demo videos of web apps from a JSON config. Auth-aware, skeleton-free, multi-format. Replaces an entire category of $30/mo SaaS tools.',
+          'Recording a new demo should not mean repeating every click by hand. I built a CLI that turns a JSON script into a video, handling login, page readiness, and multiple export formats.',
+        outcome: 'Shipped as an MIT-licensed npm package. The recording workflow lives in a reusable config.',
         link: 'https://github.com/janfaris/demotape',
         tech: ['TypeScript', 'Playwright', 'FFmpeg', 'Zod', 'MIT'],
         pipeline: ['JSON config', 'Headless browser', 'Production video'],
@@ -182,7 +187,7 @@ export const content: Record<Lang, Content> = {
         tag: 'Internal · Content Engine',
         year: '2026',
         description:
-          'My private content engine. Runs the @usableai Instagram account: RSS + curated X → GPT-5.5 → vision-QA Spanish carousels, fully automated. Built for me, not for sale.',
+          'Turns curated AI news into Spanish Instagram carousels with visual QA. The private engine behind @usableai.',
         link: 'https://instagram.com/usableai',
         tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
         pipeline: ['RSS + X', 'GPT-5.5', 'Vision QA', 'Instagram'],
@@ -193,7 +198,7 @@ export const content: Record<Lang, Content> = {
         tag: 'Open Source · npm',
         year: '2026',
         description:
-          'Prompt-side Spanish locale tone control for LLM output. Corpus-driven, no post-hoc regex. Solves the "sounds like Mexico, not PR" problem.',
+          'Helps LLMs write for a specific Spanish-speaking region. Published on npm, with tone controlled in the prompt.',
         link: 'https://www.npmjs.com/package/spanish-tone-spec',
         tech: ['TypeScript', 'Zod', 'MIT'],
       },
@@ -203,7 +208,7 @@ export const content: Record<Lang, Content> = {
         tag: 'Real Estate',
         year: '2025',
         description:
-          'AI-powered real estate platform for Puerto Rico: listings, voice search, agent tools.',
+          'Find properties in Puerto Rico by describing them aloud. Voice search, listings, and tools for agents.',
         link: 'https://vantagepr.vercel.app',
         tech: ['Next.js', 'Claude', 'ElevenLabs', 'Stripe'],
       },
@@ -212,7 +217,7 @@ export const content: Record<Lang, Content> = {
         media: 'wandr',
         tag: 'Travel',
         year: '2025',
-        description: 'AI travel planner with itineraries, flights, and local events.',
+        description: 'Brings itineraries, flights, and local events into one AI-assisted trip plan.',
         link: 'https://wandrtravelai.com',
         tech: ['React', 'Supabase', 'Gemini', 'SerpAPI'],
       },
@@ -221,7 +226,7 @@ export const content: Record<Lang, Content> = {
         media: 'janga',
         tag: 'iOS App',
         year: '2025',
-        description: 'Find where to hang out. Live on the App Store.',
+        description: 'Helps people find where to hang out. Shipped on the App Store.',
         link: 'https://apps.apple.com/us/app/janga/id6744530407',
         tech: ['Expo', 'React Native', 'Supabase'],
       },
@@ -231,12 +236,18 @@ export const content: Record<Lang, Content> = {
         span: 'wide',
         tag: 'PropTech',
         year: '2025',
-        description: 'AI condo management for Puerto Rico over WhatsApp.',
+        description: 'Brings condo management into WhatsApp, where residents and administrators already communicate.',
         link: 'https://www.blokpr.co',
         tech: ['Next.js', 'WhatsApp API', 'Twilio', 'Claude'],
       },
     ],
     experience: [
+      {
+        company: 'Cencora',
+        role: 'Lead AI Engineer',
+        period: 'Aug 2026 - Present',
+        note: 'Leading the engineering and production delivery of AI capabilities for healthcare and pharmaceutical supply-chain analytics.',
+      },
       {
         company: 'Microsoft',
         role: 'Software Engineer II',
@@ -285,28 +296,28 @@ export const content: Record<Lang, Content> = {
     },
     available: {
       headline: {
-        lead: 'I’m open to work — ',
-        em: 'hire me',
+        lead: 'Let’s stay ',
+        em: 'connected',
         tail: '.',
       },
       body:
-        'I\u2019m looking for my next full-time role, building my own AI products, and taking a small amount of work for founders and teams who want to ship something real. If any of these fit, let\u2019s talk.',
+        'My focus is on AI engineering at Cencora and the independent products I build along the way. For conversations about useful AI, open source, or the tech community in Puerto Rico, say hello.',
       channels: [
         {
-          key: 'hire',
-          title: 'Hire me · full-time',
+          key: 'connect',
+          title: 'Compare notes',
           desc:
-            'Founding engineer, staff engineer, or tech lead at AI-native startups. Especially agents, devtools, or LATAM / Spanish-first products.',
+            'Building something with AI? I enjoy exchanging ideas with engineers and product people who care about making it useful.',
           cta: 'Email me',
-          href: 'mailto:jankfaris@gmail.com?subject=Full-time%20role',
+          href: 'mailto:jankfaris@gmail.com?subject=Let%E2%80%99s%20connect',
         },
         {
           key: 'consult',
-          title: 'Work with me · project',
+          title: 'Build in the open',
           desc:
-            'AI audits, build sprints, prompt architecture, or 0→1 product builds. Limited slots per quarter. Best fit: founders shipping for PR / LATAM.',
-          cta: 'Book an intro',
-          href: 'https://cal.com/janfaris/intro',
+            'Explore my tools, contribute an idea, or follow what I am building. Small projects, real use cases, and lessons shared along the way.',
+          cta: 'Visit GitHub',
+          href: 'https://github.com/janfaris',
         },
         {
           key: 'speak',
@@ -320,7 +331,7 @@ export const content: Record<Lang, Content> = {
       aside: [
         { key: 'Stack', val: 'TypeScript, Next.js, Python, LLMs, Supabase' },
         { key: 'Domains', val: 'AI agents, devtools, vertical SaaS, LATAM' },
-        { key: 'Location', val: 'San Juan, PR · Remote or hybrid SF' },
+        { key: 'Location', val: 'San Juan, Puerto Rico' },
         { key: 'Languages', val: 'English · Spanish (PR / LATAM register)' },
       ],
     },
@@ -339,7 +350,7 @@ export const content: Record<Lang, Content> = {
     meta: {
       title: 'Jan Faris — Productos de IA desde Puerto Rico',
       description:
-        'Ingeniero de software construyendo productos de IA en español desde Puerto Rico. Ex-Microsoft. Creador de Lupa, demotape y usableai.',
+        'Lead AI Engineer en Cencora. Productos de IA confiables para salud y herramientas independientes desde Puerto Rico. Antes en Microsoft.',
     },
     nav: {
       en: 'EN',
@@ -347,10 +358,10 @@ export const content: Record<Lang, Content> = {
       work: 'Trabajo',
       writing: 'Ship Notes',
       about: 'Experiencia',
-      hire: 'Contrátame',
+      hire: 'Hablemos',
     },
     skipToContent: 'Saltar al contenido',
-    mobileDock: { resume: 'Résumé', hire: 'Contrátame' },
+    mobileDock: { resume: 'Résumé', hire: 'Hablemos' },
     hero: {
       display: {
         lead: 'De idea a ',
@@ -358,15 +369,16 @@ export const content: Record<Lang, Content> = {
         tail: '.',
       },
       lede:
-        'Ingeniero de producto de IA para agentes, herramientas de desarrollo y productos pensados primero en español. Ex-Microsoft. Construyo y lanzo de punta a punta.',
+        'Construyo productos de IA que funcionan en el mundo real. Lead AI Engineer en Cencora, entre salud, agentes y el camino de idea a producción.',
       metaItems: [
-        { key: 'estado', val: 'disponible · ex-SWE II @ Microsoft' },
+        { key: 'estado', val: 'Lead AI Engineer @ Cencora' },
         { key: 'lanzados', val: '2 npm, 1 App Store, herramientas internas' },
         { key: 'idiomas', val: 'bilingüe · español + inglés' },
       ],
     },
     workUi: {
       evidence: 'Evidencia del proyecto',
+      outcome: 'En la práctica',
       archiveTitle: 'Más trabajo lanzado',
       archiveBody: 'Productos y experimentos más pequeños, resumidos para recorrerlos rápido.',
       openProject: 'Abrir proyecto',
@@ -383,7 +395,7 @@ export const content: Record<Lang, Content> = {
       press: 'Prensa y Charlas',
       now: 'Actualmente Construyendo',
       experience: 'Experiencia',
-      available: 'Trabaja Conmigo',
+      available: 'Las buenas ideas se conversan.',
       connect: 'Contacto',
     },
     projects: [
@@ -393,14 +405,14 @@ export const content: Record<Lang, Content> = {
         tag: 'IA · Ventas',
         year: '2026',
         description:
-          'Descubre negocios locales en Puerto Rico con Gemini 3 + Google Maps, audita sus webs con PageSpeed y genera una página demo personalizada en español para cada lead. Pitch directo por WhatsApp con tracking de vistas.',
+          'Convierte una web con problemas en una propuesta concreta. Lupa audita negocios locales, genera una demo personalizada en español para cada prospecto y envía la propuesta por WhatsApp.',
+        outcome: 'Mi socio y yo lo usamos para presentar propuestas a negocios locales en Puerto Rico. Es una herramienta interna.',
         link: 'https://lupa-seven.vercel.app',
         tech: ['Next.js 16', 'React 19', 'Gemini 3', 'Supabase', 'Stripe'],
         pipeline: ['Búsqueda en Maps', 'Auditoría IA', 'Demo en español', 'Pitch por WhatsApp'],
         metrics: [
           { label: 'Demos generados', value: '120+' },
           { label: 'Categorías', value: '7' },
-          { label: 'Score de fixability', value: '6.4 / 10' },
         ],
         featured: true,
         span: 'wide',
@@ -411,7 +423,8 @@ export const content: Record<Lang, Content> = {
         tag: 'Open Source · npm',
         year: '2026',
         description:
-          'CLI que graba videos demo de calidad producción para apps web desde un config en JSON. Maneja autenticación, evita estados de loading, y exporta múltiples formatos. Reemplaza toda una categoría de SaaS de $30/mes.',
+          'Grabar otra demo no debería exigir repetir cada clic a mano. Construí un CLI que convierte un guion JSON en video: maneja el login, espera a que cargue la página y exporta en varios formatos.',
+        outcome: 'Publicado en npm bajo licencia MIT. El proceso de grabación queda en una configuración reutilizable.',
         link: 'https://github.com/janfaris/demotape',
         tech: ['TypeScript', 'Playwright', 'FFmpeg', 'Zod', 'MIT'],
         pipeline: ['Config JSON', 'Browser headless', 'Video final'],
@@ -424,7 +437,7 @@ export const content: Record<Lang, Content> = {
         tag: 'Interno · Motor de contenido',
         year: '2026',
         description:
-          'Digest diario de IA en español para LATAM. Pipeline automatizado: RSS + X curado → GPT-5.5 → carruseles de Instagram con QA visual.',
+          'Convierte noticias curadas de IA en carruseles en español con QA visual. El motor privado detrás de @usableai.',
         link: 'https://instagram.com/usableai',
         tech: ['Node 22', 'GPT-5.5', 'GPT Image 2', 'Canvas'],
         pipeline: ['RSS + X', 'GPT-5.5', 'QA visual', 'Instagram'],
@@ -435,7 +448,7 @@ export const content: Record<Lang, Content> = {
         tag: 'Open Source · npm',
         year: '2026',
         description:
-          'Control de tono del español para salida de LLMs, desde el prompt. Basado en corpus, sin regex post-hoc. Resuelve el "suena a México, no a PR".',
+          'Ayuda a los LLMs a escribir para una región hispanohablante específica. Publicado en npm; el tono se controla desde el prompt.',
         link: 'https://www.npmjs.com/package/spanish-tone-spec',
         tech: ['TypeScript', 'Zod', 'MIT'],
       },
@@ -445,7 +458,7 @@ export const content: Record<Lang, Content> = {
         tag: 'Bienes Raíces',
         year: '2025',
         description:
-          'Plataforma de bienes raíces con IA para Puerto Rico: listings, búsqueda por voz, herramientas para agentes.',
+          'Encuentra propiedades en Puerto Rico describiéndolas en voz alta. Búsqueda por voz, listings y herramientas para agentes.',
         link: 'https://vantagepr.vercel.app',
         tech: ['Next.js', 'Claude', 'ElevenLabs', 'Stripe'],
       },
@@ -454,7 +467,7 @@ export const content: Record<Lang, Content> = {
         media: 'wandr',
         tag: 'Viajes',
         year: '2025',
-        description: 'Planificador de viajes con IA: itinerarios, vuelos y eventos locales.',
+        description: 'Reúne itinerarios, vuelos y eventos locales en un plan de viaje asistido por IA.',
         link: 'https://wandrtravelai.com',
         tech: ['React', 'Supabase', 'Gemini', 'SerpAPI'],
       },
@@ -463,7 +476,7 @@ export const content: Record<Lang, Content> = {
         media: 'janga',
         tag: 'App iOS',
         year: '2025',
-        description: 'Encuentra dónde janguear. Disponible en el App Store.',
+        description: 'Ayuda a encontrar dónde janguear. Lanzado en el App Store.',
         link: 'https://apps.apple.com/us/app/janga/id6744530407',
         tech: ['Expo', 'React Native', 'Supabase'],
       },
@@ -473,12 +486,18 @@ export const content: Record<Lang, Content> = {
         span: 'wide',
         tag: 'PropTech',
         year: '2025',
-        description: 'IA para administración de condominios en Puerto Rico, sobre WhatsApp.',
+        description: 'Lleva la administración del condominio a WhatsApp, donde ya se comunican residentes y administradores.',
         link: 'https://www.blokpr.co',
         tech: ['Next.js', 'WhatsApp API', 'Twilio', 'Claude'],
       },
     ],
     experience: [
+      {
+        company: 'Cencora',
+        role: 'Lead AI Engineer',
+        period: 'Ago 2026 - Presente',
+        note: 'Liderando la ingeniería y la puesta en producción de capacidades de IA para salud y analítica de la cadena de suministro farmacéutica.',
+      },
       {
         company: 'Microsoft',
         role: 'Software Engineer II',
@@ -527,28 +546,28 @@ export const content: Record<Lang, Content> = {
     },
     available: {
       headline: {
-        lead: 'Estoy disponible — ',
-        em: 'contrátame',
+        lead: 'Sigamos ',
+        em: 'conectados',
         tail: '.',
       },
       body:
-        'Estoy buscando mi próximo rol full-time, construyendo mis propios productos de IA, y tomando una pequeña cantidad de trabajo para founders y equipos que quieren lanzar algo real. Si encajas en alguna, hablemos.',
+        'Mi enfoque está en ingeniería de IA en Cencora y en los productos independientes que sigo construyendo. Para conversar sobre IA útil, open source o la comunidad tech de Puerto Rico, escríbeme.',
       channels: [
         {
-          key: 'hire',
-          title: 'Contrátame · full-time',
+          key: 'connect',
+          title: 'Intercambiemos ideas',
           desc:
-            'Founding engineer, staff engineer o tech lead en startups de IA. Especialmente agentes, devtools, o productos para LATAM / mercados en español.',
+            '¿Estás construyendo con IA? Me gusta intercambiar ideas con gente de ingeniería y producto que quiere hacerla útil.',
           cta: 'Escríbeme',
-          href: 'mailto:jankfaris@gmail.com?subject=Rol%20full-time',
+          href: 'mailto:jankfaris@gmail.com?subject=Conversemos',
         },
         {
           key: 'consult',
-          title: 'Proyecto · consultoría',
+          title: 'Construir en comunidad',
           desc:
-            'Auditorías de IA, sprints de construcción, arquitectura de prompts, o builds 0→1. Cupos limitados por trimestre. Encaja mejor con founders en PR / LATAM.',
-          cta: 'Agenda una intro',
-          href: 'https://cal.com/janfaris/intro',
+            'Explora mis herramientas, aporta una idea o sigue lo que construyo. Proyectos pequeños, casos reales y lecciones compartidas.',
+          cta: 'Visita GitHub',
+          href: 'https://github.com/janfaris',
         },
         {
           key: 'speak',
@@ -562,7 +581,7 @@ export const content: Record<Lang, Content> = {
       aside: [
         { key: 'Stack', val: 'TypeScript, Next.js, Python, LLMs, Supabase' },
         { key: 'Áreas', val: 'Agentes IA, devtools, vertical SaaS, LATAM' },
-        { key: 'Ubicación', val: 'San Juan, PR · Remoto o híbrido SF' },
+        { key: 'Ubicación', val: 'San Juan, Puerto Rico' },
         { key: 'Idiomas', val: 'Español (registro PR / LATAM) · Inglés' },
       ],
     },

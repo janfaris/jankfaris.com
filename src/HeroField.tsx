@@ -1,284 +1,315 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { Lang } from './content'
 
-function isIOSDevice() {
-  return (
-    /iPad|iPhone|iPod/.test(window.navigator.userAgent) ||
-    (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1)
-  )
+const labels = {
+  en: { title: 'Orbit', hint: 'Move or touch to explore', pause: 'Pause sculpture', play: 'Play sculpture' },
+  es: { title: 'Órbita', hint: 'Mueve o toca para explorar', pause: 'Pausar escultura', play: 'Animar escultura' },
 }
 
-/**
- * Subtle indigo particle wave behind the hero, with a cursor ripple.
- * three.js is dynamically imported so it never blocks first paint.
- * iOS-safe: renderer creation is guarded, pixel ratio is capped, and the
- * scene remounts on WebGL context loss (Safari drops contexts aggressively).
- * With prefers-reduced-motion the wave drifts slowly with no ripple or
- * scroll kicks instead of animating at full energy.
- */
-export function HeroField() {
+/** A single GPU-deformed orbital ribbon. No textures or postprocessing.
+ * Native scroll stays in charge on touch screens. A static SVG is always
+ * available during loading, context loss, and on devices without WebGL2. */
+export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; interactive?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const hostRef = useRef<HTMLDivElement>(null)
+  const controller = useRef<{ pause: (value: boolean) => void } | null>(null)
+  const [paused, setPaused] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const preferences = useRef({ paused })
+  const text = labels[lang]
 
   useEffect(() => {
     const host = hostRef.current
     const canvas = canvasRef.current
     if (!host || !canvas) return
-
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
     let disposed = false
-    let mountToken = 0
-    let restoreTimer: ReturnType<typeof setTimeout> | null = null
-    let cleanupScene = () => {}
-
-    const mountScene = async () => {
-      const token = ++mountToken
-      cleanupScene()
-
+    let cleanup = () => {}
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const initialize = async () => {
       const THREE = await import('three')
-      if (disposed || token !== mountToken) return
-
-      const isIOS = isIOSDevice()
-      const isMobile = window.innerWidth < 720 || window.matchMedia('(pointer: coarse)').matches
-      const isPhoneLike = isIOS || isMobile
-
+      if (disposed) return
+      const mobile = window.matchMedia('(pointer: coarse)').matches || host.clientWidth < 420
       let renderer: InstanceType<typeof THREE.WebGLRenderer>
       try {
-        renderer = new THREE.WebGLRenderer({
-          canvas,
-          alpha: true,
-          antialias: false,
-          depth: false,
-          stencil: false,
-          failIfMajorPerformanceCaveat: false,
-          powerPreference: isPhoneLike ? 'default' : 'high-performance',
-          preserveDrawingBuffer: false,
-        })
-      } catch (error) {
-        console.warn('Hero wave could not start.', error)
+        renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, depth: false, stencil: false, powerPreference: 'default' })
+      } catch {
+        host.dataset.state = 'fallback'
         return
       }
-
-      const maxPixelRatio = isIOS ? 1.25 : 1.5
       renderer.setClearColor(0x000000, 0)
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio))
-
       const scene = new THREE.Scene()
-      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100)
-      camera.position.set(0, 2.2, 7)
-      camera.lookAt(0, 0, 0)
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 40)
+      camera.position.set(0, 0, 8.8)
+      const group = new THREE.Group()
+      scene.add(group)
 
-      // Flat grid of points; the vertex shader lifts them into a moving wave.
-      const COLS = isPhoneLike ? 70 : 90
-      const ROWS = isPhoneLike ? 32 : 40
-      const positions = new Float32Array(COLS * ROWS * 3)
-      let i = 0
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          positions[i++] = (c / (COLS - 1) - 0.5) * 22 // x
-          positions[i++] = 0                           // y (animated)
-          positions[i++] = (r / (ROWS - 1) - 0.5) * 10 // z
+      const columns = mobile ? 112 : 180
+      const rows = mobile ? 36 : 60
+      const positions = new Float32Array(columns * rows * 3)
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+          const i = (r * columns + c) * 3
+          positions[i] = c / (columns - 1)
+          positions[i + 1] = r / (rows - 1)
+          positions[i + 2] = 0
         }
       }
       const geometry = new THREE.BufferGeometry()
       geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-
-      // Phones get a bolder, quicker wave: no hover ripple there, so the
-      // ambient motion has to carry the effect on its own.
-      const waveAmp = isPhoneLike ? 0.8 : 0.55
-      const waveSpeed = isPhoneLike ? 1.5 : 1.0
       const uniforms = {
         uTime: { value: 0 },
-        uAmp: { value: waveAmp },
-        uEnergy: { value: 0 },                      // scroll velocity → temporary swell
-        uMouse: { value: new THREE.Vector2(0, 0) }, // cursor on the grid plane (x, z)
-        uMouseStrength: { value: 0 },               // eases 0→1 while the pointer is over the hero
+        uPointer: { value: new THREE.Vector2() }, uStrength: { value: 0 },
+        uPixelRatio: { value: 1 }, uLight: { value: 0 }, uLine: { value: 0 },
       }
+      const vertexShader = /* glsl */ `
+        uniform float uTime;
+        uniform vec2 uPointer;
+        uniform float uStrength;
+        uniform float uPixelRatio;
+        varying float vLight;
+        varying float vDepth;
+        const float PI = 3.14159265359;
+        void main() {
+          float u = position.x;
+          float v = position.y;
+          float a = u * PI * 2.0;
+          float b = v * PI * 2.0;
+          float t = uTime;
+          // Twisted elliptical ribbon: continuous threads with a breathing core.
+          float twist = a * 1.5 + t * .16;
+          float band = cos(b) * .62;
+          float thickness = sin(b) * .13;
+          float radius = 1.42 + band * cos(twist) - thickness * sin(twist);
+          vec3 orbit = vec3(cos(a) * radius, sin(a) * radius,
+            band * sin(twist) + thickness * cos(twist));
+          orbit.x *= 1.12;
+          orbit.z += sin(a * 2.0 + t * .25) * .22;
+          vec3 p = orbit;
+          float distanceToPointer = length(p.xy - uPointer);
+          float influence = exp(-distanceToPointer * distanceToPointer * 1.4) * uStrength;
+          p.z += influence * .5;
+          p.xy += (p.xy - uPointer) * influence * .12;
+          float travellingLight = pow(.5 + .5 * cos(a * 2.0 - t * .65 + b * .15), 8.0);
+          vLight = .25 + .25 * sin(a * 2.0 + b - t * .4) + travellingLight * .6 + influence * .65;
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          vDepth = 1.0 - smoothstep(6.0, 11.0, -mv.z);
+          gl_Position = projectionMatrix * mv;
+          gl_PointSize = clamp((1.9 + vLight * .95) * uPixelRatio * 8.0 / -mv.z, 1.0, 5.0);
+        }
+      `
       const material = new THREE.ShaderMaterial({
-        uniforms,
-        transparent: true,
-        depthWrite: false,
-        vertexShader: /* glsl */ `
-          uniform float uTime;
-          uniform float uAmp;
-          uniform float uEnergy;
-          uniform vec2 uMouse;
-          uniform float uMouseStrength;
-          varying float vFade;
-          varying float vGlow;
-          void main() {
-            vec3 p = position;
-            float amp = uAmp * (1.0 + uEnergy * 0.6);
-            p.y = sin(p.x * 0.55 + uTime * 0.6) * cos(p.z * 0.7 + uTime * 0.4) * amp;
-
-            // cursor ripple: a gaussian swell with a trailing ring around the pointer
-            float d = distance(position.xz, uMouse);
-            float swell = exp(-d * d * 0.30);
-            float ring = exp(-pow(d - 1.8, 2.0) * 1.2) * sin(d * 3.0 - uTime * 2.5) * 0.35;
-            vGlow = (swell + max(ring, 0.0)) * uMouseStrength;
-            p.y += (swell * 0.9 + ring) * uMouseStrength;
-
-            vec4 mv = modelViewMatrix * vec4(p, 1.0);
-            gl_Position = projectionMatrix * mv;
-            gl_PointSize = (3.4 + vGlow * 2.8) * (7.0 / -mv.z);
-            // fade points toward the horizontal edges
-            vFade = (1.0 - smoothstep(6.0, 11.0, abs(position.x))) * (0.35 + 0.65 * (p.y + 0.55));
-          }
-        `,
+        uniforms, vertexShader, transparent: true, depthTest: false, depthWrite: false,
         fragmentShader: /* glsl */ `
-          varying float vFade;
-          varying float vGlow;
+          uniform float uLight;
+          uniform float uLine;
+          varying float vLight;
+          varying float vDepth;
           void main() {
-            vec2 d = gl_PointCoord - 0.5;
-            if (dot(d, d) > 0.25) discard;
-            vec3 indigo = vec3(0.369, 0.416, 0.824);      // --indigo #5e6ad2
-            vec3 soft   = vec3(0.486, 0.529, 0.878);      // --indigo-soft #7c87e0
-            vec3 color = mix(indigo, soft, min(vGlow, 1.0));
-            gl_FragColor = vec4(color, min(vFade * 0.85 + vGlow * 0.5, 0.95));
+            float alpha = 1.0;
+            if (uLine < .5) {
+              float d = length(gl_PointCoord - .5);
+              alpha = 1.0 - smoothstep(.26, .5, d);
+            }
+            vec3 darkInk = mix(vec3(.46, .50, .86), vec3(.82, .86, 1.0), clamp(vLight, 0.0, 1.0));
+            vec3 lightInk = mix(vec3(.23, .24, .62), vec3(.43, .46, .80), clamp(vLight, 0.0, 1.0));
+            vec3 color = mix(darkInk, lightInk, uLight);
+            gl_FragColor = vec4(color, alpha * mix(.55 + vDepth * .38, .16 + vDepth * .15, uLine));
           }
         `,
       })
-      scene.add(new THREE.Points(geometry, material))
-
-      const render = () => {
-        if (renderer.getContext().isContextLost()) return
-        renderer.render(scene, camera)
+      const points = new THREE.Points(geometry, material)
+      points.frustumCulled = false // CPU positions are UVs; the shader owns the bounds.
+      group.add(points)
+      // Sparse contour threads add shape and depth without a heavy bloom pass.
+      const indices: number[] = []
+      for (let r = 0; r < rows; r += 4) {
+        for (let c = 0; c < columns - 1; c++) {
+          indices.push(r * columns + c, r * columns + c + 1)
+        }
       }
-
-      const resize = () => {
-        const { clientWidth: w, clientHeight: h } = host
-        if (!w || !h) return
-        renderer.setSize(w, h, false)
-        camera.aspect = w / h
-        camera.updateProjectionMatrix()
-      }
-      resize()
-      const ro = new ResizeObserver(resize)
-      ro.observe(host)
-
-      // Pointer → grid plane (y = 0), eased each frame so the ripple trails the cursor.
-      const raycaster = new THREE.Raycaster()
-      const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
-      const ndc = new THREE.Vector2()
-      const hit = new THREE.Vector3()
-      const target = new THREE.Vector2(0, 0)
-      let pointerActive = false
-      const onPointerMove = (e: PointerEvent) => {
-        const rect = host.getBoundingClientRect()
-        const inside =
-          e.clientX >= rect.left && e.clientX <= rect.right &&
-          e.clientY >= rect.top && e.clientY <= rect.bottom
-        pointerActive = inside
-        if (!inside) return
-        ndc.set(
-          ((e.clientX - rect.left) / rect.width) * 2 - 1,
-          -((e.clientY - rect.top) / rect.height) * 2 + 1
-        )
-        raycaster.setFromCamera(ndc, camera)
-        if (raycaster.ray.intersectPlane(plane, hit)) target.set(hit.x, hit.z)
-      }
-      const onPointerLeave = () => { pointerActive = false }
-      // touch: no leave event fires after the finger lifts, so release the ripple explicitly
-      const onPointerUp = (e: PointerEvent) => {
-        if (e.pointerType !== 'mouse') pointerActive = false
-      }
-      // Reduced motion: no ripple interaction — the wave only drifts slowly.
-      if (!reducedMotion) {
-        window.addEventListener('pointermove', onPointerMove, { passive: true })
-        document.addEventListener('pointerleave', onPointerLeave)
-        window.addEventListener('pointerup', onPointerUp, { passive: true })
-        window.addEventListener('pointercancel', onPointerUp, { passive: true })
-      }
+      const linesGeometry = new THREE.BufferGeometry()
+      linesGeometry.setAttribute('position', geometry.getAttribute('position'))
+      linesGeometry.setIndex(indices)
+      const lineMaterial = material.clone()
+      lineMaterial.uniforms = { ...uniforms, uLine: { value: 1 } }
+      const lines = new THREE.LineSegments(linesGeometry, lineMaterial)
+      lines.frustumCulled = false
+      group.add(lines)
 
       let raf = 0
       let running = false
-      let waveTime = 0
-      let lastFrame = performance.now()
-      let lastScrollY = window.scrollY
-      let energy = 0
-      const frame = () => {
-        const now = performance.now()
-        const dt = Math.min((now - lastFrame) / 1000, 0.05)
-        lastFrame = now
-
-        // scroll velocity → energy kick (rises fast, decays slow)
-        const y = window.scrollY
-        const kick = reducedMotion
-          ? 0
-          : Math.min(Math.abs(y - lastScrollY) / Math.max(dt, 0.001) / 2400, 1)
-        lastScrollY = y
-        energy += (kick - energy) * (kick > energy ? 0.3 : 0.04)
-        uniforms.uEnergy.value = energy
-
-        // energetic scrolling speeds the wave up; reduced motion drifts slowly
-        waveTime += dt * waveSpeed * (reducedMotion ? 0.35 : 1 + energy * 1.5)
-        uniforms.uTime.value = waveTime
-        uniforms.uMouse.value.lerp(target, 0.08)
-        uniforms.uMouseStrength.value +=
-          ((pointerActive ? 1 : 0) - uniforms.uMouseStrength.value) * 0.05
-        render()
-        raf = requestAnimationFrame(frame)
+      let visible = false
+      let lost = false
+      let isPaused = preferences.current.paused
+      let reduced = media.matches
+      let elapsed = 0
+      let last = 0
+      let inside = false
+      let lastTouch = -10
+      const pointer = new THREE.Vector2()
+      const origin = new THREE.Vector2()
+      const tilt = new THREE.Vector2()
+      const render = () => {
+        if (disposed || lost || renderer.getContext().isContextLost()) return
+        renderer.render(scene, camera)
+        host.dataset.state = 'ready'
       }
-      const setRunning = (on: boolean) => {
-        if (on === running) return
-        running = on
-        if (on) raf = requestAnimationFrame(frame)
+      const setPose = () => {
+        group.rotation.set(-.3 + tilt.y * .16, -.3 + tilt.x * .25 + Math.sin(elapsed * .14) * .16, -.18)
+      }
+      const frame = (now: number) => {
+        if (!running) return
+        raf = requestAnimationFrame(frame)
+        // Phones stay at 30fps; desktop caps at 60fps even on ProMotion displays.
+        const interval = mobile ? 1000 / 30 : 1000 / 60
+        if (now - last < interval - 1) return
+        const dt = Math.min((now - last) / 1000, .05)
+        last = now
+        elapsed += dt
+        const ease = 1 - Math.exp(-dt * 4.5)
+        uniforms.uTime.value = elapsed
+        uniforms.uPointer.value.lerp(pointer, ease)
+        const strength = inside || elapsed - lastTouch < 1 ? 1 : 0
+        uniforms.uStrength.value += (strength - uniforms.uStrength.value) * ease
+        tilt.lerp(inside ? pointer : origin, ease * .5)
+        setPose()
+        render()
+      }
+      const sync = () => {
+        const next = visible && !document.hidden && !lost && !isPaused && !disposed
+        host.dataset.motion = next ? 'running' : 'paused'
+        if (next === running) return
+        running = next
+        if (running) { last = performance.now(); raf = requestAnimationFrame(frame) }
         else cancelAnimationFrame(raf)
       }
-
-      const io = new IntersectionObserver(
-        ([e]) => setRunning(e.isIntersecting && !document.hidden),
-        { threshold: 0 }
-      )
-      io.observe(host)
-      const onVisibility = () => setRunning(!document.hidden)
-      document.addEventListener('visibilitychange', onVisibility)
-
-      render()
-      setRunning(!document.hidden)
-
-      cleanupScene = () => {
-        setRunning(false)
-        io.disconnect()
-        ro.disconnect()
-        document.removeEventListener('visibilitychange', onVisibility)
-        window.removeEventListener('pointermove', onPointerMove)
-        document.removeEventListener('pointerleave', onPointerLeave)
-        window.removeEventListener('pointerup', onPointerUp)
-        window.removeEventListener('pointercancel', onPointerUp)
+      controller.current = {
+        pause(value) { isPaused = value; inside = false; sync() },
+      }
+      const resize = () => {
+        const w = host.clientWidth, h = host.clientHeight
+        if (!w || !h) return
+        const ratio = Math.min(window.devicePixelRatio || 1, mobile ? 1.35 : 1.75)
+        renderer.setPixelRatio(ratio)
+        uniforms.uPixelRatio.value = ratio
+        renderer.setSize(w, h, false)
+        camera.aspect = w / h
+        // Portrait phones retain the entire sculpture, including touch displacement.
+        camera.position.z = camera.aspect < 1 ? 9.8 : 7.6
+        camera.updateProjectionMatrix()
+        render()
+      }
+      const updateTheme = () => {
+        uniforms.uLight.value = document.documentElement.classList.contains('light') ? 1 : 0
+        render()
+      }
+      const onPointer = (event: PointerEvent) => {
+        if (isPaused || reduced) return
+        const rect = host.getBoundingClientRect()
+        pointer.set(((event.clientX - rect.left) / rect.width - .5) * 4.8, (.5 - (event.clientY - rect.top) / rect.height) * 4.8)
+        inside = true
+        if (event.pointerType !== 'mouse') lastTouch = elapsed
+      }
+      const release = () => { inside = false }
+      const onMotion = () => {
+        reduced = media.matches
+        isPaused = reduced
+        preferences.current.paused = reduced
+        setPaused(reduced)
+        if (reduced) {
+          uniforms.uStrength.value = 0
+          tilt.set(0, 0)
+          setPose()
+          render()
+        }
+        sync()
+      }
+      const onLost = (event: Event) => {
+        event.preventDefault()
+        lost = true
+        host.dataset.state = 'fallback'
+        sync()
+      }
+      // Three.js restores its own GPU resources first. Keep the renderer alive
+      // so its restoration listener survives; never dispose inside contextlost.
+      const onRestored = () => { lost = false; resize(); sync() }
+      const onPageHide = () => { visible = false; sync() }
+      const onPageShow = () => {
+        const rect = host.getBoundingClientRect()
+        visible = rect.bottom > 0 && rect.top < window.innerHeight
+        resize()
+        sync()
+      }
+      const resizeObserver = new ResizeObserver(resize)
+      const intersectionObserver = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync() })
+      const themeObserver = new MutationObserver(updateTheme)
+      resizeObserver.observe(host)
+      intersectionObserver.observe(host)
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+      document.addEventListener('visibilitychange', sync)
+      media.addEventListener('change', onMotion)
+      canvas.addEventListener('webglcontextlost', onLost)
+      canvas.addEventListener('webglcontextrestored', onRestored)
+      window.addEventListener('pagehide', onPageHide)
+      window.addEventListener('pageshow', onPageShow)
+      host.addEventListener('pointermove', onPointer, { passive: true })
+      host.addEventListener('pointerdown', onPointer, { passive: true })
+      host.addEventListener('pointerleave', release)
+      host.addEventListener('pointerup', release)
+      host.addEventListener('pointercancel', release)
+      updateTheme()
+      setPose()
+      resize()
+      cleanup = () => {
+        running = false
+        cancelAnimationFrame(raf)
+        controller.current = null
+        resizeObserver.disconnect()
+        intersectionObserver.disconnect()
+        themeObserver.disconnect()
+        document.removeEventListener('visibilitychange', sync)
+        media.removeEventListener('change', onMotion)
+        canvas.removeEventListener('webglcontextlost', onLost)
+        canvas.removeEventListener('webglcontextrestored', onRestored)
+        window.removeEventListener('pagehide', onPageHide)
+        window.removeEventListener('pageshow', onPageShow)
+        host.removeEventListener('pointermove', onPointer)
+        host.removeEventListener('pointerdown', onPointer)
+        host.removeEventListener('pointerleave', release)
+        host.removeEventListener('pointerup', release)
+        host.removeEventListener('pointercancel', release)
         geometry.dispose()
+        linesGeometry.dispose()
         material.dispose()
+        lineMaterial.dispose()
         renderer.dispose()
       }
     }
-
-    // iOS Safari drops WebGL contexts under memory pressure; remount when restored.
-    const onContextLost = (event: Event) => {
-      event.preventDefault()
-      cleanupScene()
-      cleanupScene = () => {}
-    }
-    const onContextRestored = () => {
-      if (disposed) return
-      if (restoreTimer) clearTimeout(restoreTimer)
-      restoreTimer = setTimeout(() => { void mountScene() }, 120)
-    }
-    canvas.addEventListener('webglcontextlost', onContextLost, false)
-    canvas.addEventListener('webglcontextrestored', onContextRestored, false)
-    void mountScene()
-
-    return () => {
-      disposed = true
-      if (restoreTimer) clearTimeout(restoreTimer)
-      canvas.removeEventListener('webglcontextlost', onContextLost)
-      canvas.removeEventListener('webglcontextrestored', onContextRestored)
-      cleanupScene()
-    }
+    void initialize().catch(() => { if (!disposed) host.dataset.state = 'fallback' })
+    return () => { disposed = true; cleanup() }
   }, [])
 
   return (
-    <div ref={hostRef} className="hero-field" aria-hidden="true">
-      <canvas ref={canvasRef} className="hero-field-canvas" />
+    <div className={`hero-field${interactive ? ' hero-field-interactive' : ''}`}>
+      <div ref={hostRef} className="sculpture-stage" data-state="loading" aria-hidden="true">
+        <svg className="sculpture-fallback" viewBox="0 0 480 400" fill="none">
+          {Array.from({ length: 22 }, (_, i) => (
+            <ellipse key={i} cx="240" cy="200" rx={108 + i * 1.5} ry={70 + i * 2.6}
+              transform={`rotate(${i * 7 - 45} 240 200)`} stroke="currentColor" strokeWidth=".7" opacity={.2 + i / 50} />
+          ))}
+        </svg>
+        <canvas ref={canvasRef} className="hero-field-canvas" />
+      </div>
+      {interactive && (
+        <div className="sculpture-caption">
+          <div className="sculpture-description"><span>{text.title}</span><span>{text.hint}</span></div>
+            <button className="sculpture-pause" type="button" aria-label={paused ? text.play : text.pause} aria-pressed={paused}
+              onClick={() => { preferences.current.paused = !paused; setPaused(!paused); controller.current?.pause(!paused) }}>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                {paused ? <path d="M3 1.5 10 6 3 10.5Z" /> : <path d="M2 1h3v10H2zm5 0h3v10H7z" />}
+              </svg>
+            </button>
+        </div>
+      )}
     </div>
   )
 }

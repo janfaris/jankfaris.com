@@ -134,8 +134,14 @@ function CardMedia({
     const video = videoRef.current
     if (!video || !playInView) return
 
-    const play = () => {
-      // Keep the property set explicitly for iOS Safari's autoplay policy.
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let visible = false
+    const syncPlayback = () => {
+      if (!visible || document.hidden || motion.matches) {
+        video.pause()
+        return
+      }
+      // iOS permits muted inline playback; Low Power Mode may still decline.
       video.muted = true
       void video.play().catch((error: DOMException) => {
         if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
@@ -144,18 +150,19 @@ function CardMedia({
       })
     }
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) play()
-        else video.pause()
-      },
-      { threshold: 0.2, rootMargin: '48px 0px' },
+      ([entry]) => { visible = entry.isIntersecting; syncPlayback() },
+      { threshold: 0.2 },
     )
     observer.observe(video)
-    video.addEventListener('canplay', play)
+    video.addEventListener('canplay', syncPlayback)
+    document.addEventListener('visibilitychange', syncPlayback)
+    motion.addEventListener('change', syncPlayback)
 
     return () => {
       observer.disconnect()
-      video.removeEventListener('canplay', play)
+      video.removeEventListener('canplay', syncPlayback)
+      document.removeEventListener('visibilitychange', syncPlayback)
+      motion.removeEventListener('change', syncPlayback)
       video.pause()
     }
   }, [name, playInView])
@@ -167,11 +174,10 @@ function CardMedia({
         className="card-demo"
         src={`/demos/${slug}.mp4`}
         poster={`/demos/${slug}.jpg`}
-        autoPlay={playInView}
         muted
         loop
         playsInline
-        preload={playInView ? 'auto' : 'metadata'}
+        preload="metadata"
         aria-label={`${name} demo`}
       />
     )
@@ -655,6 +661,13 @@ function FeaturedProject({
           </dl>
         ) : null}
 
+        {project.outcome && (
+          <div className="case-outcome">
+            <span className="case-outcome-label">{labels.outcome}</span>
+            <p>{project.outcome}</p>
+          </div>
+        )}
+
         {project.pipeline ? <Pipeline steps={project.pipeline} /> : null}
 
         <div className="case-footer">
@@ -741,51 +754,40 @@ export default function App({ lang = 'en' }: Props) {
       <main className="container" id="main-content" tabIndex={-1}>
 
         {/* ============ HERO ============ */}
-        <section className="hero">
-          <HeroField />
+        <section className="hero" aria-labelledby="hero-title">
           <div className="hero-status">
             <img src="/jan-profile.jpg" alt="Jan Faris" className="hero-avatar" />
             <div className="hero-id">
               <strong className="hero-name">Jan Faris</strong>
-              <span className="hero-status-line">
-                <span className="pulse" />
-                <span>
-                  {lang === 'es'
-                    ? 'Disponible para roles remotos · San Juan, PR'
-                    : 'Open to remote roles · San Juan, PR'}
-                </span>
-              </span>
+              <span className="hero-status-line">San Juan, Puerto Rico · {lang === 'es' ? 'Ingeniero y creador' : 'Engineer & builder'}</span>
             </div>
           </div>
 
-          <h1 className="display">
-            {splitWords(c.hero.display.lead)}
-            <em>{splitWords(c.hero.display.em, leadWords)}</em>
-            {splitWords(c.hero.display.tail, leadWords + emWords)}
-          </h1>
-
+          <div className="hero-composition">
+            <div className="hero-copy">
+              <a className="hero-current" href="#experience">
+                <span className="pulse" aria-hidden="true" />
+                Lead AI Engineer {lang === 'es' ? 'en' : 'at'} Cencora <span aria-hidden="true">↗</span>
+              </a>
+              <h1 className="display" id="hero-title">
+                {splitWords(c.hero.display.lead)}
+                <em>{splitWords(c.hero.display.em, leadWords)}{splitWords(c.hero.display.tail, leadWords + emWords)}</em>
+              </h1>
+              <p className="hero-lede">{c.hero.lede}</p>
+              <div className="hero-cta">
+                <a className="btn-primary" href="#work">{lang === 'es' ? 'Explora mi trabajo' : 'Explore my work'} <span aria-hidden="true">↘</span></a>
+                <Link className="btn-secondary" to={lang === 'es' ? '/es/resume' : '/resume'}>{lang === 'es' ? 'Mi trayectoria' : 'My background'} <span aria-hidden="true">↗</span></Link>
+              </div>
+            </div>
+            <HeroField lang={lang} />
+          </div>
           <div className="hero-foot">
-            <p className="hero-lede">{c.hero.lede as string}</p>
+            <span className="hero-foot-note">{lang === 'es' ? 'Ingeniería con intención. De principio a fin.' : 'Thoughtful engineering. All the way through.'}</span>
             <div className="hero-meta">
-              {c.hero.metaItems.map((m, i) => (
-                <div key={m.key} className={i === 1 ? 'accent' : ''}>{m.val}</div>
-              ))}
+              <span>{lang === 'es' ? 'Antes en' : 'Previously'}</span> Microsoft <span> / </span> Xtillion <span> / </span> Pratt & Whitney
             </div>
           </div>
-
-          <div className="hero-cta">
-            <a className="btn-primary" href="#contact">
-              {lang === 'es' ? 'Contrátame' : 'Hire me'}
-            </a>
-            <Link className="btn-secondary" to={lang === 'es' ? '/es/resume' : '/resume'}>
-              Résumé
-            </Link>
-          </div>
-
         </section>
-
-        {/* ============ PRODUCTION TOOLCHAIN ============ */}
-        <TechMarquee lang={lang} />
 
         {/* ============ WORK ============ */}
         <section className="section" id="work">
@@ -797,6 +799,9 @@ export default function App({ lang = 'en' }: Props) {
           </div>
           <ProjectArchive projects={archiveProjects} lang={lang} />
         </section>
+
+        {/* ============ PRODUCTION TOOLCHAIN ============ */}
+        <TechMarquee lang={lang} />
 
         {/* ============ EXPERIENCE ============ */}
         <section className="section" id="experience">
@@ -885,7 +890,7 @@ export default function App({ lang = 'en' }: Props) {
               <a
                 key={ch.key}
                 href={ch.href}
-                className={`contact-card ${ch.key === 'hire' ? 'contact-card-primary' : ''}`}
+                className={`contact-card ${ch.key === 'connect' ? 'contact-card-primary' : ''}`}
                 data-reveal
                 style={{ '--i': i } as CSSProperties}
                 {...(ch.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}

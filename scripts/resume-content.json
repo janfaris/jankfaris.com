@@ -1,0 +1,88 @@
+{
+  "name": "JAN K. FARIS GARCÍA",
+  "role": "Lead AI Engineer at Cencora",
+  "contact": "San Juan, PR (US Citizen, EST) | (939) 343-2647 | jankarlo.faris@outlook.com | linkedin.com/in/jan-faris-garcia | jankfaris.com | github.com/janfaris ",
+  "summary": "Lead AI Engineer at Cencora, focused on reliable AI products for healthcare and pharmaceutical supply-chain analytics. Previously at Microsoft, built an autonomous PR-review agent across 7+ repositories and co-designed a 21-session AI learning program. Outside work, shipped 8 AI products in 18 months as a solo engineer. I work across product design, architecture, engineering, deployment, and operations.",
+  "experience": [
+    {
+      "heading": "Cencora - Lead AI Engineer",
+      "period": "Aug 2026 - Present",
+      "note": "San Juan, Puerto Rico - Hybrid",
+      "bullets": [
+        "Leading the engineering and production delivery of AI capabilities for healthcare and pharmaceutical supply-chain analytics."
+      ]
+    },
+    {
+      "heading": "Microsoft - Software Engineer II, Trust Platform (Commerce Core)",
+      "period": "Jul 2025 - Jul 2026",
+      "note": "Remote - fraud & abuse prevention systems for Microsoft's commerce ecosystem",
+      "bullets": [
+        "Built PRPilot, an autonomous AI-powered PR-review agent using Copilot CLI, Microsoft Scout, custom skills, and MCP servers (Azure DevOps, WorkIQ): continuously monitored 7+ repositories, auto-reviewed and graded ~5 vendor/team PRs daily, and escalated only the ones needing human review - removing a full daily review burden from engineers.",
+        "Maintained transaction-risk APIs and apps that scored the riskiness of transactions across multiple Microsoft products and countries, keeping them compliant with Microsoft's Secure Future Initiative (SFI).",
+        "Shipped production full-stack features from prototype to launch across TypeScript, React, Python, and Azure (AKS), and led end-to-end delivery with a vendor team across multiple workstreams - coordinating engineering, product, and business stakeholders.",
+        "Co-designed and delivered a 21-session org-wide AI learning program (Copilot CLI, MCP, agentic workflows) - self- initiated, then requested org-wide by a Partner-level leader. Separately onboarded ~15 PMs to AI tooling with setup sessions and ongoing support; non-engineers left able to build working AI tools.",
+        "Led security & compliance remediation across repositories - vulnerability management, attestations, secure-by-design and governance initiatives, accessibility compliance - plus observability (OpenTelemetry/Geneva) on Azure Kubernetes Service.",
+        "Known for rapid prototyping - internal and external-facing apps that distilled complicated processes into a few clicks, repeatedly used by PMs and leadership to green-light features."
+      ]
+    },
+    {
+      "heading": "Xtillion - Associate Engineer",
+      "period": "Jan 2024 - Jul 2025",
+      "note": "",
+      "bullets": [
+        "Led a 12-month reporting-platform replacement end-to-end for a major healthcare client - research, system design, implementation, and stakeholder management. Fully retired legacy SQL Server + SSRS in favor of Retool (front end), Snowflake (backend, warehousing, and functions), dbt for data transformation, and GitHub Actions CI/CD - a platform generating 5,000+ reports per day across PDF and multiple file formats.",
+        "Solo-built HIPAA-compliant automated report delivery on top of the new platform, over encrypted email (AWS SES) and fax (OpenText Fax API) - meeting healthcare clients on the channels they actually use.",
+        "Built conversational analytics on Databricks Genie for a separate client: business users chat with their data in plain English, skipping months of upfront data-engineering cleanup before getting answers.",
+        "Cut cloud costs by refactoring a C# application's database endpoints, eliminating an entire SQL Server instance."
+      ]
+    },
+    {
+      "heading": "Pratt & Whitney - Software Engineer",
+      "period": "Aug 2021 - Aug 2023",
+      "note": "",
+      "bullets": [
+        "Cut build time 90% by automating and securing CI/CD on the F-135 (Joint Strike Fighter) military DevSecOps transformation.",
+        "Migrated a legacy military database to a secure modern stack (Perl, Python, SQL) and built a C code-generation wrapper and a GUI for F-135 blade-assembly validation."
+      ]
+    }
+  ],
+  "earlier": "Earlier: Support Engineer at BrainHi (SaaS, 2023); Founder of UPRConnect, an AI-powered student platform at UPRM (led a team of engineers and designers).",
+  "projects": [
+    {
+      "heading": "Lupa · AI client-acquisition engine (2026) Next.js 16 · React 19 · Gemini · Supabase · Stripe",
+      "body": "From a Google Maps search, audits local businesses with PageSpeed, generates a personalized Spanish demo website per lead with Gemini, and delivers the pitch over WhatsApp with view tracking. 120+ demo sites generated across 7 business categories; in active use for real client acquisition."
+    },
+    {
+      "heading": "demotape · Open source · npm (2026) TypeScript · Playwright · FFmpeg · Zod",
+      "body": "CLI that records production-quality demo videos of web apps from a JSON config - auth-aware, skeleton-free, multi-format. Replaces a category of $30/mo SaaS tools. MIT-licensed."
+    },
+    {
+      "heading": "spanish-tone-spec · Open source · npm (2026) TypeScript · Zod",
+      "body": "Prompt-side Spanish locale tone control for LLM output - corpus-driven, no post-hoc regex. Solves regional-dialect drift in LLM- generated Spanish (e.g., Mexican vs. Puerto Rican tone). MIT-licensed."
+    },
+    {
+      "heading": "Vantage · AI real-estate platform (2025) Next.js · Claude · ElevenLabs · Stripe",
+      "body": "Voice-first property search for Puerto Rico: buyers describe what they want in natural language and get listings that actually match. Includes agent tooling, listing management, and Stripe subscriptions."
+    },
+    {
+      "heading": "Blok · AI PropTech over WhatsApp (2025) Next.js · WhatsApp API · Twilio · Claude",
+      "body": "AI condo management for Puerto Rico delivered entirely over WhatsApp - residents and admins interact with an LLM agent through the channel they already use."
+    },
+    {
+      "heading": "Janga + Wandr · Consumer apps (2025) React Native · Supabase · Gemini",
+      "body": "Janga: social discovery app, live on the App Store (Expo/React Native/Supabase). Wandr: AI travel planner with itineraries, flights, and local events (React/Supabase/Gemini/SerpAPI)."
+    }
+  ],
+  "skills": [
+    "AI Engineering: LLM products in production (Claude, GPT, Gemini, Copilot), autonomous agents, Model Context Protocol (MCP) servers & skills, multimodal pipelines (vision QA, image gen, voice/ElevenLabs), prompt engineering, evals",
+    "Languages: TypeScript/JavaScript, Python, SQL, C#, C",
+    "Full-Stack: React, Next.js, Node.js, React Native/Expo, Tailwind, REST APIs, Stripe, Twilio/WhatsApp API",
+    "Cloud & Data: Azure (AKS), AWS (Lambda, S3, SES), PostgreSQL, Supabase, Snowflake, Databricks (Genie), SQL Server, dbt, GitHub Actions CI/CD, OpenTelemetry, Playwright",
+    "Leadership: AI enablement & training (21-session program; engineers, PMs, execs), vendor-team delivery, stakeholder management, technical writing (jankfaris.com essays)"
+  ],
+  "quotes": [
+    "“I've made a lot of hiring decisions over my career, and bringing Jan onto my team was one of the best... a true force multiplier. I'd hire Jan again tomorrow.” - Ryan McDonald, Principal, Microsoft (direct manager)",
+    "“A true 10x engineer... the type of person you can trust with ambiguous, high-impact problems and know he'll deliver a solution that exceeds expectations.” - Javier Román, Data & AI Leader (direct manager, Xtillion)"
+  ],
+  "education": "University of Puerto Rico, Mayagüez - B.S. Software Engineering Dec 2023 GitHub Copilot Certified (GH-300) - Microsoft, Jun 2026 | Bilingual: English & Spanish (native)"
+}

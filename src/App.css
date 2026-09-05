@@ -453,156 +453,80 @@ main:focus { outline: none; }
    HERO
    ============================================ */
 .hero {
-  padding-top: 24px;
-  padding-bottom: 88px;
-  min-height: 78vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 72px;
   position: relative;
+  padding: 24px 0 32px;
 }
-
-/* three.js particle wave behind the hero */
-.hero-field {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.8;
-  /* Fade toward the top and bottom so it reads as ambient, and toward the
-     left so it fills the hero's empty right half instead of speckling the
-     headline and lede. */
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 26%, #000 56%, transparent 84%),
-    linear-gradient(to right, transparent 26%, rgba(0, 0, 0, 0.32) 46%, #000 72%);
-  mask-image:
-    linear-gradient(to bottom, transparent 0%, #000 26%, #000 56%, transparent 84%),
-    linear-gradient(to right, transparent 26%, rgba(0, 0, 0, 0.32) 46%, #000 72%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-/* Single-column hero: the copy spans the full width, so there is no empty
-   half to fill. The field drops back to ambient texture and fades out above
-   the lede — both themes, since `.light .hero-field` would otherwise win on
-   specificity. */
-@media (max-width: 720px) {
-  .hero-field,
-  .light .hero-field {
-    opacity: 0.3;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 44%, transparent 68%);
-    mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 44%, transparent 68%);
-  }
-}
-.hero > .hero-field {
-  right: auto;
-  bottom: -56px;
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-}
-.light .hero-field {
-  opacity: 0.95;
-  filter: saturate(1.25) brightness(0.62);
-}
-.hero-field-canvas { width: 100%; height: 100%; display: block; }
-.hero > *:not(.hero-field) { position: relative; z-index: 1; }
-@media (max-width: 720px) {
-  .hero { min-height: auto; gap: 56px; padding-bottom: 72px; }
-}
-
-.hero-status {
-  display: inline-flex; align-items: center; gap: 14px;
-}
-.hero-id {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.hero-name {
-  font-family: var(--serif);
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  color: var(--text);
-}
-.hero-status-line {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.05em;
-  color: var(--text-dim);
-  display: inline-flex; align-items: center; gap: 10px;
-}
-.hero-avatar {
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  object-position: center top;
-  border: 1px solid var(--hairline-strong);
-  margin-right: 4px;
-  filter: saturate(0.9) contrast(1.02);
-}
-:root.light .hero-avatar { filter: none; }
-.pulse {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--indigo);
-  box-shadow: 0 0 0 0 rgba(94, 106, 210, 0.5);
-  animation: pulse-ring 2400ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  flex-shrink: 0;
-}
-@keyframes pulse-ring {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(94, 106, 210, 0.5); }
-  50%      { box-shadow: 0 0 0 10px rgba(94, 106, 210, 0); }
-}
-
+.hero-status { display: inline-flex; align-items: center; gap: 14px; }
+.hero-id { display: flex; flex-direction: column; gap: 7px; }
+.hero-name { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
+.hero-status-line { font-family: var(--mono); font-size: 10px; letter-spacing: .02em; color: var(--text-dim); }
+.hero-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: center top; border: 1px solid var(--hairline-strong); }
+.hero-composition { display: grid; grid-template-columns: 1.12fr 1fr; align-items: center; gap: 24px; padding: 72px 0 64px; }
+.hero-copy { min-width: 0; position: relative; z-index: 1; }
+.hero-current { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 30px; font-size: 11px; letter-spacing: .015em; color: var(--text-dim); }
+.hero-current > span:last-child { color: var(--indigo-soft); transition: transform 200ms; }
+.hero-current:hover > span:last-child { transform: translate(2px, -2px); }
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--indigo-soft); box-shadow: 0 0 0 4px color-mix(in srgb, var(--indigo) 10%, transparent); flex-shrink: 0; }
 .display {
   font-family: var(--serif);
   font-weight: 400;
-  font-size: clamp(64px, 11.5vw, 172px);
-  line-height: 0.94;
-  letter-spacing: -0.04em;
-  color: var(--text);
-  font-variation-settings: "opsz" 144;
-  max-width: 16ch;
+  font-size: clamp(64px, 7.7vw, 112px);
+  line-height: .97;
+  letter-spacing: -.065em;
+  font-variation-settings: "opsz" 60;
   text-wrap: balance;
+  max-width: 11ch;
 }
-.display em {
-  font-style: italic;
-  color: var(--indigo);
-  font-weight: 400;
-  font-variation-settings: "opsz" 144;
-}
+.display em { display: block; font-style: italic; color: var(--indigo); font-weight: 400; }
+.hero-lede { margin-top: 30px; font-family: var(--serif); font-size: clamp(18px, 1.6vw, 21px); line-height: 1.6; color: var(--text-dim); max-width: 42ch; text-wrap: pretty; }
+.hero-copy .hero-cta { margin-top: 30px; }
+.hero-foot { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--hairline-strong); padding-top: 24px; }
+.hero-foot-note { font-family: var(--serif); font-size: 14px; color: var(--text-dim); }
+.hero-meta { font-family: var(--mono); font-size: 10px; color: var(--text-dim); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hero-meta > span { color: var(--text-mute); }
 
-.hero-foot {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: end;
-  gap: 64px;
+/* The artwork owns its space so particles never compete with reading. */
+.hero-field { position: relative; min-width: 0; }
+.sculpture-stage { position: relative; width: 100%; height: 440px; touch-action: pan-y pinch-zoom; }
+.hero-field-canvas, .sculpture-fallback { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sculpture-fallback { color: var(--indigo); }
+.hero-field-canvas { opacity: 0; transition: opacity 500ms ease; }
+.sculpture-stage[data-state="ready"] .hero-field-canvas { opacity: 1; }
+.sculpture-stage[data-state="ready"] .sculpture-fallback { opacity: 0; }
+.sculpture-caption { margin: -8px 16px 0; display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--hairline-strong); padding-top: 6px; }
+.sculpture-description { flex: 1; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-family: var(--mono); font-size: 10px; color: var(--text-mute); letter-spacing: .02em; }
+.sculpture-description > span:first-child { color: var(--text-dim); }
+.sculpture-pause { display: grid; place-items: center; background: transparent; color: var(--text-mute); border: 0; cursor: pointer; min-height: 44px; min-width: 44px; border-radius: 4px; transition: background 200ms, color 200ms; }
+.sculpture-pause:hover { color: var(--text); background: var(--bg-elev); }
+.sculpture-pause:active { transform: scale(.96); }
+
+@media (max-width: 1000px) {
+  .hero-composition { gap: 4px; }
+  .display { font-size: clamp(62px, 8.5vw, 86px); }
+  .sculpture-stage { height: 380px; }
+  .sculpture-description > span:last-child { display: none; }
+  .hero-foot { flex-direction: column; gap: 12px; }
 }
 @media (max-width: 720px) {
-  .hero-foot { grid-template-columns: 1fr; gap: 32px; }
+  .hero { padding-top: 36px; padding-bottom: 24px; }
+  .hero-status-line { font-size: 9px; }
+  .hero-composition { grid-template-columns: minmax(0, 1fr); padding: 40px 0 28px; gap: 28px; }
+  .hero-copy { display: contents; }
+  .hero-current { grid-row: 1; margin-bottom: -12px; font-size: 11px; }
+  .display { grid-row: 2; font-size: clamp(58px, 13.5vw, 88px); max-width: 100%; }
+  .hero-composition > .hero-field { grid-row: 5; }
+  .hero-lede { grid-row: 3; margin-top: 0; font-size: 19px; max-width: 42ch; }
+  .hero-copy .hero-cta { grid-row: 4; margin-top: -4px; }
+  .sculpture-stage { height: 290px; }
+  .sculpture-caption { margin: -8px 0 0; }
+  .sculpture-description > span:last-child { display: inline; }
+  .hero-foot { gap: 10px; }
+  .hero-meta { font-size: 9px; gap: 8px; }
 }
-.hero-lede {
-  font-family: var(--serif);
-  font-size: clamp(20px, 2vw, 25px);
-  line-height: 1.48;
-  color: var(--text-dim);
-  max-width: 44ch;
-  font-variation-settings: "opsz" 24;
-  text-wrap: pretty;
-}
-.hero-meta {
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.07em;
-  color: var(--text-mute);
-  text-align: right;
-  line-height: 1.9;
-  font-variant-numeric: tabular-nums;
-}
-.hero-meta .accent { color: var(--text); }
-@media (max-width: 720px) {
-  .hero-meta { text-align: left; }
+@media (max-width: 360px) {
+  .sculpture-description { font-size: 9px; }
+  .sculpture-stage { height: 260px; }
+  .hero-status-line { font-size: 8px; }
 }
 
 /* Hero word-reveal animation. The stagger index comes from an inline --i so
@@ -712,7 +636,7 @@ main:focus { outline: none; }
 .case-metrics {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin: 30px 0 6px;
   padding: 22px 0;
@@ -738,6 +662,9 @@ main:focus { outline: none; }
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
+.case-outcome { margin-top: 24px; padding-left: 16px; border-left: 2px solid var(--indigo); }
+.case-outcome-label { display: block; margin-bottom: 7px; font-family: var(--mono); font-size: 10px; letter-spacing: .04em; color: var(--indigo-soft); }
+.case-outcome p { font-size: 14px; line-height: 1.65; color: var(--text-dim); text-wrap: pretty; }
 .case-footer {
   width: 100%;
   display: flex;
@@ -1747,6 +1674,8 @@ main:focus { outline: none; }
   justify-content: center;
 }
 .resume-head .hero-field {
+  position: absolute;
+  pointer-events: none;
   inset: -64px -18vw -16px;
   opacity: 0.78;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 82%, transparent 100%);
@@ -2688,3 +2617,16 @@ main:focus { outline: none; }
   .readiness-cta a { width: fit-content; white-space: normal; }
   .readiness-footer { margin-top: 80px; }
 }
+
+/* Mobile touch targets and safe-area clearance. */
+@media (max-width: 720px) {
+  .theme-toggle { width: 40px; height: 40px; }
+  .lang-switch a { min-width: 30px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; }
+  .topbar { top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); }
+  .resume-head .sculpture-stage { height: 100%; min-height: 350px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-field-canvas { transition: none; }
+}
+
+.hero-copy .btn-primary, .hero-copy .btn-secondary { display: inline-flex; align-items: center; gap: 12px; }

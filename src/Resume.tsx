@@ -20,40 +20,40 @@ interface Stop {
 const copy = {
   en: {
     title: 'Résumé',
-    status: 'Open to remote roles · San Juan, PR',
+    status: 'Lead AI Engineer at Cencora · San Juan, PR',
     download: 'Download PDF',
     email: 'Email me',
     back: '← jankfaris.com',
-    eyebrow: 'AI Engineer / Software Engineer',
-    summary: 'Full-stack AI engineer operating across the entire product lifecycle — design, build, deploy, and operate. Ex-Microsoft, with 8 AI products shipped in 18 months as a solo engineer.',
+    eyebrow: 'Lead AI Engineer',
+    summary: 'Lead AI Engineer at Cencora, operating across the entire product lifecycle — design, build, deploy, and operate. Ex-Microsoft, with 8 AI products shipped in 18 months as a solo engineer.',
     experience: 'Professional experience',
     managers: 'What managers say',
     education: 'Education & certification',
     numbers: 'The numbers',
     current: {
-      period: '2026 - Now',
-      org: 'Independent',
-      role: 'AI products, end to end',
-      note: 'Building Lupa (AI client acquisition), demotape (npm, demo-video CLI), spanish-tone-spec (npm, Spanish tone control for LLMs), and usableai (automated Spanish AI digest). Looking for the next full-time role.',
+      period: 'Aug 2026 - Present',
+      org: 'Cencora',
+      role: 'Lead AI Engineer',
+      note: 'Leading the engineering and production delivery of AI capabilities for healthcare and pharmaceutical supply-chain analytics. San Juan, Puerto Rico · Hybrid.',
     },
   },
   es: {
     title: 'Résumé',
-    status: 'Disponible para roles remotos · San Juan, PR',
+    status: 'Lead AI Engineer en Cencora · San Juan, PR',
     download: 'Descargar PDF',
     email: 'Escríbeme',
     back: '← jankfaris.com',
-    eyebrow: 'Ingeniero de IA / Ingeniero de Software',
-    summary: 'Ingeniero full-stack de IA trabajando en todo el ciclo del producto — diseñar, construir, desplegar y operar. Ex-Microsoft, con 8 productos de IA lanzados en 18 meses como ingeniero independiente.',
+    eyebrow: 'Lead AI Engineer',
+    summary: 'Lead AI Engineer en Cencora, trabajando en todo el ciclo del producto — diseñar, construir, desplegar y operar. Ex-Microsoft, con 8 productos de IA lanzados en 18 meses como ingeniero independiente.',
     experience: 'Experiencia profesional',
     managers: 'Lo que dicen mis managers',
     education: 'Educación y certificación',
     numbers: 'Los números',
     current: {
-      period: '2026 - Hoy',
-      org: 'Independiente',
-      role: 'Productos de IA, de punta a punta',
-      note: 'Construyendo Lupa (adquisición de clientes con IA), demotape (npm, CLI de videos demo), spanish-tone-spec (npm, control de tono en español para LLMs) y usableai (digest de IA en español automatizado). Buscando mi próximo rol full-time.',
+      period: 'Ago 2026 - Presente',
+      org: 'Cencora',
+      role: 'Lead AI Engineer',
+      note: 'Liderando la ingeniería y la puesta en producción de capacidades de IA para salud y analítica de la cadena de suministro farmacéutica. San Juan, Puerto Rico · Híbrido.',
     },
   },
 }
@@ -226,7 +226,7 @@ export default function Resume({ lang = 'en' }: Props) {
 
       <div className="container resume-container">
         <header className="resume-head">
-          <HeroField />
+          <HeroField lang={lang} interactive={false} />
           <Link to={lang === 'es' ? '/es' : '/'} className="resume-back">{t.back}</Link>
           <span className="resume-eyebrow">{t.eyebrow}</span>
           <h1 className="resume-name">Jan Faris</h1>
@@ -238,7 +238,7 @@ export default function Resume({ lang = 'en' }: Props) {
             <a className="btn-primary" href="/resume.pdf" target="_blank" rel="noopener">
               {t.download}
             </a>
-            <a className="btn-secondary" href="mailto:jankfaris@gmail.com?subject=Full-time%20role">
+            <a className="btn-secondary" href="mailto:jankfaris@gmail.com?subject=Let%E2%80%99s%20connect">
               {t.email}
             </a>
           </div>
