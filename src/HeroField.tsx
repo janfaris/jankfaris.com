@@ -7,8 +7,8 @@ const labels = {
 }
 
 /** A single GPU-deformed orbital ribbon. No textures or postprocessing.
- * Native scroll stays in charge on touch screens. A static SVG is always
- * available during loading, context loss, and on devices without WebGL2. */
+ * Native scroll stays in charge on touch screens. An animated SVG covers
+ * loading, context loss, and devices without WebGL2. */
 export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; interactive?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const hostRef = useRef<HTMLDivElement>(null)
@@ -21,6 +21,56 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
     let disposed = false
     let cleanup = () => {}
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let reduced = media.matches
+    let active = false
+    let pageAway = false
+    let syncScene = (_restart = false) => { void _restart }
+    let resizeScene = () => {}
+    let resetInteraction = () => {}
+
+    // A visibility observer is an optimization, not permission to start.
+    // Safari can delay it while scrolling or restoring a suspended page.
+    const refreshPlayback = (restart = false) => {
+      if (disposed) return
+      const rect = host.getBoundingClientRect()
+      const viewport = window.visualViewport
+      const top = viewport?.offsetTop ?? 0
+      const left = viewport?.offsetLeft ?? 0
+      const inView = rect.width > 0 && rect.height > 0 &&
+        rect.bottom > top && rect.top < top + (viewport?.height ?? window.innerHeight) &&
+        rect.right > left && rect.left < left + (viewport?.width ?? window.innerWidth)
+      active = inView && !document.hidden && !pageAway
+      host.dataset.motion = active ? 'running' : 'paused'
+      host.dataset.motionMode = reduced ? 'gentle' : 'full'
+      syncScene(restart)
+    }
+    const onScroll = () => refreshPlayback()
+    const onResize = () => { resizeScene(); refreshPlayback() }
+    const onVisibility = () => {
+      if (!document.hidden) pageAway = false
+      refreshPlayback(true)
+    }
+    const onPageHide = () => { pageAway = true; refreshPlayback(true) }
+    const onPageShow = () => { pageAway = false; resizeScene(); refreshPlayback(true) }
+    const onMotion = () => {
+      reduced = media.matches
+      resetInteraction()
+      refreshPlayback()
+    }
+    const intersectionObserver = new IntersectionObserver(() => refreshPlayback())
+    const resizeObserver = new ResizeObserver(onResize)
+    intersectionObserver.observe(host)
+    resizeObserver.observe(host)
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pagehide', onPageHide)
+    window.addEventListener('pageshow', onPageShow)
+    window.addEventListener('focus', onPageShow)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize, { passive: true })
+    window.visualViewport?.addEventListener('resize', onResize, { passive: true })
+    window.visualViewport?.addEventListener('scroll', onScroll, { passive: true })
+    media.addEventListener('change', onMotion)
+    refreshPlayback()
     const initialize = async () => {
       const THREE = await import('three')
       if (disposed) return
@@ -134,10 +184,9 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
 
       let raf = 0
       let running = false
-      let visible = false
       let lost = false
-      let reduced = media.matches
       let elapsed = 0
+      let turn = 0
       let last = 0
       let inside = false
       let lastTouch = -10
@@ -150,8 +199,6 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         host.dataset.state = 'ready'
       }
       const setPose = () => {
-        // One complete turn about every 35 seconds, with no reset or reversal.
-        const turn = (elapsed * .18) % (Math.PI * 2)
         group.rotation.set(-.3 + tilt.y * .16, -.3 + tilt.x * .25 + turn, -.18)
       }
       const frame = (now: number) => {
@@ -160,9 +207,12 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         // Phones stay at 30fps; desktop caps at 60fps even on ProMotion displays.
         const interval = mobile ? 1000 / 30 : 1000 / 60
         if (now - last < interval - 1) return
-        const dt = Math.min((now - last) / 1000, .05)
+        const dt = Math.min((now - last) / 1000, .1)
         last = now
-        elapsed += dt
+        // Gentle mode keeps the requested automatic rotation, but removes
+        // deformation and touch swells and halves the turning speed.
+        elapsed += reduced ? 0 : dt
+        turn = (turn + dt * .18 * (reduced ? .5 : 1)) % (Math.PI * 2)
         const ease = 1 - Math.exp(-dt * 4.5)
         uniforms.uTime.value = elapsed
         uniforms.uPointer.value.lerp(pointer, ease)
@@ -172,18 +222,25 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         setPose()
         render()
       }
-      const sync = () => {
-        const next = visible && !document.hidden && !lost && !reduced && !disposed
-        host.dataset.motion = next ? 'running' : 'paused'
+      const sync = (restart = false) => {
+        const next = active && !lost && !disposed
+        // Safari may discard a pending callback during suspension. On wake,
+        // replace it even if our last known state was already "running".
+        if (restart) { cancelAnimationFrame(raf); running = false }
         if (next === running) return
         running = next
         if (running) { last = performance.now(); raf = requestAnimationFrame(frame) }
         else cancelAnimationFrame(raf)
       }
+      let sizedWidth = 0, sizedHeight = 0, sizedRatio = 0
       const resize = () => {
         const w = host.clientWidth, h = host.clientHeight
         if (!w || !h) return
         const ratio = Math.min(window.devicePixelRatio || 1, mobile ? 1.35 : 1.75)
+        // Safari's toolbar resizes the visual viewport during scrolling even
+        // when this canvas is unchanged. Avoid reallocating its GPU buffers.
+        if (w === sizedWidth && h === sizedHeight && ratio === sizedRatio) return
+        sizedWidth = w; sizedHeight = h; sizedRatio = ratio
         renderer.setPixelRatio(ratio)
         uniforms.uPixelRatio.value = ratio
         renderer.setSize(w, h, false)
@@ -205,17 +262,11 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         if (event.pointerType !== 'mouse') lastTouch = elapsed
       }
       const release = () => { inside = false }
-      const onMotion = () => {
-        reduced = media.matches
+      resetInteraction = () => {
         inside = false
         lastTouch = -10
-        if (reduced) {
-          uniforms.uStrength.value = 0
-          tilt.set(0, 0)
-          setPose()
-          render()
-        }
-        sync()
+        uniforms.uStrength.value = 0
+        tilt.set(0, 0)
       }
       const onLost = (event: Event) => {
         event.preventDefault()
@@ -225,46 +276,24 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
       }
       // Three.js restores its own GPU resources first. Keep the renderer alive
       // so its restoration listener survives; never dispose inside contextlost.
-      const onRestored = () => { lost = false; resize(); sync() }
-      const onPageHide = () => { visible = false; sync() }
-      const onPageShow = () => {
-        const rect = host.getBoundingClientRect()
-        visible = rect.bottom > 0 && rect.top < window.innerHeight
-        resize()
-        sync()
-      }
-      const resizeObserver = new ResizeObserver(resize)
-      const intersectionObserver = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync() })
+      const onRestored = () => { lost = false; resize(); render(); refreshPlayback(true) }
       const themeObserver = new MutationObserver(updateTheme)
-      resizeObserver.observe(host)
-      intersectionObserver.observe(host)
       themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-      document.addEventListener('visibilitychange', sync)
-      media.addEventListener('change', onMotion)
       canvas.addEventListener('webglcontextlost', onLost)
       canvas.addEventListener('webglcontextrestored', onRestored)
-      window.addEventListener('pagehide', onPageHide)
-      window.addEventListener('pageshow', onPageShow)
       host.addEventListener('pointermove', onPointer, { passive: true })
       host.addEventListener('pointerdown', onPointer, { passive: true })
       host.addEventListener('pointerleave', release)
       host.addEventListener('pointerup', release)
       host.addEventListener('pointercancel', release)
-      updateTheme()
-      setPose()
-      resize()
+      syncScene = sync
+      resizeScene = resize
       cleanup = () => {
         running = false
         cancelAnimationFrame(raf)
-        resizeObserver.disconnect()
-        intersectionObserver.disconnect()
         themeObserver.disconnect()
-        document.removeEventListener('visibilitychange', sync)
-        media.removeEventListener('change', onMotion)
         canvas.removeEventListener('webglcontextlost', onLost)
         canvas.removeEventListener('webglcontextrestored', onRestored)
-        window.removeEventListener('pagehide', onPageHide)
-        window.removeEventListener('pageshow', onPageShow)
         host.removeEventListener('pointermove', onPointer)
         host.removeEventListener('pointerdown', onPointer)
         host.removeEventListener('pointerleave', release)
@@ -276,9 +305,27 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
         lineMaterial.dispose()
         renderer.dispose()
       }
+      updateTheme()
+      setPose()
+      resize()
+      refreshPlayback(true)
     }
     void initialize().catch(() => { if (!disposed) host.dataset.state = 'fallback' })
-    return () => { disposed = true; cleanup() }
+    return () => {
+      disposed = true
+      intersectionObserver.disconnect()
+      resizeObserver.disconnect()
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pagehide', onPageHide)
+      window.removeEventListener('pageshow', onPageShow)
+      window.removeEventListener('focus', onPageShow)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+      window.visualViewport?.removeEventListener('resize', onResize)
+      window.visualViewport?.removeEventListener('scroll', onScroll)
+      media.removeEventListener('change', onMotion)
+      cleanup()
+    }
   }, [])
 
   return (

@@ -49,19 +49,20 @@ test('Orbit starts automatically and continues without playback controls', async
   expect(errors).toEqual([])
 })
 
-test('reduced motion is static and reacts to preference changes', async ({ page }) => {
+test('reduced motion keeps gentle rotation and reacts to preference changes', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await ready(page)
   await page.locator('.sculpture-stage').scrollIntoViewIfNeeded()
   await expect(page.locator('.hero-field button')).toHaveCount(0)
   const before = await renderedFrames(page)
   expect(before).toBeGreaterThan(0)
-  await page.waitForTimeout(200)
-  expect(await renderedFrames(page)).toBe(before)
+  await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-motion-mode', 'gentle')
+  await expect.poll(() => renderedFrames(page)).toBeGreaterThan(before)
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-motion', 'running')
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-motion', 'paused')
+  await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-motion', 'running')
+  await expect(page.locator('.sculpture-stage')).toHaveAttribute('data-motion-mode', 'gentle')
 })
 
 test('suspends offscreen and does not restart offscreen on tab return', async ({ page }) => {

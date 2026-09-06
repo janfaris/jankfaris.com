@@ -487,9 +487,20 @@ main:focus { outline: none; }
 
 /* The artwork owns its space so particles never compete with reading. */
 .hero-field { position: relative; min-width: 0; }
-.sculpture-stage { position: relative; width: 100%; height: 440px; touch-action: pan-y pinch-zoom; }
+.sculpture-stage { position: relative; overflow: hidden; width: 100%; height: 440px; touch-action: pan-y pinch-zoom; }
 .hero-field-canvas, .sculpture-fallback { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.sculpture-fallback { color: var(--indigo); }
+.sculpture-fallback {
+  color: var(--indigo);
+  transform-origin: center;
+  animation: orbit-fallback-turn 35s linear infinite;
+  animation-play-state: paused;
+}
+.sculpture-stage[data-motion="running"]:not([data-state="ready"]) .sculpture-fallback { animation-play-state: running; }
+@keyframes orbit-fallback-turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .sculpture-fallback { animation: orbit-fallback-turn 70s linear infinite paused !important; }
+  .sculpture-stage[data-motion="running"]:not([data-state="ready"]) .sculpture-fallback { animation-play-state: running !important; }
+}
 .hero-field-canvas { opacity: 0; transition: opacity 500ms ease; }
 .sculpture-stage[data-state="ready"] .hero-field-canvas { opacity: 1; }
 .sculpture-stage[data-state="ready"] .sculpture-fallback { opacity: 0; }
