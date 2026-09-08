@@ -221,7 +221,7 @@ body.dashboard-route::before { display: none; }
   .desk-card { padding: 17px 15px; }
   .desk-clock-body, .desk-status-content { margin-top: 10px; }
   .desk-status-content strong { font-size: 13px; }
-  .desk-social-grid { grid-template-columns: repeat(2,40px); gap: 18px; }
+  .desk-social-grid { grid-template-columns: repeat(3,40px); gap: 14px; }
   .desk-social-grid > a, .desk-social-grid > button, .desk-social-grid img { width: 40px; height: 40px; }
   .desk-orbit .hero-field, .desk-orbit .sculpture-stage { height: 175px; }
   .desk-tool-groups { gap: 12px; grid-template-columns: 1fr; }
@@ -348,3 +348,6 @@ body.dashboard-route::before { display: none; }
   .desk-sidebar-heading > div { line-height: 1; }
   .desk-sidebar-heading > div a { display: grid; place-items: center; height: 18px; }
 }
+
+.desk-social-grid .desk-social-x { border: 2px solid #66666e; border-radius: 10px; background: linear-gradient(135deg, #38383e, #111114); box-shadow: inset 0 0 0 1px #0008, 0 3px 7px #0003; }
+.desk-social-grid .desk-social-x img { width: 25px; height: 25px; filter: invert(1); }

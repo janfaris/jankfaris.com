@@ -77,7 +77,7 @@ function getAnswer(question: string, lang: Lang, topic?: Topic): Answer {
     }
   }
 
-  if (topic === 'contact' || /contact|email|correo|linkedin|github|reach|connect|hello|hola|hablar|hablemos|contrat|hiring|available|disponib/.test(query)) {
+  if (topic === 'contact' || /contact|email|correo|linkedin|github|instagram|twitter|social|\big\b|\bx\b|reach|connect|hello|hola|hablar|hablemos|contrat|hiring|available|disponib/.test(query)) {
     return {
       paragraphs: [spanish
         ? 'Mi enfoque está en la ingeniería de IA en Cencora y mis proyectos independientes. Me interesa conversar sobre IA útil, código abierto y tecnología en Puerto Rico.'
@@ -86,6 +86,8 @@ function getAnswer(question: string, lang: Lang, topic?: Topic): Answer {
         { label: spanish ? 'Escríbeme' : 'Email me', href: EMAIL },
         { label: 'LinkedIn', href: LINKEDIN },
         { label: 'GitHub', href: GITHUB },
+        { label: 'Instagram @jankfaris', href: 'https://www.instagram.com/jankfaris/' },
+        { label: 'X @jankfaris', href: 'https://x.com/jankfaris' },
       ],
     }
   }

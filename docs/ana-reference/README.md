@@ -28,6 +28,8 @@ This branch is a local portfolio adaptation for Jan Faris; it is not a deploymen
 - The source stylesheet is retained as source.css for design evidence, not imported by the application.
 - Jan's portrait, JF mark, project previews, and tool logos come from the existing repository.
 - LinkedIn glyph: Material Design Icons, via https://api.iconify.design/mdi/linkedin.svg.
+- X glyph: Simple Icons, via https://api.iconify.design/simple-icons/x.svg.
+- Personal Instagram and X handles: @jankfaris, supplied by Jan for this dashboard.
 - Other UI glyphs: lucide-react.
 - San Juan maps: real OpenStreetMap tiles with local light/dark treatments; see public/dashboard/map-attribution.txt. No location lookup or remote tile request runs in the prototype.
 - No source assets are hotlinked. The reference's personal photos and project work are not shipped in the application.
