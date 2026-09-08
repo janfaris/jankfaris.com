@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
-import App from './App.tsx'
+import Dashboard from './Dashboard.tsx'
 import Writing from './Writing.tsx'
 import Post from './Post.tsx'
 import WritingEs from './WritingEs.tsx'
@@ -19,8 +19,8 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route path="/" element={<App lang="en" />} />
-        <Route path="/es" element={<App lang="es" />} />
+        <Route path="/" element={<Dashboard lang="en" />} />
+        <Route path="/es" element={<Dashboard lang="es" />} />
         <Route path="/writing" element={
           <RouteMeta
             title="Ship Notes — Jan Faris"

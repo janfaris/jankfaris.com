@@ -1,0 +1,29 @@
+San Juan portfolio map preview
+
+Visible attribution (provided as a clickable Dashboard.tsx overlay): © OpenStreetMap contributors
+No attribution is embedded in these raster assets; the overlay must remain visible.
+Attribution link: https://www.openstreetmap.org/copyright
+Map data: OpenStreetMap contributors, ODbL 1.0.
+Standard tile cartography: OpenStreetMap Carto.
+Tile usage policy: https://operations.osmfoundation.org/policies/tiles/
+
+Composition: broad coastal San Juan, Puerto Rico, centered at 18.46, -66.10.
+Web Mercator zoom 13, 502 x 422 source viewport, resized to 1004 x 844 pixels.
+This is a city-level illustrative map; the center is not a home or private location.
+Original geography, coastlines, roads, and labels preserved. Neutral grayscale light and higher-contrast blue-gray dark
+palettes applied to match the portfolio UI; no invented geographic data.
+Nine tiles were requested for this preview viewport; the lower-right tile was
+retrieved once more to restore pixels covered by the previous embedded credit.
+The website serves
+these local static composites and makes no tile-provider requests.
+
+Source tile URLs:
+https://tile.openstreetmap.org/13/2590/3667.png
+https://tile.openstreetmap.org/13/2591/3667.png
+https://tile.openstreetmap.org/13/2592/3667.png
+https://tile.openstreetmap.org/13/2590/3668.png
+https://tile.openstreetmap.org/13/2591/3668.png
+https://tile.openstreetmap.org/13/2592/3668.png
+https://tile.openstreetmap.org/13/2590/3669.png
+https://tile.openstreetmap.org/13/2591/3669.png
+https://tile.openstreetmap.org/13/2592/3669.png
