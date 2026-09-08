@@ -16,15 +16,15 @@
   --text-dim:  oklch(74% 0.018 265);
   --text-mute: oklch(61% 0.026 265);
 
-  /* Atlantic indigo — the single interaction accent */
-  --indigo:      oklch(58% 0.16 275);
-  --indigo-soft: oklch(69% 0.13 275);
-  --indigo-deep: oklch(51% 0.17 275);
+  /* Atlantic blue — the single interaction accent */
+  --indigo:      #4195f5;
+  --indigo-soft: #78b8ff;
+  --indigo-deep: #1e64bc;
   /* Peak colour for the dot-map glint. On the dark canvas a lit dot reads by
      getting brighter; on the light canvas it has to get deeper instead. */
-  --glint:       oklch(74% 0.14 275);
+  --glint:       #80bdff;
   --accent-ink:  oklch(98% 0.004 265);
-  --focus:       oklch(76% 0.15 275);
+  --focus:       #80bdff;
 
   /* Hairlines */
   --hairline:        oklch(93% 0.006 265 / 0.08);
@@ -67,12 +67,12 @@
   --text-dim:  oklch(42% 0.018 265);
   --text-mute: oklch(53% 0.024 265);
 
-  --indigo:      oklch(50% 0.18 275);
-  --indigo-soft: oklch(58% 0.16 275);
-  --indigo-deep: oklch(43% 0.18 275);
-  --glint:       oklch(38% 0.20 275);
+  --indigo:      #246cca;
+  --indigo-soft: #2c73bc;
+  --indigo-deep: #155bad;
+  --glint:       #205fa8;
   --accent-ink:  oklch(99% 0.003 265);
-  --focus:       oklch(46% 0.2 275);
+  --focus:       #205fa8;
 
   --hairline:        oklch(16% 0.008 265 / 0.08);
   --hairline-strong: oklch(16% 0.008 265 / 0.14);
@@ -105,8 +105,8 @@ body::before {
   position: fixed; inset: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(circle at 20% 10%, rgba(94, 106, 210, 0.05), transparent 50%),
-    radial-gradient(circle at 80% 90%, rgba(94, 106, 210, 0.03), transparent 60%);
+    radial-gradient(circle at 20% 10%, rgba(40, 130, 220, 0.05), transparent 50%),
+    radial-gradient(circle at 80% 90%, rgba(40, 130, 220, 0.03), transparent 60%);
   z-index: 0;
 }
 :root.light body::before { display: none; }

@@ -4,12 +4,12 @@ Date: 2026-09-08
 Branch: codex/ana-inspired-portfolio
 Source: https://ana.sh/
 Implementation: http://127.0.0.1:5191/
-Scope: source layout and interaction language, adapted to Jan Faris's portfolio.
+Scope: source layout and interaction language, adapted to Jan Faris's portfolio. User-approved palette update: cool blue replaces purple throughout the UI.
 
 ## Evidence
 
 - Source desktop truth: docs/ana-reference/captures/source-desktop.jpg
-- Implementation desktop: docs/ana-reference/captures/implementation-desktop.jpg
+- Implementation desktop: docs/ana-reference/captures/implementation-desktop-blue.jpg
 - Source mobile truth: docs/ana-reference/captures/source-mobile.jpg
 - Implementation mobile: docs/ana-reference/captures/implementation-mobile.jpg
 - Spanish mobile: docs/ana-reference/captures/implementation-mobile-es.jpg
@@ -37,7 +37,7 @@ Final pass: no outstanding P0/P1/P2 issues for this local adaptation.
 
 - Fonts/typography: captured PP Mori files are served locally; heading/body hierarchy, compact labels, and wrapping match the source's scale. Jan's longer facts and role copy intentionally wrap differently.
 - Spacing/layout: 69px header, 380px desktop sidebar, dense 18-track grid, 6px gaps, card proportions, stacked mobile layout, and folder/theme pairing checked.
-- Colors/tokens: dark/light surfaces, purple accent family, thin double outlines, muted text, and native theme transition checked against reference.
+- Colors/tokens: the user requested a cool-blue replacement for the source purple. Dark accent #64b3ff and light accent #1469c1 now cover the wordmark, folder, map halo, links, controls, guide, gallery states, custom GitHub tile, Orbit shader/fallback, and preserved-page theme tokens. Both themes were checked; layout and interactions are unchanged. Official Instagram artwork and colors inside project screenshots remain original content.
 - Image quality/assets: source social icons and fonts, existing Jan portrait/project assets, real San Juan maps, and the existing Orbit rendering are used. The Lupa tile uses an icon treatment instead of the unrelated rainy-window image in the previous portfolio. Earlier-portfolio footage is shown only as a demotape project sample.
 - Copy/content: Cencora role, prior employers, published-project counts, articles, actual links, bilingual copy, and guide answers derive from repository evidence. No invented live music, fitness, weather, presence, user counts, or backend AI claims.
 

@@ -156,8 +156,8 @@ export function HeroField({ lang = 'en', interactive = true }: { lang?: Lang; in
               float d = length(gl_PointCoord - .5);
               alpha = 1.0 - smoothstep(.26, .5, d);
             }
-            vec3 darkInk = mix(vec3(.46, .50, .86), vec3(.82, .86, 1.0), clamp(vLight, 0.0, 1.0));
-            vec3 lightInk = mix(vec3(.23, .24, .62), vec3(.43, .46, .80), clamp(vLight, 0.0, 1.0));
+            vec3 darkInk = mix(vec3(.27, .60, .94), vec3(.76, .90, 1.0), clamp(vLight, 0.0, 1.0));
+            vec3 lightInk = mix(vec3(.08, .35, .70), vec3(.25, .54, .85), clamp(vLight, 0.0, 1.0));
             vec3 color = mix(darkInk, lightInk, uLight);
             gl_FragColor = vec4(color, alpha * mix(.55 + vDepth * .38, .16 + vDepth * .15, uLine));
           }
