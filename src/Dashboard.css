@@ -3,7 +3,7 @@
 @font-face { font-family: 'Desk Mori'; src: url('/dashboard/fonts/mori-semibold.woff2') format('woff2'); font-weight: 600 900; font-display: swap; }
 body.dashboard-route { background: #131316; overflow: hidden; }
 body.dashboard-route::before { display: none; }
-.desk-shell { --desk-bg: #131316; --desk-panel: #17171b; --desk-profile: #1a1a1e; --desk-text: #d2d2d7; --desk-muted: #797983; --desk-border: #29292f; --desk-inner: #242429; --desk-accent: #8b70fb; --desk-strong: #efeff3; --desk-bubble: #252529; --desk-shadow: #0a0a0c; background: var(--desk-bg); color: var(--desk-text); font-family: 'Desk Mori', Arial, sans-serif; font-weight: 400; font-size: 15px; line-height: 1.5; letter-spacing: -.035em; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.desk-shell { --desk-bg: #131316; --desk-panel: #17171b; --desk-profile: #1a1a1e; --desk-text: #d2d2d7; --desk-muted: #797983; --desk-border: #29292f; --desk-inner: #242429; --desk-accent: #8b70fb; --desk-strong: #efeff3; --desk-bubble: #252529; --desk-shadow: #0a0a0c; background: var(--desk-bg); color: var(--desk-text); font-family: 'Desk Mori', Arial, sans-serif; font-weight: 400; font-size: 15px; line-height: 1.5; letter-spacing: -.035em; height: 100dvh; position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
 .desk-shell[data-theme='light'] { --desk-bg: #fafbfc; --desk-panel: #fff; --desk-profile: #fff; --desk-text: #474b56; --desk-muted: #9699a1; --desk-border: #e4e5e9; --desk-inner: #f0f0f3; --desk-accent: #7554e2; --desk-strong: #30343f; --desk-bubble: #f2f2f5; --desk-shadow: #c2c3d128; }
 .desk-shell *, .desk-shell *::before, .desk-shell *::after { box-sizing: border-box; }
 .desk-shell :where(button, input, textarea) { font: inherit; }
@@ -234,7 +234,7 @@ body.dashboard-route::before { display: none; }
 
 @media (max-width: 980px) {
   body.dashboard-route { overflow-y: auto; }
-  .desk-shell { height: auto; min-height: 100dvh; overflow: clip; }
+  .desk-shell { position: relative; inset: auto; height: auto; min-height: 100dvh; overflow: clip; }
   .desk-layout { display: block; }
   .desk-header { padding: 0 20px; }
   .desk-header > nav { gap: 26px; }

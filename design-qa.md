@@ -29,6 +29,8 @@ First pass: blocked for the following P2 issues.
 4. Mobile navigation allowed focus behind the overlay. Background is now inert, focus cycles through menu controls, Escape closes it, focus returns to the opener, and resizing beyond the mobile breakpoint closes the overlay.
 5. Mobile profile spacing started lower than the reference. Aligned profile padding, icon line boxes, and portrait margin. Final paired mobile captures show matching top-section rhythm.
 
+6. During handoff, browser scroll restoration could offset the entire desktop shell after a viewport change/reload. Anchored the desktop shell to the viewport while retaining normal mobile document flow. Verified the header stays at y=0 after a scrolled reload.
+
 Final pass: no outstanding P0/P1/P2 issues for this local adaptation.
 
 ## Required fidelity surfaces
