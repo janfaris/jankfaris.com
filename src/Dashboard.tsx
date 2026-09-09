@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type PointerEvent } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode, type PointerEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowDownToLine, ArrowLeft, ArrowUpRight, AtSign, BookOpen, BriefcaseBusiness, ChevronLeft, ChevronRight, CircleHelp, Clock3, Code2, FileText, FolderOpen, Laptop, Mail, MapPin, Menu, Moon, Package, Radio, Search, Sparkles, Sun, X } from 'lucide-react'
+import { ArrowDownToLine, ArrowLeft, ArrowUpRight, AtSign, BookOpen, BriefcaseBusiness, CircleHelp, Clock3, Code2, FileText, FolderOpen, Laptop, Mail, Menu, Moon, Radio, Search, Sparkles, Sun, X } from 'lucide-react'
 import { JFMark } from './JFMark'
-import { HeroField } from './HeroField'
 import { DashboardGuide } from './DashboardGuide'
 import { content, type Lang, type Project } from './content'
 import { posts } from './posts'
 import { postsEs } from './posts.es'
 import './Dashboard.css'
+import './DashboardIsland.css'
+
+const IslandExperience = lazy(() => import('./three-lab/IslandExperience'))
 
 const PHOTO_PROJECTS = [
   { name: 'Wandr', image: '/demos/wandr.jpg', link: 'https://wandrtravelai.com', detail: 'AI travel planning', detailEs: 'Viajes con IA' },
@@ -66,25 +68,6 @@ function PhotoStack({ active, onOpen, title }: { active: number; onOpen: (index:
   </div>
 }
 
-function WorkCarousel({ lang, onOpen }: { lang: Lang; onOpen: (index: number) => void }) {
-  const [active, setActive] = useState(0)
-  const text = words[lang]
-  const previous = () => setActive(index => (index + PHOTO_PROJECTS.length - 1) % PHOTO_PROJECTS.length)
-  const next = () => setActive(index => (index + 1) % PHOTO_PROJECTS.length)
-  return <Card title={text.collection} icon={<Package size={15} />} className="desk-work-carousel">
-    <div className="desk-carousel-arrows"><button onClick={previous} aria-label={text.previous}><ChevronLeft size={19} /></button><button onClick={next} aria-label={text.next}><ChevronRight size={19} /></button></div>
-    <div className="desk-carousel-track" aria-live="polite">
-      {PHOTO_PROJECTS.map((project, index) => {
-        let offset = index - active
-        if (offset > 1) offset -= PHOTO_PROJECTS.length
-        if (offset < -1) offset += PHOTO_PROJECTS.length
-        return <button key={project.name} className={`desk-project-slide ${offset === 0 ? 'is-current' : ''}`} style={{ '--offset': offset } as CSSProperties} tabIndex={offset === 0 ? 0 : -1} aria-hidden={offset !== 0} onClick={() => onOpen(index)} aria-label={`${text.open}: ${project.name}`}><img src={project.image} alt={project.name} /><strong>{project.name}</strong><span>{lang === 'es' ? project.detailEs : project.detail}</span></button>
-      })}
-    </div>
-    <div className="desk-carousel-dots" aria-label={text.collection}>{PHOTO_PROJECTS.map((project, index) => <button key={project.name} className={index === active ? 'is-active' : ''} aria-label={project.name} aria-pressed={index === active} onClick={() => setActive(index)} />)}</div>
-  </Card>
-}
-
 function ImagePreview({ index, onClose, setIndex, lang }: { index: number; onClose: () => void; setIndex: (index: number) => void; lang: Lang }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const project = PHOTO_PROJECTS[index]
@@ -124,6 +107,13 @@ export default function Dashboard({ lang = 'en' }: { lang?: Lang }) {
   const base = lang === 'es' ? '/es' : '/'
   const [theme, setTheme] = useState<'dark' | 'light'>(() => localStorage.getItem('jan-desk-theme') === 'light' ? 'light' : 'dark')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileLayout, setMobileLayout] = useState(() => window.matchMedia('(max-width: 980px)').matches)
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 980px)')
+    const change = () => setMobileLayout(media.matches)
+    media.addEventListener('change', change)
+    return () => media.removeEventListener('change', change)
+  }, [])
   const [imageIndex, setImageIndex] = useState<number | null>(null)
   const [activePhoto, setActivePhoto] = useState(0)
   const [copied, setCopied] = useState(false)
@@ -193,11 +183,14 @@ export default function Dashboard({ lang = 'en' }: { lang?: Lang }) {
   }
   const nav = <><Link to={base} className={view === 'home' ? 'is-active' : ''} onClick={goHome}>{text.home}</Link><Link to={`${base}?view=work`} className={view === 'work' ? 'is-active' : ''} onClick={() => setMenuOpen(false)}>{text.work}</Link><Link to={`${base}?view=writing`} className={view === 'writing' ? 'is-active' : ''} onClick={() => setMenuOpen(false)}>{text.writing}</Link><Link to={lang === 'es' ? '/es/resume' : '/resume'}>{text.resume}</Link></>
 
+  const island = <div className="desk-island-slot"><Suspense fallback={<div className="desk-island-loading">{lang === 'es' ? 'Abriendo la isla…' : 'Opening the island…'}</div>}><IslandExperience embedded lang={lang} theme={theme} /></Suspense></div>
+
   return <div className="desk-shell" data-theme={theme}>
     <a href="#desk-main" className="desk-skip">{lang === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a>
     <header className="desk-header"><Link className="desk-wordmark" inert={menuOpen} to={base} onClick={goHome} aria-label="Jan Faris home"><span><JFMark size={32} /></span>JAN FARIS</Link><nav aria-label={lang === 'es' ? 'Navegación principal' : 'Main navigation'}>{nav}</nav><div className="desk-header-actions"><Link className="desk-language" inert={menuOpen} to={`${lang === 'es' ? '/' : '/es'}${search.size ? `?${search.toString()}` : ''}`}>{lang === 'es' ? 'EN' : 'ES'}</Link><button className="desk-mobile-menu-toggle" ref={menuButton} aria-label={menuOpen ? (lang === 'es' ? 'Cerrar menú' : 'Close menu') : (lang === 'es' ? 'Abrir menú' : 'Open menu')} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button></div></header>
     {menuOpen && <div className="desk-mobile-menu"><nav ref={mobileNav} aria-label={lang === 'es' ? 'Menú móvil' : 'Mobile menu'}>{nav}</nav></div>}
     {view === 'home' ? <div className="desk-layout" inert={menuOpen}>
+      {mobileLayout && island}
       <aside className="desk-profile">
         <div className="desk-about"><div className="desk-sidebar-heading"><h2><Sparkles size={15} />{text.about}</h2><div><a href="https://github.com/janfaris" target="_blank" rel="noreferrer" aria-label="GitHub"><Code2 size={18} /></a><a href="https://linkedin.com/in/jan-faris-garcia" target="_blank" rel="noreferrer" aria-label="LinkedIn"><img className="desk-inline-brand" src="/dashboard/linkedin.svg" alt="" /></a><Link to={lang === 'es' ? '/es/resume' : '/resume'} aria-label={text.resume}><FileText size={18} /></Link></div></div>
           <div className="desk-intro"><img src="/jan-profile.jpg" alt="Jan Faris" /><div><h1>{text.greeting} <span>Jan.</span></h1><p>{text.bio}</p></div></div>
@@ -207,18 +200,16 @@ export default function Dashboard({ lang = 'en' }: { lang?: Lang }) {
         <div className="desk-contact"><h2><Mail size={15} />{text.contact}</h2><p>{text.contactBody} <a href="https://linkedin.com/in/jan-faris-garcia" target="_blank" rel="noreferrer">LinkedIn</a> {text.or} <a href="mailto:jankarlo.faris@outlook.com">jankarlo.faris@outlook.com</a>.</p></div>
       </aside>
       <main id="desk-main" ref={main} className="desk-main" tabIndex={-1}>
-        <div className="desk-grid">
+        {!mobileLayout && island}
+        <div className="desk-grid desk-grid-with-island">
           <Card title={text.role} icon={<Radio size={15} />} className="desk-status"><div className="desk-status-content"><span className="desk-status-dot" /><div><strong>{text.roleTitle}</strong><span>{text.roleDetail}</span></div></div></Card>
           <Card title={text.time} icon={<Clock3 size={15} />} className="desk-time"><LocalClock lang={lang} /></Card>
-          <section className="desk-map desk-card"><img className="desk-map-image" src={`/dashboard/san-juan-map-${theme}.webp`} alt={text.location} /><a className="desk-map-marker" href="https://www.openstreetmap.org/#map=13/18.4600/-66.1000" target="_blank" rel="noreferrer" aria-label={text.location}><img src="/jan-profile.jpg" alt="" /><span /></a><div className="desk-map-location"><MapPin size={15} />{text.location}</div><a className="desk-map-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap</a></section>
           <div className="desk-photos"><PhotoStack active={activePhoto} onOpen={setImageIndex} title={text.photos} /></div>
           <Card title={text.current} icon={<BriefcaseBusiness size={15} />} className="desk-current"><a href="https://lupa-seven.vercel.app" target="_blank" rel="noreferrer"><div className="desk-app-icon"><Search size={58} strokeWidth={1.5} /></div><strong>Lupa</strong><span>{text.currentCaption}</span><small>{lang === 'es' ? 'Herramienta interna · 120+ demos' : 'Internal tool · 120+ demos'}</small></a></Card>
-          <Card title={text.playground} icon={<Sparkles size={15} />} className="desk-orbit"><HeroField lang={lang} interactive={false} /><span className="desk-orbit-caption">{text.orbital}</span></Card>
           <WorkFolder href={`${base}?view=work`} label={text.viewWork} />
           <Card className="desk-theme"><span>{text.appearance}</span><button aria-label={theme === 'dark' ? text.light : text.dark} aria-pressed={theme === 'light'} className={`desk-theme-switch ${theme}`} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}><span>{theme === 'dark' ? <Moon size={27} fill="currentColor" /> : <Sun size={27} />}</span></button></Card>
           <Card title={text.note} icon={<BookOpen size={15} />} className="desk-note"><div className="desk-note-art"><img src="/jan-profile.jpg" alt="" /></div><div className="desk-note-copy"><span>Ship Note {String(headlineNote.noteNumber).padStart(3, '0')}</span><h3>{headlineNote.title}</h3><p>{lang === 'es' ? 'Lecciones de construir un agente de revisión de código en Microsoft.' : 'Lessons from building an AI pull-request reviewer at Microsoft.'}</p><Link to={lang === 'es' ? `/es/writing/${headlineNote.slug}` : `/writing/${headlineNote.slug}`}>{text.read}<ArrowUpRight size={15} /></Link></div></Card>
           <Card title={text.socials} icon={<AtSign size={15} />} className="desk-socials"><div className="desk-social-grid"><a href="https://github.com/janfaris" target="_blank" rel="noreferrer" aria-label="GitHub"><img src="/dashboard/github.png" alt="GitHub" /></a><a href="https://www.instagram.com/jankfaris/" target="_blank" rel="noreferrer" aria-label="Instagram @jankfaris"><img src="/dashboard/instagram.png" alt="Instagram" /></a><a className="desk-social-x" href="https://x.com/jankfaris" target="_blank" rel="noreferrer" aria-label="X @jankfaris"><img src="/dashboard/x.svg" alt="X" /></a><a className="desk-social-linkedin" href="https://linkedin.com/in/jan-faris-garcia" target="_blank" rel="noreferrer" aria-label="LinkedIn"><img src="/dashboard/linkedin.svg" alt="" /></a><button className="desk-social-mail" onClick={copyEmail} aria-label={text.copy}><Mail size={29} /></button></div><span className="desk-copy-status" role="status">{copied ? text.copied : lang === 'es' ? 'Sigamos en contacto.' : 'Let’s connect.'}</span></Card>
-          <WorkCarousel lang={lang} onOpen={setImageIndex} />
           <Card title={text.tools} icon={<Laptop size={15} />} className="desk-tools"><div className="desk-tool-groups"><div><h3>{text.code}</h3>{[['TypeScript','typescript'],['React','react'],['Next.js','nextdotjs'],['Python','python'],['PostgreSQL','postgresql'],['Supabase','supabase']].map(([name,icon])=><span key={name}><img src={`/icons/tech/${icon}.svg`} alt="" />{name}</span>)}</div><div><h3>{text.product}</h3>{[['Playwright',''],['GitHub Actions','githubactions'],['FFmpeg','ffmpeg'],['Claude','claude'],['Copilot','githubcopilot'],['Vercel','vercel']].map(([name,icon])=><span key={name}>{icon?<img src={`/icons/tech/${icon}.svg`} alt="" />:<Code2 size={16} />}{name}</span>)}</div></div><Link className="desk-tools-foot" to={lang === 'es'?'/es/resume':'/resume'}><ArrowDownToLine size={14}/>{text.resume}<ArrowUpRight size={13}/></Link></Card>
           <div className="desk-guide-slot"><DashboardGuide lang={lang} /></div>
         </div>

@@ -354,3 +354,37 @@ body.dashboard-route::before { display: none; }
 
 /* Recolor the custom GitHub tile to the dashboard's blue accent. */
 .desk-social-grid a[aria-label='GitHub'] img { filter: hue-rotate(-50deg); }
+
+/* The island feature replaces the map, orbit, and work carousel on Home. */
+.desk-grid-with-island { min-height: 0; align-content: start; }
+
+@media (min-width: 1280px) {
+  .desk-grid-with-island { grid-template-columns: repeat(18, minmax(0, 1fr)); grid-template-rows: repeat(11, minmax(80px, 1fr)); }
+  .desk-grid-with-island > .desk-status { grid-column: 1 / span 4; grid-row: 1 / span 2; }
+  .desk-grid-with-island > .desk-time { grid-column: 5 / span 4; grid-row: 1 / span 2; }
+  .desk-grid-with-island > .desk-folder-card { grid-column: 9 / span 5; grid-row: 1 / span 2; }
+  .desk-grid-with-island > .desk-theme { grid-column: 14 / span 5; grid-row: 1 / span 2; }
+  .desk-grid-with-island > .desk-photos { grid-column: 1 / span 4; grid-row: 3 / span 4; }
+  .desk-grid-with-island > .desk-current { grid-column: 5 / span 4; grid-row: 3 / span 4; }
+  .desk-grid-with-island > .desk-note { grid-column: 9 / span 10; grid-row: 3 / span 4; }
+  .desk-grid-with-island > .desk-socials { grid-column: 1 / span 5; grid-row: 7 / span 5; }
+  .desk-grid-with-island > .desk-tools { grid-column: 6 / span 8; grid-row: 7 / span 5; }
+  .desk-grid-with-island > .desk-guide-slot { grid-column: 14 / span 5; grid-row: 7 / span 5; }
+}
+
+@media (min-width: 981px) and (max-width: 1279px) {
+  .desk-grid-with-island {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: minmax(166px, auto) minmax(300px, auto) minmax(166px, auto) minmax(320px, auto) minmax(390px, auto);
+  }
+  .desk-grid-with-island > .desk-status { grid-column: 1 / span 3; grid-row: 1; }
+  .desk-grid-with-island > .desk-time { grid-column: 4 / span 3; grid-row: 1; }
+  .desk-grid-with-island > .desk-photos { grid-column: 1 / span 3; grid-row: 2; }
+  .desk-grid-with-island > .desk-current { grid-column: 4 / span 3; grid-row: 2; }
+  .desk-grid-with-island > .desk-folder-card { grid-column: 1 / span 3; grid-row: 3; }
+  .desk-grid-with-island > .desk-theme { grid-column: 4 / span 3; grid-row: 3; }
+  .desk-grid-with-island > .desk-note { grid-column: 1 / span 4; grid-row: 4; }
+  .desk-grid-with-island > .desk-socials { grid-column: 5 / span 2; grid-row: 4; }
+  .desk-grid-with-island > .desk-tools { grid-column: 1 / span 3; grid-row: 5; }
+  .desk-grid-with-island > .desk-guide-slot { grid-column: 4 / span 3; grid-row: 5; }
+}

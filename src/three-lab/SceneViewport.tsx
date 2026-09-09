@@ -6,7 +6,7 @@ import type { SceneController, SceneFactory } from './types'
 
 const noop = () => undefined
 
-export function SceneViewport({ factory, name, paused, controllerRef, onInfo, onProgress = noop, onSelectProject = noop, allowPageScroll = false, fitAspect = 1.35 }: {
+export function SceneViewport({ factory, name, paused, controllerRef, onInfo, onProgress = noop, onSelectProject = noop, allowPageScroll = false, fitAspect = 1.35, theme = 'light', lang = 'en' }: {
   factory: SceneFactory
   name: string
   paused: boolean
@@ -16,6 +16,8 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
   onSelectProject?: (index: number | null) => void
   allowPageScroll?: boolean
   fitAspect?: number
+  theme?: 'light' | 'dark'
+  lang?: 'en' | 'es'
 }) {
   const host = useRef<HTMLDivElement>(null)
   const pauseRef = useRef(paused)
@@ -50,8 +52,9 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
     renderer.domElement.setAttribute('role', 'img')
     element.appendChild(renderer.domElement)
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color('#edf4fb')
-    scene.fog = new THREE.Fog('#edf4fb', 18, 45)
+    const background = theme === 'dark' ? '#152331' : '#edf4fb'
+    scene.background = new THREE.Color(background)
+    scene.fog = new THREE.Fog(background, 18, 45)
     const camera = new THREE.PerspectiveCamera(38, 1, .1, 80)
     camera.position.set(0, 1.5, 9)
     camera.lookAt(0, 0, 0)
@@ -74,7 +77,7 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
     const rim = new THREE.DirectionalLight('#88c6ff', 1.5)
     rim.position.set(3, 4, -4)
     scene.add(rim)
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: '#edf4fb', roughness: .9 }))
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: background, roughness: .9 }))
     floor.rotation.x = -Math.PI / 2
     floor.position.y = -1.6
     floor.receiveShadow = true
@@ -200,9 +203,9 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
       renderer.forceContextLoss()
       renderer.domElement.remove()
     }
-  }, [factory, name, controllerRef, onInfo, onProgress, onSelectProject, attempt, reducedMotion, fitAspect])
+  }, [factory, name, controllerRef, onInfo, onProgress, onSelectProject, attempt, reducedMotion, fitAspect, theme])
 
   return <div className="lab-canvas-host" ref={host} style={{ position: 'absolute', inset: 0, overflow: 'hidden', touchAction: allowPageScroll ? 'pan-y pinch-zoom' : 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}>
-    {error && <div className="lab-error" role="status"><Monitor size={28} /><p>The 3D view is taking a break.</p><span>You can still explore every project below.</span><button onClick={() => { setError(false); setAttempt(value => value + 1) }}>Try 3D again</button></div>}
+    {error && <div className="lab-error" role="status"><Monitor size={28} /><p>{lang === 'es' ? 'La vista 3D está tomando un descanso.' : 'The 3D view is taking a break.'}</p><span>{lang === 'es' ? 'Puedes explorar todos los proyectos abajo.' : 'You can still explore every project below.'}</span><button onClick={() => { setError(false); setAttempt(value => value + 1) }}>{lang === 'es' ? 'Intentar 3D de nuevo' : 'Try 3D again'}</button></div>}
   </div>
 }

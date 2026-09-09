@@ -1,0 +1,47 @@
+.desk-island-slot { width: 100%; min-width: 0; padding: 8px 8px 0; container-type: inline-size; container-name: homepage-island; }
+.desk-island-loading { min-height: 480px; display: grid; place-items: center; border: 1px solid var(--desk-border); border-radius: 12px; background: var(--desk-panel); color: var(--desk-muted); font-size: 13px; }
+.desk-shell .island-embedded { width: 100%; min-height: 0; padding: 0; margin: 0; color: var(--desk-text); color-scheme: inherit; }
+.desk-shell .island-embedded .island-experience { border-color: var(--desk-border); border-radius: 12px; grid-template-columns: minmax(0,1fr) 240px; }
+.desk-shell .island-embedded .island-world { height: 480px; min-height: 0; }
+.desk-shell .island-embedded .island-side { padding: 19px 17px 16px; gap: 16px; }
+.desk-shell .island-embedded .island-explorer-intro h2 { font-size: 26px; }
+.desk-shell .island-embedded .island-explorer-intro { min-height: 210px; }
+.desk-shell .island-embedded .island-location { left: 18px; top: 21px; font-size: 12px; }
+.desk-shell .island-embedded .island-location > span { display: none; }
+.desk-shell .island-embedded .island-location h2 { font-size: 13px; font-weight: 500; letter-spacing: -.025em; }
+.desk-shell .island-embedded .island-project-heading h2 { font-size: 26px; }
+.desk-shell .island-embedded .island-project-preview { margin-top: 13px; }
+.desk-shell .island-embedded .island-project-content h3 { margin-top: 14px; }
+.desk-shell .island-embedded .island-project-link { margin-top: 14px; }
+.desk-shell[data-theme='dark'] .island-embedded .island-experience,
+.desk-shell[data-theme='dark'] .island-embedded .island-side { background: var(--desk-panel); border-color: var(--desk-border); }
+.desk-shell[data-theme='dark'] .island-embedded .island-world { background: #152331; }
+.desk-shell[data-theme='dark'] .island-embedded :is(.island-location, .island-gesture-hint, .island-explorer-intro p, .island-project-description, .island-eyebrow, .island-side-title, .island-side-footer) { color: #90a4b7; }
+.desk-shell[data-theme='dark'] .island-embedded :is(.island-explorer-intro h2, .island-project-heading h2, .island-project-content h3) { color: #d6e2ed; }
+.desk-shell[data-theme='dark'] .island-embedded :is(.island-project-selector > button, .island-world-actions button, .island-close-project, .island-small-star) { background: #202d39; border-color: #304354; color: #99c7ec; }
+.desk-shell[data-theme='dark'] .island-embedded .island-project-selector > button[aria-pressed='true'] { background: #183e5c; border-color: #4385b7; color: #d0eaff; }
+.desk-shell[data-theme='dark'] .island-embedded :is(.island-project-link, .island-explorer-intro > button) { background: #1b3549; border-color: #2c526c; color: #8bc7f5; }
+.desk-shell[data-theme='dark'] .island-embedded .island-explorer-intro > button { background: transparent; }
+.desk-shell[data-theme='dark'] .island-embedded .island-side-footer { border-color: var(--desk-border); }
+.desk-shell[data-theme='dark'] .island-embedded .lab-error { background: #152331; color: #b0cce0; }
+.desk-shell[data-theme='dark'] .island-embedded .lab-error button { background: #233b4e; border-color: #40637e; color: #b3ddfc; }
+@container homepage-island (max-width: 740px) {
+  .desk-shell .island-embedded .island-experience { grid-template-columns: minmax(0,1fr); }
+  .desk-shell .island-embedded .island-world { height: clamp(330px, 85cqw, 430px); }
+  .desk-shell .island-embedded .island-side { border-left: 0; border-top: 1px solid var(--desk-border); }
+  .desk-shell .island-embedded .island-small-star { display: none; }
+  .desk-shell .island-embedded .island-explorer-intro { min-height: 0; }
+  .desk-shell .island-embedded .island-explorer-intro h2 { font-size: 23px; }
+  .desk-shell .island-embedded .island-explorer-intro h2 br { display: none; }
+  .desk-shell .island-embedded .island-project-preview { max-height: 160px; }
+  .desk-shell .island-embedded .island-project-preview img { object-fit: contain; background: #10212d; }
+}
+@media (max-width: 980px) {
+  .desk-island-slot { padding-bottom: 8px; }
+  .desk-shell .island-embedded .island-project-selector > button { min-height: 53px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .desk-shell .island-embedded .island-experience { grid-template-columns: minmax(0,1fr); }
+  .desk-shell .island-embedded .island-world { height: max(235px, calc(100dvh - 100px)); }
+  .desk-shell .island-embedded .island-side { border-left: 0; border-top: 1px solid var(--desk-border); }
+}

@@ -7,23 +7,69 @@ import { islandProjects } from './projects'
 import type { SceneController } from './types'
 import './IslandExperience.css'
 
-export default function IslandExperience() {
+const copy = {
+  en: {
+    built: 'Built in Puerto Rico.', back: 'All motion studies', eyebrow: 'A PLACE. A FEW IDEAS. A LITTLE PLAY.', intro: 'Things I make, from a place I call home.',
+    experience: "Explore Jan’s projects on an interactive island", scene: 'Puerto Rico with magnetic project blocks and particle trails',
+    play: 'Play island animation', pause: 'Pause island animation', reset: 'Reset island and projects', resetTitle: 'Reset view',
+    desktopHint: 'Drag the island · Flick a block · Select a project', mobileHint: 'Swipe to turn · Tap a project · Scroll as usual',
+    explorer: 'Project explorer', work: 'SELECTED WORK', choose: 'Choose a project', close: 'Return project to island', preview: 'product preview',
+    smallIsland: 'Small island.', bigIdeas: 'A world of ideas.', explore: 'Pick a project above or tap a floating block. Each one has a story.', start: 'Start with Wandr',
+    sideFooter: 'Made with curiosity, in San Juan.', footer: 'Grab a little piece of the work.', nudge: 'Give the blocks a nudge',
+    initialStatus: 'Drag to explore the island. Select a project to discover the work.',
+  },
+  es: {
+    built: 'Hecho en Puerto Rico.', back: 'Todos los conceptos', eyebrow: 'UN LUGAR. ALGUNAS IDEAS. UN POCO DE JUEGO.', intro: 'Cosas que creo, desde el lugar que llamo hogar.',
+    experience: 'Explora los proyectos de Jan en una isla interactiva', scene: 'Puerto Rico con bloques de proyectos y estelas de partículas',
+    play: 'Reproducir la animación de la isla', pause: 'Pausar la animación de la isla', reset: 'Restablecer la isla y los proyectos', resetTitle: 'Restablecer la vista',
+    desktopHint: 'Arrastra la isla · Impulsa un bloque · Elige un proyecto', mobileHint: 'Desliza para girar · Toca un proyecto · Desplázate como siempre',
+    explorer: 'Explorador de proyectos', work: 'TRABAJO SELECCIONADO', choose: 'Elige un proyecto', close: 'Devolver el proyecto a la isla', preview: 'vista del producto',
+    smallIsland: 'Una isla pequeña.', bigIdeas: 'Un mundo de ideas.', explore: 'Elige un proyecto arriba o toca un bloque flotante. Cada uno tiene su historia.', start: 'Empieza con Wandr',
+    sideFooter: 'Hecho con curiosidad, en San Juan.', footer: 'Descubre un poco de mi trabajo.', nudge: 'Dale un impulso a los bloques',
+    initialStatus: 'Arrastra para explorar la isla. Elige un proyecto para conocer mi trabajo.',
+  },
+}
+
+type IslandExperienceProps = {
+  embedded?: boolean
+  lang?: 'en' | 'es'
+  theme?: 'light' | 'dark'
+}
+
+export default function IslandExperience({ embedded = false, lang = 'en', theme = 'light' }: IslandExperienceProps) {
+  const text = copy[lang]
   const controller = useRef<SceneController | null>(null)
   const [selected, setSelected] = useState<number | null>(null)
   const [paused, setPaused] = useState(false)
-  const [status, setStatus] = useState('Drag to explore the island. Select a project to discover the work.')
-  const onInfo = useCallback((label: string, detail?: string) => setStatus(detail || label), [])
+  const [info, setInfo] = useState({ label: '', detail: '' })
+  const onInfo = useCallback((label: string, detail = '') => setInfo({ label, detail }), [])
   const onSelectProject = useCallback((index: number | null) => setSelected(index), [])
   const project = selected === null ? null : islandProjects[selected]
+  const projectText = lang === 'es' && project?.es ? project.es : project
+  const statusProject = islandProjects.find(item => item.name === info.label)
+  const status = lang === 'es'
+    ? statusProject?.es?.description || (info.label === 'San Juan, Puerto Rico' ? 'Hecho en Puerto Rico. Una perspectiva local, con trabajo que llega más allá de la isla.' : text.initialStatus)
+    : info.detail || info.label || text.initialStatus
+  const detailId = embedded ? 'embedded-island-project-detail' : 'island-project-detail'
+  const Root = embedded ? 'div' : 'main'
 
   useEffect(() => {
+    if (embedded) return
     const title = document.title
-    document.title = 'Built in Puerto Rico — Jan Faris'
+    document.title = lang === 'es' ? 'Hecho en Puerto Rico — Jan Faris' : 'Built in Puerto Rico — Jan Faris'
     document.body.classList.add('island-route')
     const robots = document.createElement('meta')
     robots.name = 'robots'
     robots.content = 'noindex, nofollow'
     document.head.appendChild(robots)
+    return () => {
+      document.title = title
+      document.body.classList.remove('island-route')
+      robots.remove()
+    }
+  }, [embedded, lang])
+
+  useEffect(() => {
     const escape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setSelected(null)
@@ -31,12 +77,7 @@ export default function IslandExperience() {
       }
     }
     window.addEventListener('keydown', escape)
-    return () => {
-      document.title = title
-      document.body.classList.remove('island-route')
-      robots.remove()
-      window.removeEventListener('keydown', escape)
-    }
+    return () => window.removeEventListener('keydown', escape)
   }, [])
 
   const choose = (index: number) => {
@@ -47,48 +88,50 @@ export default function IslandExperience() {
   const close = () => { setSelected(null); controller.current?.action?.('close') }
   const reset = () => { setSelected(null); setPaused(false); controller.current?.action?.('reset') }
 
-  return <main className="island-page">
-    <header className="island-page-header">
-      <Link className="island-wordmark" to="/"><span>JF</span>Jan Faris</Link>
-      <Link className="island-back" to="/lab/three?concept=island"><ArrowLeft size={14} /><span>All motion studies</span></Link>
-    </header>
-    <div className="island-page-intro">
-      <div><p className="island-eyebrow">A PLACE. A FEW IDEAS. A LITTLE PLAY.</p><h1>Built in Puerto Rico.</h1></div>
-      <p>Things I make, from a place I call home.</p>
-    </div>
-    <section className="island-experience" aria-label="Explore Jan's projects on an interactive island">
-      <div className="island-world">
-        <div className="island-location"><MapPin size={13} />San Juan, Puerto Rico<span>18.46° N · 66.11° W</span></div>
-        <SceneViewport factory={createCombined} name="Puerto Rico with magnetic project blocks and particle trails" controllerRef={controller} paused={paused} onInfo={onInfo} onSelectProject={onSelectProject} allowPageScroll fitAspect={1.18} />
-        <div className="island-world-actions">
-          <button onClick={() => setPaused(value => !value)} aria-label={paused ? 'Play island animation' : 'Pause island animation'} title={paused ? 'Play animation' : 'Pause animation'}>{paused ? <Play size={16} /> : <Pause size={16} />}</button>
-          <button onClick={reset} aria-label="Reset island and projects" title="Reset view"><RotateCcw size={16} /></button>
-        </div>
-        <div className="island-gesture-hint"><Hand size={14} /><span className="island-desktop-hint">Drag the island · Flick a block · Select a project</span><span className="island-mobile-hint">Swipe to turn · Tap a project · Scroll as usual</span></div>
+  return <Root className={`island-page${embedded ? ' island-embedded' : ''}`} data-theme={theme}>
+    {!embedded && <>
+      <header className="island-page-header">
+        <Link className="island-wordmark" to={lang === 'es' ? '/es' : '/'}><span>JF</span>Jan Faris</Link>
+        <Link className="island-back" to="/lab/three?concept=island"><ArrowLeft size={14} /><span>{text.back}</span></Link>
+      </header>
+      <div className="island-page-intro">
+        <div><p className="island-eyebrow">{text.eyebrow}</p><h1>{text.built}</h1></div>
+        <p>{text.intro}</p>
       </div>
-      <aside className="island-side" aria-label="Project explorer">
-        <div className="island-side-title"><span>SELECTED WORK</span><span>01—03</span></div>
-        <div className="island-project-selector" aria-label="Choose a project">
-          {islandProjects.map((item, index) => <button key={item.name} onClick={() => choose(index)} aria-pressed={selected === index} aria-controls="island-project-detail" style={{ '--project-color': item.color } as React.CSSProperties}><span>{item.number}</span><strong>{item.name}</strong><span className="island-project-indicator" /></button>)}
+    </>}
+    <section className="island-experience" aria-label={text.experience}>
+      <div className="island-world">
+        <div className="island-location"><MapPin size={13} />{embedded ? <h2 className="island-embedded-title">{text.built}</h2> : 'San Juan, Puerto Rico'}<span>{embedded ? 'San Juan, Puerto Rico' : '18.46° N · 66.11° W'}</span></div>
+        <SceneViewport factory={createCombined} name={text.scene} controllerRef={controller} paused={paused} onInfo={onInfo} onSelectProject={onSelectProject} allowPageScroll fitAspect={1.18} theme={theme} lang={lang} />
+        <div className="island-world-actions">
+          <button onClick={() => setPaused(value => !value)} aria-label={paused ? text.play : text.pause} title={paused ? text.play : text.pause}>{paused ? <Play size={16} /> : <Pause size={16} />}</button>
+          <button onClick={reset} aria-label={text.reset} title={text.resetTitle}><RotateCcw size={16} /></button>
         </div>
-        <div className="island-project-detail" id="island-project-detail" aria-live="polite" aria-atomic="true">
-          {project ? <div className="island-project-content" key={project.name}>
-            <div className="island-project-heading"><div><p className="island-eyebrow">{project.category}</p><h2>{project.name}</h2></div><button className="island-close-project" onClick={close} aria-label="Return project to island"><X size={16} /></button></div>
-            <div className="island-project-preview"><img src={project.image} alt={`${project.name} product preview`} width="800" height="474" /></div>
-            <h3>{project.tagline}</h3>
-            <p className="island-project-description">{project.description}</p>
-            <a className="island-project-link" href={project.url} target="_blank" rel="noreferrer">{project.linkLabel}<ArrowUpRight size={16} /></a>
+        <div className="island-gesture-hint"><Hand size={14} /><span className="island-desktop-hint">{text.desktopHint}</span><span className="island-mobile-hint">{text.mobileHint}</span></div>
+      </div>
+      <aside className="island-side" aria-label={text.explorer}>
+        <div className="island-side-title"><span>{text.work}</span><span>01—03</span></div>
+        <div className="island-project-selector" aria-label={text.choose}>
+          {islandProjects.map((item, index) => <button key={item.name} onClick={() => choose(index)} aria-pressed={selected === index} aria-controls={detailId} style={{ '--project-color': item.color } as React.CSSProperties}><span>{item.number}</span><strong>{item.name}</strong><span className="island-project-indicator" /></button>)}
+        </div>
+        <div className="island-project-detail" id={detailId} aria-live="polite" aria-atomic="true">
+          {project && projectText ? <div className="island-project-content" key={project.name}>
+            <div className="island-project-heading"><div><p className="island-eyebrow">{projectText.category}</p><h2>{project.name}</h2></div><button className="island-close-project" onClick={close} aria-label={text.close}><X size={16} /></button></div>
+            <div className="island-project-preview"><img src={project.image} alt={`${project.name} · ${text.preview}`} width="800" height="474" /></div>
+            <h3>{projectText.tagline}</h3>
+            <p className="island-project-description">{projectText.description}</p>
+            <a className="island-project-link" href={project.url} target="_blank" rel="noreferrer">{projectText.linkLabel}<ArrowUpRight size={16} /></a>
           </div> : <div className="island-explorer-intro">
             <span className="island-small-star"><Sparkles size={23} strokeWidth={1.2} /></span>
-            <h2>Small island.<br /> A world of ideas.</h2>
-            <p>Pick a project above or tap a floating block. Each one has a story.</p>
-            <button onClick={() => choose(0)}>Start with Wandr<ArrowRight size={16} /></button>
+            <h2>{text.smallIsland}<br />{' '}{text.bigIdeas}</h2>
+            <p>{text.explore}</p>
+            <button onClick={() => choose(0)}>{text.start}<ArrowRight size={16} /></button>
           </div>}
         </div>
-        <div className="island-side-footer"><span className="island-online-dot" />Made with curiosity, in San Juan.</div>
+        <div className="island-side-footer"><span className="island-online-dot" />{text.sideFooter}</div>
       </aside>
     </section>
-    <footer className="island-page-footer"><span>Grab a little piece of the work.</span><button onClick={() => { setPaused(false); controller.current?.action?.('nudge') }}><Sparkles size={13} />Give the blocks a nudge</button></footer>
+    {!embedded && <footer className="island-page-footer"><span>{text.footer}</span><button onClick={() => { setPaused(false); controller.current?.action?.('nudge') }}><Sparkles size={13} />{text.nudge}</button></footer>}
     <p className="island-sr-only" role="status">{status}</p>
-  </main>
+  </Root>
 }
