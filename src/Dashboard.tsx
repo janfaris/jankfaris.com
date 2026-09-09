@@ -8,8 +8,10 @@ import { posts } from './posts'
 import { postsEs } from './posts.es'
 import './Dashboard.css'
 import './DashboardIsland.css'
+import './DashboardMotion.css'
 
 const IslandExperience = lazy(() => import('./three-lab/IslandExperience'))
+const CompactMotion = lazy(() => import('./three-lab/CompactMotion'))
 
 const PHOTO_PROJECTS = [
   { name: 'Wandr', image: '/demos/wandr.jpg', link: 'https://wandrtravelai.com', detail: 'AI travel planning', detailEs: 'Viajes con IA' },
@@ -107,13 +109,6 @@ export default function Dashboard({ lang = 'en' }: { lang?: Lang }) {
   const base = lang === 'es' ? '/es' : '/'
   const [theme, setTheme] = useState<'dark' | 'light'>(() => localStorage.getItem('jan-desk-theme') === 'light' ? 'light' : 'dark')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [mobileLayout, setMobileLayout] = useState(() => window.matchMedia('(max-width: 980px)').matches)
-  useEffect(() => {
-    const media = window.matchMedia('(max-width: 980px)')
-    const change = () => setMobileLayout(media.matches)
-    media.addEventListener('change', change)
-    return () => media.removeEventListener('change', change)
-  }, [])
   const [imageIndex, setImageIndex] = useState<number | null>(null)
   const [activePhoto, setActivePhoto] = useState(0)
   const [copied, setCopied] = useState(false)
@@ -190,7 +185,6 @@ export default function Dashboard({ lang = 'en' }: { lang?: Lang }) {
     <header className="desk-header"><Link className="desk-wordmark" inert={menuOpen} to={base} onClick={goHome} aria-label="Jan Faris home"><span><JFMark size={32} /></span>JAN FARIS</Link><nav aria-label={lang === 'es' ? 'Navegación principal' : 'Main navigation'}>{nav}</nav><div className="desk-header-actions"><Link className="desk-language" inert={menuOpen} to={`${lang === 'es' ? '/' : '/es'}${search.size ? `?${search.toString()}` : ''}`}>{lang === 'es' ? 'EN' : 'ES'}</Link><button className="desk-mobile-menu-toggle" ref={menuButton} aria-label={menuOpen ? (lang === 'es' ? 'Cerrar menú' : 'Close menu') : (lang === 'es' ? 'Abrir menú' : 'Open menu')} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button></div></header>
     {menuOpen && <div className="desk-mobile-menu"><nav ref={mobileNav} aria-label={lang === 'es' ? 'Menú móvil' : 'Mobile menu'}>{nav}</nav></div>}
     {view === 'home' ? <div className="desk-layout" inert={menuOpen}>
-      {mobileLayout && island}
       <aside className="desk-profile">
         <div className="desk-about"><div className="desk-sidebar-heading"><h2><Sparkles size={15} />{text.about}</h2><div><a href="https://github.com/janfaris" target="_blank" rel="noreferrer" aria-label="GitHub"><Code2 size={18} /></a><a href="https://linkedin.com/in/jan-faris-garcia" target="_blank" rel="noreferrer" aria-label="LinkedIn"><img className="desk-inline-brand" src="/dashboard/linkedin.svg" alt="" /></a><Link to={lang === 'es' ? '/es/resume' : '/resume'} aria-label={text.resume}><FileText size={18} /></Link></div></div>
           <div className="desk-intro"><img src="/jan-profile.jpg" alt="Jan Faris" /><div><h1>{text.greeting} <span>Jan.</span></h1><p>{text.bio}</p></div></div>
@@ -200,8 +194,10 @@ export default function Dashboard({ lang = 'en' }: { lang?: Lang }) {
         <div className="desk-contact"><h2><Mail size={15} />{text.contact}</h2><p>{text.contactBody} <a href="https://linkedin.com/in/jan-faris-garcia" target="_blank" rel="noreferrer">LinkedIn</a> {text.or} <a href="mailto:jankarlo.faris@outlook.com">jankarlo.faris@outlook.com</a>.</p></div>
       </aside>
       <main id="desk-main" ref={main} className="desk-main" tabIndex={-1}>
-        {!mobileLayout && island}
         <div className="desk-grid desk-grid-with-island">
+          {island}
+          <Suspense fallback={<div className="desk-motion-card desk-blocks-motion" />}><CompactMotion kind="blocks" theme={theme} lang={lang} /></Suspense>
+          <Suspense fallback={<div className="desk-motion-card desk-particles-motion" />}><CompactMotion kind="particles" theme={theme} lang={lang} /></Suspense>
           <Card title={text.role} icon={<Radio size={15} />} className="desk-status"><div className="desk-status-content"><span className="desk-status-dot" /><div><strong>{text.roleTitle}</strong><span>{text.roleDetail}</span></div></div></Card>
           <Card title={text.time} icon={<Clock3 size={15} />} className="desk-time"><LocalClock lang={lang} /></Card>
           <div className="desk-photos"><PhotoStack active={activePhoto} onOpen={setImageIndex} title={text.photos} /></div>

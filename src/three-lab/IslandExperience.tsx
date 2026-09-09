@@ -125,15 +125,15 @@ export default function IslandExperience({ embedded = false, lang = 'en', theme 
     </>}
     <section className="island-experience" aria-label={text.experience}>
       <div className="island-world">
-        <div className="island-location"><MapPin size={13} />{embedded ? <h2 className="island-embedded-title">{text.built}</h2> : 'San Juan, Puerto Rico'}<span>{embedded ? 'San Juan, Puerto Rico' : '18.46° N · 66.11° W'}</span></div>
+        {!embedded && <div className="island-location"><MapPin size={13} />{embedded ? <h2 className="island-embedded-title">{text.built}</h2> : 'San Juan, Puerto Rico'}<span>{embedded ? 'San Juan, Puerto Rico' : '18.46° N · 66.11° W'}</span></div>}
         <SceneViewport factory={embedded ? createIsland : createCombined} name={text.scene} controllerRef={controller} paused={paused} onInfo={onInfo} onSelectProject={onSelectProject} allowPageScroll fitAspect={embedded ? 1.4 : 1.18} theme={theme} lang={lang} />
         <div className="island-world-actions">
           <button onClick={() => setPaused(value => !value)} aria-label={paused ? text.play : text.pause} title={paused ? text.play : text.pause}>{paused ? <Play size={16} /> : <Pause size={16} />}</button>
-          <button onClick={reset} aria-label={text.reset} title={text.resetTitle}><RotateCcw size={16} /></button>
+          {!embedded && <button onClick={reset} aria-label={text.reset} title={text.resetTitle}><RotateCcw size={16} /></button>}
         </div>
-        <div className="island-gesture-hint"><Hand size={14} /><span className="island-desktop-hint">{text.desktopHint}</span><span className="island-mobile-hint">{text.mobileHint}</span></div>
+        {!embedded && <div className="island-gesture-hint"><Hand size={14} /><span className="island-desktop-hint">{text.desktopHint}</span><span className="island-mobile-hint">{text.mobileHint}</span></div>}
       </div>
-      <aside className="island-side" aria-label={text.explorer}>
+      {!embedded && <aside className="island-side" aria-label={text.explorer}>
         <div className="island-side-title"><span>{text.work}</span><span>01—03</span></div>
         <div className="island-project-selector" aria-label={text.choose}>
           {islandProjects.map((item, index) => <button key={item.name} onClick={() => choose(index)} aria-pressed={selected === index} aria-controls={detailId} style={{ '--project-color': item.color } as React.CSSProperties}><span>{item.number}</span><strong>{item.name}</strong><span className="island-project-indicator" /></button>)}
@@ -153,7 +153,7 @@ export default function IslandExperience({ embedded = false, lang = 'en', theme 
           </div>}
         </div>
         <div className="island-side-footer"><span className="island-online-dot" />{text.sideFooter}</div>
-      </aside>
+      </aside>}
     </section>
     {!embedded && <footer className="island-page-footer"><span>{text.footer}</span><button onClick={() => { setPaused(false); controller.current?.action?.('nudge') }}><Sparkles size={13} />{text.nudge}</button></footer>}
     <p className="island-sr-only" role="status">{status}</p>

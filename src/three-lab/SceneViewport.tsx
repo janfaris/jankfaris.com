@@ -6,7 +6,7 @@ import type { SceneController, SceneFactory } from './types'
 
 const noop = () => undefined
 
-export function SceneViewport({ factory, name, paused, controllerRef, onInfo, onProgress = noop, onSelectProject = noop, allowPageScroll = false, fitAspect = 1.35, theme = 'light', lang = 'en' }: {
+export function SceneViewport({ factory, name, paused, controllerRef, onInfo, onProgress = noop, onSelectProject = noop, allowPageScroll = false, fitAspect = 1.35, theme = 'light', lang = 'en', showFloor = true }: {
   factory: SceneFactory
   name: string
   paused: boolean
@@ -18,6 +18,7 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
   fitAspect?: number
   theme?: 'light' | 'dark'
   lang?: 'en' | 'es'
+  showFloor?: boolean
 }) {
   const host = useRef<HTMLDivElement>(null)
   const pauseRef = useRef(paused)
@@ -81,6 +82,7 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
     floor.rotation.x = -Math.PI / 2
     floor.position.y = -1.6
     floor.receiveShadow = true
+    floor.visible = showFloor
     scene.add(floor)
     let alive = true
     const controller = factory({ scene, camera, renderer, reducedMotion, onInfo: (label, detail) => { if (alive) onInfo(label, detail) }, onSelectProject: index => { if (alive) onSelectProject(index) } })
@@ -203,7 +205,7 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
       renderer.forceContextLoss()
       renderer.domElement.remove()
     }
-  }, [factory, name, controllerRef, onInfo, onProgress, onSelectProject, attempt, reducedMotion, fitAspect, theme])
+  }, [factory, name, controllerRef, onInfo, onProgress, onSelectProject, attempt, reducedMotion, fitAspect, theme, showFloor])
 
   return <div className="lab-canvas-host" ref={host} style={{ position: 'absolute', inset: 0, overflow: 'hidden', touchAction: allowPageScroll ? 'pan-y pinch-zoom' : 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}>
     {error && <div className="lab-error" role="status"><Monitor size={28} /><p>{lang === 'es' ? 'La vista 3D está tomando un descanso.' : 'The 3D view is taking a break.'}</p><span>{lang === 'es' ? 'Puedes explorar todos los proyectos abajo.' : 'You can still explore every project below.'}</span><button onClick={() => { setError(false); setAttempt(value => value + 1) }}>{lang === 'es' ? 'Intentar 3D de nuevo' : 'Try 3D again'}</button></div>}
