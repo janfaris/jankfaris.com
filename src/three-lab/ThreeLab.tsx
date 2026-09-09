@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ArrowUpRight, Box, Hand, Layers3, MapPin, Monitor, Pause, Play, RotateCcw, Sparkles } from 'lucide-react'
-import * as THREE from 'three'
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 import { createShowroom, showroomProjects } from './showroom'
 import { createAssembly } from './assembly'
 import { createIsland } from './island'
 import { createBlocks } from './blocks'
 import { createParticles } from './particles'
-import type { SceneController, SceneFactory } from './types'
+import type { SceneController } from './types'
+import { SceneViewport } from './SceneViewport'
 import './ThreeLab.css'
 
 const concepts = [
@@ -19,172 +18,6 @@ const concepts = [
   { id: 'particles', name: 'Particles with a purpose', short: 'Particles', icon: Sparkles, headline: 'A signature, with a story.', description: 'Thousands of blue points become your initials, your island, and an app. Touch them to break the shape; let go to bring it back.', hint: 'Press and move to scatter · release to reform', strength: 'Best fit for the existing Orbit card', factory: createParticles },
 ]
 
-function SceneViewport({ factory, name, paused, controllerRef, onInfo, onProgress }: {
-  factory: SceneFactory
-  name: string
-  paused: boolean
-  controllerRef: React.RefObject<SceneController | null>
-  onInfo: (label: string, detail?: string) => void
-  onProgress: (progress: number) => void
-}) {
-  const host = useRef<HTMLDivElement>(null)
-  const pauseRef = useRef(paused)
-  const [error, setError] = useState(false)
-  useEffect(() => { pauseRef.current = paused }, [paused])
-  useEffect(() => {
-    const element = host.current
-    if (!element) return
-    let renderer: THREE.WebGLRenderer
-    try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'low-power' })
-    } catch {
-      queueMicrotask(() => setError(true))
-      return
-    }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75))
-    renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = .9
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFShadowMap
-    renderer.domElement.setAttribute('aria-label', name + ' interactive 3D preview')
-    renderer.domElement.setAttribute('role', 'img')
-    element.appendChild(renderer.domElement)
-    const scene = new THREE.Scene()
-    scene.background = new THREE.Color('#edf4fb')
-    scene.fog = new THREE.Fog('#edf4fb', 18, 45)
-    const camera = new THREE.PerspectiveCamera(38, 1, .1, 80)
-    camera.position.set(0, 1.5, 9)
-    camera.lookAt(0, 0, 0)
-    const room = new RoomEnvironment()
-    const pmrem = new THREE.PMREMGenerator(renderer)
-    const environment = pmrem.fromScene(room, .04)
-    scene.environment = environment.texture
-    scene.environmentIntensity = .6
-    room.dispose()
-    pmrem.dispose()
-    scene.add(new THREE.HemisphereLight('#ddebff', '#bac5d4', 1.2))
-    const key = new THREE.DirectionalLight('#fff9ef', 2.2)
-    key.position.set(-3, 7, 6)
-    key.castShadow = true
-    key.shadow.mapSize.set(1024, 1024)
-    Object.assign(key.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: .1, far: 25 })
-    key.shadow.bias = -.001
-    key.shadow.normalBias = .035
-    scene.add(key)
-    const rim = new THREE.DirectionalLight('#88c6ff', 1.5)
-    rim.position.set(3, 4, -4)
-    scene.add(rim)
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: '#edf4fb', roughness: .9 }))
-    floor.rotation.x = -Math.PI / 2
-    floor.position.y = -1.6
-    floor.receiveShadow = true
-    scene.add(floor)
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let alive = true
-    const controller = factory({ scene, camera, renderer, reducedMotion, onInfo: (label, detail) => { if (alive) onInfo(label, detail) } })
-    controllerRef.current = controller
-    const resize = () => {
-      const width = element.clientWidth
-      const height = element.clientHeight
-      if (!width || !height) return
-      renderer.setSize(width, height)
-      camera.aspect = width / height
-      camera.zoom = Math.min(1, camera.aspect / 1.35)
-      camera.updateProjectionMatrix()
-    }
-    const observer = new ResizeObserver(resize)
-    observer.observe(element)
-    resize()
-    let elapsed = 0
-    let lastTime = performance.now()
-    let lastProgressTime = 0
-    renderer.setAnimationLoop((time) => {
-      const delta = Math.min((time - lastTime) / 1000, .05)
-      lastTime = time
-      if (document.hidden) return
-      if (!pauseRef.current) elapsed += delta
-      controller.update(elapsed, pauseRef.current ? 0 : delta)
-      if (controller.getProgress && time - lastProgressTime > 100) {
-        lastProgressTime = time
-        onProgress(controller.getProgress())
-      }
-      renderer.render(scene, camera)
-    })
-    let pressed = false
-    let activePointer: number | null = null
-    let lastX = 0
-    let lastY = 0
-    const input = (event: PointerEvent, type: 'down' | 'move' | 'up' | 'cancel') => {
-      if (type === 'down' && (activePointer !== null || event.button !== 0)) return
-      if (activePointer !== null && event.pointerId !== activePointer) return
-      if ((type === 'up' || type === 'cancel') && activePointer !== event.pointerId) return
-      if (type === 'move' && activePointer === null && event.pointerType !== 'mouse') return
-      const rect = element.getBoundingClientRect()
-      const x = (event.clientX - rect.left) / rect.width * 2 - 1
-      const y = -(event.clientY - rect.top) / rect.height * 2 + 1
-      if (type === 'down') { activePointer = event.pointerId; pressed = true; lastX = x; lastY = y; element.setPointerCapture(event.pointerId) }
-      if (type === 'up' || type === 'cancel') pressed = false
-      controller.pointer?.(type, { x, y, dx: x - lastX, dy: y - lastY, pressed })
-      if (type === 'up' || type === 'cancel') { activePointer = null; if (element.hasPointerCapture(event.pointerId)) element.releasePointerCapture(event.pointerId) }
-      lastX = x
-      lastY = y
-    }
-    const down = (e: PointerEvent) => input(e, 'down')
-    const move = (e: PointerEvent) => input(e, 'move')
-    const up = (e: PointerEvent) => input(e, 'up')
-    const cancel = (e: PointerEvent) => input(e, 'cancel')
-    const lost = (e: PointerEvent) => {
-      if (e.pointerId !== activePointer) return
-      activePointer = null
-      pressed = false
-      controller.pointer?.('cancel', { x: lastX, y: lastY, dx: 0, dy: 0, pressed: false })
-    }
-    const contextLost = (e: Event) => { e.preventDefault(); setError(true) }
-    element.addEventListener('pointerdown', down)
-    element.addEventListener('pointermove', move)
-    element.addEventListener('pointerup', up)
-    element.addEventListener('pointercancel', cancel)
-    element.addEventListener('lostpointercapture', lost)
-    renderer.domElement.addEventListener('webglcontextlost', contextLost)
-    return () => {
-      alive = false
-      observer.disconnect()
-      renderer.setAnimationLoop(null)
-      controllerRef.current = null
-      controller.dispose?.()
-      element.removeEventListener('pointerdown', down)
-      element.removeEventListener('pointermove', move)
-      element.removeEventListener('pointerup', up)
-      element.removeEventListener('pointercancel', cancel)
-      element.removeEventListener('lostpointercapture', lost)
-      renderer.domElement.removeEventListener('webglcontextlost', contextLost)
-      const textures = new Set<THREE.Texture>()
-      const materials = new Set<THREE.Material>()
-      const geometries = new Set<THREE.BufferGeometry>()
-      scene.traverse((object) => {
-        const mesh = object as THREE.Mesh
-        if (mesh.geometry) geometries.add(mesh.geometry)
-        if (mesh.material) for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
-          materials.add(material)
-          for (const value of Object.values(material)) if (value instanceof THREE.Texture) textures.add(value)
-        }
-      })
-      geometries.forEach(geometry => geometry.dispose())
-      materials.forEach(material => material.dispose())
-      textures.forEach(texture => texture.dispose())
-      key.shadow.dispose()
-      environment.dispose()
-      renderer.dispose()
-      renderer.forceContextLoss()
-      renderer.domElement.remove()
-    }
-  }, [factory, name, controllerRef, onInfo, onProgress])
-
-  return <div className="lab-canvas-host" ref={host}>
-    {error && <div className="lab-error"><Monitor size={28} /><p>The 3D preview needs WebGL.</p><button onClick={() => window.location.reload()}>Reload preview</button></div>}
-  </div>
-}
 
 export default function ThreeLab() {
   const [selected, setSelected] = useState(() => Math.max(0, concepts.findIndex(c => c.id === new URLSearchParams(location.search).get('concept'))))

@@ -6,6 +6,7 @@ export type PointerInput = {
   dx: number
   dy: number
   pressed: boolean
+  pointerType?: string
 }
 
 export type SceneContext = {
@@ -14,6 +15,7 @@ export type SceneContext = {
   renderer: THREE.WebGLRenderer
   reducedMotion: boolean
   onInfo: (label: string, detail?: string) => void
+  onSelectProject?: (index: number | null) => void
 }
 
 export type SceneController = {
