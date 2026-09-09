@@ -84,4 +84,3 @@ export const VIEQUES_COASTLINE: readonly CoastCoordinate[] = [
   [-65.294873, 18.13335],
   [-65.425586, 18.105615],
 ]
-
