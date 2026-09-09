@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ArrowUpRight, Hand, MapPin, Pause, Play, RotateCcw, Sparkles, X } from 'lucide-react'
 import { SceneViewport } from './SceneViewport'
 import { createCombined } from './combined'
+import { createIsland } from './island'
 import { islandProjects } from './projects'
 import type { SceneController } from './types'
 import './IslandExperience.css'
@@ -30,6 +31,29 @@ const copy = {
   },
 }
 
+const embeddedCopy = {
+  en: {
+    experience: 'Explore Puerto Rico and Jan’s portfolio',
+    scene: 'Interactive Puerto Rico island with a San Juan location pin',
+    reset: 'Recenter the Puerto Rico island',
+    desktopHint: 'Drag to turn · Tap the San Juan pin',
+    mobileHint: 'Swipe to turn · Tap San Juan · Scroll as usual',
+    explore: 'Choose a project above to explore what I’ve built.',
+    close: 'Close project details',
+    initialStatus: 'Drag to explore Puerto Rico. Tap the blue pin to find San Juan.',
+  },
+  es: {
+    experience: 'Explora Puerto Rico y el portafolio de Jan',
+    scene: 'Isla interactiva de Puerto Rico con un marcador en San Juan',
+    reset: 'Centrar la vista de Puerto Rico',
+    desktopHint: 'Arrastra para girar · Toca el marcador de San Juan',
+    mobileHint: 'Desliza para girar · Toca San Juan · Desplázate como siempre',
+    explore: 'Elige un proyecto arriba para descubrir lo que he creado.',
+    close: 'Cerrar los detalles del proyecto',
+    initialStatus: 'Arrastra para explorar Puerto Rico. Toca el marcador azul para encontrar San Juan.',
+  },
+}
+
 type IslandExperienceProps = {
   embedded?: boolean
   lang?: 'en' | 'es'
@@ -37,7 +61,7 @@ type IslandExperienceProps = {
 }
 
 export default function IslandExperience({ embedded = false, lang = 'en', theme = 'light' }: IslandExperienceProps) {
-  const text = copy[lang]
+  const text = embedded ? { ...copy[lang], ...embeddedCopy[lang] } : copy[lang]
   const controller = useRef<SceneController | null>(null)
   const [selected, setSelected] = useState<number | null>(null)
   const [paused, setPaused] = useState(false)
@@ -86,7 +110,7 @@ export default function IslandExperience({ embedded = false, lang = 'en', theme 
     controller.current?.action?.('project', index)
   }
   const close = () => { setSelected(null); controller.current?.action?.('close') }
-  const reset = () => { setSelected(null); setPaused(false); controller.current?.action?.('reset') }
+  const reset = () => { setSelected(null); setPaused(false); controller.current?.action?.(embedded ? 'recenter' : 'reset') }
 
   return <Root className={`island-page${embedded ? ' island-embedded' : ''}`} data-theme={theme}>
     {!embedded && <>
@@ -102,7 +126,7 @@ export default function IslandExperience({ embedded = false, lang = 'en', theme 
     <section className="island-experience" aria-label={text.experience}>
       <div className="island-world">
         <div className="island-location"><MapPin size={13} />{embedded ? <h2 className="island-embedded-title">{text.built}</h2> : 'San Juan, Puerto Rico'}<span>{embedded ? 'San Juan, Puerto Rico' : '18.46° N · 66.11° W'}</span></div>
-        <SceneViewport factory={createCombined} name={text.scene} controllerRef={controller} paused={paused} onInfo={onInfo} onSelectProject={onSelectProject} allowPageScroll fitAspect={1.18} theme={theme} lang={lang} />
+        <SceneViewport factory={embedded ? createIsland : createCombined} name={text.scene} controllerRef={controller} paused={paused} onInfo={onInfo} onSelectProject={onSelectProject} allowPageScroll fitAspect={embedded ? 1.4 : 1.18} theme={theme} lang={lang} />
         <div className="island-world-actions">
           <button onClick={() => setPaused(value => !value)} aria-label={paused ? text.play : text.pause} title={paused ? text.play : text.pause}>{paused ? <Play size={16} /> : <Pause size={16} />}</button>
           <button onClick={reset} aria-label={text.reset} title={text.resetTitle}><RotateCcw size={16} /></button>
