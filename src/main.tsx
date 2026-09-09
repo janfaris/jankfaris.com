@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
@@ -11,6 +11,8 @@ import Resume from './Resume.tsx'
 import AiReadiness from './AiReadiness.tsx'
 import { RouteMeta, ScrollToTop } from './RouteUtilities.tsx'
 
+const ThreeLab = lazy(() => import('./three-lab/ThreeLab.tsx'))
+
 const storedTheme = localStorage.getItem('theme')
 document.documentElement.classList.toggle('light', storedTheme !== 'dark')
 
@@ -19,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
+        <Route path="/lab/three" element={<Suspense fallback={<p style={{ padding: 40 }}>Loading motion studies…</p>}><ThreeLab /></Suspense>} />
         <Route path="/" element={<Dashboard lang="en" />} />
         <Route path="/es" element={<Dashboard lang="es" />} />
         <Route path="/writing" element={
