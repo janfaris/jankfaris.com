@@ -1,8 +1,7 @@
 import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import './index.css'
-import Dashboard from './Dashboard.tsx'
 import Writing from './Writing.tsx'
 import Post from './Post.tsx'
 import WritingEs from './WritingEs.tsx'
@@ -13,9 +12,13 @@ import { RouteMeta, ScrollToTop } from './RouteUtilities.tsx'
 
 const ThreeLab = lazy(() => import('./three-lab/ThreeLab.tsx'))
 const IslandExperience = lazy(() => import('./three-lab/IslandExperience.tsx'))
+const BahiaPage = lazy(() => import('./bahia/BahiaPage.tsx'))
+const bayFallback = <div style={{ minHeight: '100svh', background: '#02060c' }} />
 
 const storedTheme = localStorage.getItem('theme')
-document.documentElement.classList.toggle('light', storedTheme !== 'dark')
+// The homepage is dark-only; index.html marks it before the first paint.
+const bayRoute = document.documentElement.classList.contains('bahia-route')
+document.documentElement.classList.toggle('light', !bayRoute && storedTheme !== 'dark')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -24,8 +27,10 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/lab/island" element={<Suspense fallback={<p style={{ padding: 40 }}>Opening the island…</p>}><IslandExperience /></Suspense>} />
         <Route path="/lab/three" element={<Suspense fallback={<p style={{ padding: 40 }}>Loading motion studies…</p>}><ThreeLab /></Suspense>} />
-        <Route path="/" element={<Dashboard lang="en" />} />
-        <Route path="/es" element={<Dashboard lang="es" />} />
+        <Route path="/" element={<Suspense fallback={bayFallback}><BahiaPage lang="en" /></Suspense>} />
+        <Route path="/es" element={<Suspense fallback={bayFallback}><BahiaPage lang="es" /></Suspense>} />
+        <Route path="/next" element={<Navigate to="/" replace />} />
+        <Route path="/es/next" element={<Navigate to="/es" replace />} />
         <Route path="/writing" element={
           <RouteMeta
             title="Ship Notes — Jan Faris"

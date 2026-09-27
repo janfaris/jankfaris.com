@@ -1,10 +1,17 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
+
+const withoutLanguage = (pathname: string) => pathname.replace(/^\/es(?=\/|$)/, '') || '/'
 
 export function ScrollToTop() {
   const { pathname } = useLocation()
+  const previous = useRef(pathname)
 
   useEffect(() => {
+    const from = previous.current
+    previous.current = pathname
+    // The homepage switches EN/ES in place, keeping the reader's position.
+    if (from !== pathname && withoutLanguage(from) === '/' && withoutLanguage(pathname) === '/') return
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
   }, [pathname])
 

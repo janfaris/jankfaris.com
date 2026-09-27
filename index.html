@@ -5,6 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f5f4ed" />
+    <!-- The homepage is dark-only: paint it dark from the first frame. -->
+    <style>html.bahia-route, html.bahia-route body { background: #02060c; }</style>
+    <script>if (/^\/(es\/?)?(next\/?)?$/.test(location.pathname)) { document.documentElement.classList.add('bahia-route'); document.querySelector('meta[name="theme-color"]').setAttribute('content', '#02060c') }</script>
 
     <!-- SEO -->
     <title>Jan Faris — AI products from Puerto Rico</title>

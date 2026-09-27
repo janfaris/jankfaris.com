@@ -1,6 +1,8 @@
 {
   "redirects": [
-    { "source": "/writing/github-profile-overhaul", "destination": "/writing", "permanent": true }
+    { "source": "/writing/github-profile-overhaul", "destination": "/writing", "permanent": true },
+    { "source": "/next", "destination": "/", "permanent": false },
+    { "source": "/es/next", "destination": "/es", "permanent": false }
   ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }

@@ -84,3 +84,30 @@ export const VIEQUES_COASTLINE: readonly CoastCoordinate[] = [
   [-65.294873, 18.13335],
   [-65.425586, 18.105615],
 ]
+
+/**
+ * Culebra, from Natural Earth 1:10m Admin 0 countries (public domain); the
+ * 1:50m file above does not include it.
+ * https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson
+ */
+export const CULEBRA_COASTLINE: readonly CoastCoordinate[] = [
+  [-65.278798, 18.279202],
+  [-65.292592, 18.299954],
+  [-65.33434, 18.337104],
+  [-65.334055, 18.340644],
+  [-65.309438, 18.340766],
+  [-65.280914, 18.335273],
+  [-65.256663, 18.32392],
+  [-65.244618, 18.306545],
+  [-65.247548, 18.305854],
+  [-65.25829, 18.306545],
+  [-65.251454, 18.299709],
+  [-65.262115, 18.299221],
+  [-65.270416, 18.301418],
+  [-65.276031, 18.306342],
+  [-65.278798, 18.313951],
+  [-65.285553, 18.313951],
+  [-65.276519, 18.296942],
+  [-65.27481, 18.289008],
+  [-65.278798, 18.279202],
+]
