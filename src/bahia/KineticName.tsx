@@ -7,8 +7,8 @@ const WORDS = ['JAN', 'FARIS']
 /**
  * The name as the hero visual. Each letter is a variable-font glyph: near the
  * pointer or a finger it swells wider and heavier, like water pushed aside by
- * a hand. Mouse devices also get a slow swell before the first move. On touch
- * devices the loop sleeps as soon as the letters settle.
+ * a hand. Without a pointer a slow swell runs through the letters; phones run
+ * it at half rate, and nothing runs while the name is off screen.
  */
 export function KineticName({ reduced }: { reduced: boolean }) {
   const line = useRef<HTMLSpanElement>(null)
@@ -24,11 +24,15 @@ export function KineticName({ reduced }: { reduced: boolean }) {
     let visible = true
     let running = false
     let frame = 0
+    let lastDraw = 0
 
     const tick = (now: number) => {
       if (!visible) { running = false; return }
       if (pointer.until && now > pointer.until) { pointer.active = false; pointer.until = 0 }
-      const swell = !touchOnly && !pointer.active
+      const swell = !pointer.active
+      // Touch devices draw the idle swell at ~30fps; a finger gets full rate.
+      if (touchOnly && swell && now - lastDraw < 30) { frame = requestAnimationFrame(tick); return }
+      lastDraw = now
       const radius = fontSize * .82
       // Only measure letters while something is actually near them.
       const rects = pointer.active ? glyphs.map(glyph => glyph.getBoundingClientRect()) : null
@@ -79,6 +83,13 @@ export function KineticName({ reduced }: { reduced: boolean }) {
       wake()
     }
     const leave = () => { pointer.active = false }
+    // If Safari dropped the pending frame while suspended, start a fresh chain.
+    const resume = () => {
+      if (document.hidden) return
+      cancelAnimationFrame(frame)
+      running = false
+      wake()
+    }
     const resize = new ResizeObserver(() => { fontSize = parseFloat(getComputedStyle(root).fontSize) || fontSize })
     const intersection = new IntersectionObserver(([entry]) => {
       visible = entry?.isIntersecting ?? true
@@ -90,6 +101,8 @@ export function KineticName({ reduced }: { reduced: boolean }) {
     window.addEventListener('touchstart', touch, { passive: true })
     window.addEventListener('touchmove', touch, { passive: true })
     document.documentElement.addEventListener('pointerleave', leave)
+    window.addEventListener('pageshow', resume)
+    document.addEventListener('visibilitychange', resume)
     wake()
 
     return () => {
@@ -100,6 +113,8 @@ export function KineticName({ reduced }: { reduced: boolean }) {
       window.removeEventListener('touchstart', touch)
       window.removeEventListener('touchmove', touch)
       document.documentElement.removeEventListener('pointerleave', leave)
+      window.removeEventListener('pageshow', resume)
+      document.removeEventListener('visibilitychange', resume)
       glyphs.forEach(glyph => { glyph.style.fontVariationSettings = ''; glyph.style.transform = '' })
     }
   }, [reduced])

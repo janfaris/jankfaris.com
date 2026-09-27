@@ -110,8 +110,10 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
     let contextAvailable = true
     const intersection = new IntersectionObserver(entries => { inViewport = entries[0]?.isIntersecting ?? true }, { rootMargin: '80px' })
     intersection.observe(element)
-    renderer.setAnimationLoop((time) => {
-      const delta = Math.min((time - lastTime) / 1000, .05)
+    let lastFrameAt = performance.now()
+    const loop = (time: number) => {
+      lastFrameAt = performance.now()
+      const delta = Math.min(Math.max((time - lastTime) / 1000, 0), .05)
       lastTime = time
       if (document.hidden || !inViewport || !contextAvailable) return
       if (!pauseRef.current) elapsed += delta
@@ -121,7 +123,18 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
         onProgress(controller.getProgress())
       }
       renderer.render(scene, camera)
-    })
+    }
+    renderer.setAnimationLoop(loop)
+    // iOS Safari can drop a pending animation-frame callback while the page is
+    // suspended (app switch, links opened from other apps), which silently ends
+    // three.js's frame chain. Re-arm it on return and whenever frames stall.
+    const restartLoop = () => {
+      if (!alive || document.hidden) return
+      renderer.setAnimationLoop(null)
+      lastTime = performance.now()
+      renderer.setAnimationLoop(loop)
+    }
+    const watchdog = window.setInterval(() => { if (!document.hidden && performance.now() - lastFrameAt > 1500) restartLoop() }, 1000)
     let pressed = false
     let activePointer: number | null = null
     let lastX = 0
@@ -160,7 +173,7 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
       controller.pointer?.('cancel', { x: lastX, y: lastY, dx: 0, dy: 0, pressed: false })
       if (element.hasPointerCapture(pointerId)) element.releasePointerCapture(pointerId)
     }
-    const visibility = () => { lastTime = performance.now(); if (document.hidden) cancelGesture() }
+    const visibility = () => { lastTime = performance.now(); if (document.hidden) cancelGesture(); else restartLoop() }
     const contextLost = (e: Event) => { e.preventDefault(); cancelGesture(); contextAvailable = false; setError(true) }
     element.addEventListener('pointerdown', down)
     element.addEventListener('pointermove', move)
@@ -170,7 +183,12 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
     renderer.domElement.addEventListener('webglcontextlost', contextLost)
     document.addEventListener('visibilitychange', visibility)
     window.addEventListener('blur', cancelGesture)
+    window.addEventListener('pageshow', restartLoop)
+    window.addEventListener('focus', restartLoop)
     return () => {
+      window.clearInterval(watchdog)
+      window.removeEventListener('pageshow', restartLoop)
+      window.removeEventListener('focus', restartLoop)
       alive = false
       cancelGesture()
       observer.disconnect()

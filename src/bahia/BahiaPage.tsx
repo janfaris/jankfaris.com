@@ -160,6 +160,19 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
     return () => window.clearTimeout(refresh)
   }, [lang, t.metaTitle, t.metaDescription])
 
+  // Safari can drop GSAP's pending frame while the page is suspended; wake the ticker on return.
+  useEffect(() => {
+    const wake = () => { if (!document.hidden) gsap.ticker.wake() }
+    window.addEventListener('pageshow', wake)
+    window.addEventListener('focus', wake)
+    document.addEventListener('visibilitychange', wake)
+    return () => {
+      window.removeEventListener('pageshow', wake)
+      window.removeEventListener('focus', wake)
+      document.removeEventListener('visibilitychange', wake)
+    }
+  }, [])
+
   // Pointer and taps stir the water behind the content.
   useEffect(() => {
     if (reduced) return

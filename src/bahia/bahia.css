@@ -115,7 +115,7 @@ html.bahia-route body::before { display: none; }
 .b-hero-sub { margin: 0; font-size: clamp(17px, 1.3vw, 19px); line-height: 1.55; color: var(--text-2); text-wrap: pretty; }
 .b-ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
 .b-name { margin: 0; font-size: clamp(60px, 14.6vw, 252px); font-weight: 600; line-height: .8; letter-spacing: -.028em; color: var(--text); }
-.b-name-line { display: flex; flex-wrap: wrap; column-gap: .2em; }
+.b-name-line { display: flex; flex-wrap: wrap; column-gap: .2em; contain: layout style; }
 .b-word { display: inline-flex; padding: .1em .04em .08em; margin: -.1em -.04em -.08em; }
 .bahia:not([data-intro='done']) .b-word { overflow: hidden; }
 .b-letter { display: inline-block; }

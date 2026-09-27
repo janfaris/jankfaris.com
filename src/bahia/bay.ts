@@ -69,6 +69,7 @@ uniform float uIslandSize;
 uniform float uBright;
 uniform float uAgitation;
 uniform float uMaxPoint;
+uniform float uScale;
 uniform vec3 uBeacon;
 uniform vec3 uDrop;
 uniform vec4 uTrail[TRAIL];
@@ -134,7 +135,7 @@ void main() {
   gl_Position = projectionMatrix * mv;
   float depth = max(-mv.z, 0.001);
   float size = (0.7 + aRand.x * 1.5) * mix(1.0, uIslandSize, land) * (1.0 + min(g, 2.0) * 0.6);
-  float pixels = size * uPixels * 0.0105 / depth;
+  float pixels = size * uScale * uPixels * 0.0105 / depth;
   gl_PointSize = clamp(pixels, 1.0, uMaxPoint);
   float reveal = clamp(uIntro * 14.0 - length(water.xz - uDrop.xz) * 0.9, 0.0, 1.0);
   float fog = smoothstep(52.0, 20.0, depth);
@@ -244,8 +245,11 @@ export function createBay(input: BayInput): SceneFactory {
     camera.near = .05
     camera.far = 120
 
-    const heroPos = new THREE.Vector3(0, 1.15, 7.4)
-    const heroLook = new THREE.Vector3(0, 0, -2.6)
+    // Portrait phones look further down at the water so it fills the screen
+    // instead of leaving the top half as empty sky.
+    const portrait = window.innerWidth / Math.max(window.innerHeight, 1) < .8
+    const heroPos = portrait ? new THREE.Vector3(0, 2, 7.4) : new THREE.Vector3(0, 1.15, 7.4)
+    const heroLook = portrait ? new THREE.Vector3(0, 0, -1.2) : new THREE.Vector3(0, 0, -2.6)
     const restPos = new THREE.Vector3(0, 2.3, 8.6)
     const restLook = new THREE.Vector3(0, 0, -3.4)
 
@@ -321,6 +325,9 @@ export function createBay(input: BayInput): SceneFactory {
     const [sjX, sjZ] = toWorld(SAN_JUAN)
     const beaconWorld = new THREE.Vector3(sjX, .04, sjZ)
     const drop = new THREE.Vector3(-1.1, 0, 2.6)
+    ndc.set(-.3, -.45)
+    ray.setFromCamera(ndc, sampler)
+    if (ray.ray.intersectPlane(plane, hit)) drop.set(hit.x, 0, hit.z)
     const trail = Array.from({ length: TRAIL }, () => new THREE.Vector4(0, 0, -100, 0))
     const ripples = Array.from({ length: RIPPLES }, () => new THREE.Vector4(0, 0, -100, 0))
     const particleUniforms = {
@@ -332,6 +339,7 @@ export function createBay(input: BayInput): SceneFactory {
       uBright: { value: 1 },
       uAgitation: { value: 0 },
       uMaxPoint: { value: compact ? 36 : 56 },
+      uScale: { value: compact ? 1.3 : 1 },
       uBeacon: { value: beaconWorld },
       uDrop: { value: drop },
       uTrail: { value: trail },
@@ -452,6 +460,7 @@ export function createBay(input: BayInput): SceneFactory {
     let lastTrailTime = -1
     let lastScrollWake = 0
     let lastSwim = 0
+    let nextDrop = 3.2
     let introRipple = false
     const aerialPos = new THREE.Vector3()
     const aerialLook = new THREE.Vector3()
@@ -565,16 +574,23 @@ export function createBay(input: BayInput): SceneFactory {
             if (point) addTrail(point.x, point.z, .35 + speed * .8, time)
           }
           // Two unseen swimmers keep the water moving when nobody is touching it.
+          // Their paths are defined on screen, so they stay in view on a narrow
+          // phone as well as a wide desktop, then projected onto the water.
           const idle = performance.now() - input.pointer.lastMove > 2500
+          const waterTop = Math.min(backgroundUniforms.uHorizon.value - .12, .55)
           if (time - lastSwim > .075) {
             lastSwim = time
-            const cx = cameraLook.x
-            const cz = cameraLook.z
-            const rx = THREE.MathUtils.lerp(3.2, 7.4, lift)
-            const rz = THREE.MathUtils.lerp(1.6, 2.9, lift)
-            const strength = (idle ? .42 : .2) * (1 - state.dim * .5)
-            addTrail(cx + Math.sin(time * .31) * rx, cz + Math.sin(time * .47 + 1.3) * rz, strength, time)
-            addTrail(cx + Math.cos(time * .23 + 2.1) * rx * .8, cz + Math.sin(time * .19) * rz * 1.2 + .8, strength * .8, time)
+            const strength = (idle ? (compact ? .62 : .42) : .2) * (1 - state.dim * .5)
+            const a = toWater(Math.sin(time * .31) * .78, THREE.MathUtils.lerp(-.9, waterTop, .45 + Math.sin(time * .47 + 1.3) * .35))
+            if (a) addTrail(a.x, a.z, strength, time)
+            const b = toWater(Math.cos(time * .23 + 2.1) * .7, THREE.MathUtils.lerp(-.9, waterTop, .3 + Math.sin(time * .19) * .25))
+            if (b) addTrail(b.x, b.z, strength * .8, time)
+          }
+          // Now and then a drop lands somewhere in view and rings out.
+          if (idle && time > nextDrop) {
+            nextDrop = time + 2.4 + Math.random() * 2.2
+            const point = toWater(Math.random() * 1.5 - .75, THREE.MathUtils.lerp(-.85, waterTop, Math.random()))
+            if (point) addRipple(point.x, point.z, (compact ? .85 : .65) * (1 - state.dim * .6), time)
           }
         }
 
