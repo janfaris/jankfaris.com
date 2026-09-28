@@ -262,7 +262,8 @@ html.bahia-route body::before { display: none; }
 .b-email button:active { scale: .96; }
 
 /* Footer */
-.b-footer { position: relative; z-index: 1; padding: 28px 0 36px; border-top: 1px solid var(--line); background: linear-gradient(to bottom, rgba(2, 6, 12, 0), rgba(2, 6, 12, .6)); font-size: 13px; color: var(--text-3); }
+/* Solid enough that the brightest closing glow never sits behind the small type. */
+.b-footer { position: relative; z-index: 1; padding: 28px 0 36px; border-top: 1px solid var(--line); background: rgba(2, 6, 12, .9); box-shadow: 0 -48px 64px -8px rgba(2, 6, 12, .75); font-size: 13px; color: var(--text-2); }
 .b-footer-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 24px; }
 .b-footer p { margin: 0; }
 .b-footer nav { display: flex; flex-wrap: wrap; gap: 22px; }
