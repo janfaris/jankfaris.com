@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type PointerEvent } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import type { Lang } from '../content'
@@ -6,16 +6,9 @@ import { copy, stops } from './copy'
 import { gsap, ScrollTrigger } from './gsap'
 import { Scramble } from './Scramble'
 
-function moveLens(event: PointerEvent<HTMLElement>) {
-  const rect = event.currentTarget.getBoundingClientRect()
-  event.currentTarget.style.setProperty('--lx', `${event.clientX - rect.left}px`)
-  event.currentTarget.style.setProperty('--ly', `${event.clientY - rect.top}px`)
-}
-
 /**
  * Career as a flight path: the line draws itself as you scroll and each stop
- * lights up when the path reaches it. The portrait sits in the same blue as
- * the bay; a lens follows the pointer and shows it in full colour.
+ * lights up when the path reaches it.
  */
 export function Trajectory({ lang }: { lang: Lang }) {
   const t = copy[lang]
@@ -104,9 +97,8 @@ export function Trajectory({ lang }: { lang: Lang }) {
     </div>
     <div className="b-wrap b-path-grid">
       <div className="b-path-aside">
-        <figure className="b-portrait" onPointerMove={moveLens} onPointerEnter={moveLens}>
+        <figure className="b-portrait">
           <img src="/jan-profile.jpg" alt={t.path.portrait} width={682} height={1024} loading="lazy" />
-          <img className="b-portrait-color" src="/jan-profile.jpg" alt="" aria-hidden="true" loading="lazy" />
         </figure>
         <p className="b-lede">{t.path.intro}</p>
         <Link className="b-link" to={lang === 'es' ? '/es/resume' : '/resume'}>{t.path.resume}<ArrowUpRight size={16} strokeWidth={1.75} /></Link>

@@ -209,12 +209,10 @@ html.bahia-route body::before { display: none; }
 .b-path-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(48px, 8vw, 140px); align-items: start; }
 .b-path-aside { position: sticky; top: 120px; display: grid; gap: 26px; justify-items: start; }
 .b-path-aside .b-lede { margin: 0; }
-.b-portrait { --lx: 50%; --ly: 40%; position: relative; width: min(100%, 260px); aspect-ratio: 4 / 5; margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: #0a1a2e; }
-.b-portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-.b-portrait img:first-child { filter: grayscale(1) contrast(1.1) brightness(.78); }
-.b-portrait::after { content: ''; position: absolute; inset: 0; z-index: 1; background: #1c5fbd; mix-blend-mode: color; opacity: .75; pointer-events: none; }
-.b-portrait-color { z-index: 2; clip-path: circle(0 at var(--lx) var(--ly)); transition: clip-path .7s var(--ease); }
-.b-portrait:hover .b-portrait-color { clip-path: circle(86px at var(--lx) var(--ly)); }
+.b-portrait { position: relative; width: min(100%, 260px); aspect-ratio: 4 / 5; margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: #0a1a2e; }
+.b-portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: brightness(.95); }
+/* Natural colour; a soft fade at the foot settles the bright photo into the page. */
+.b-portrait::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 62%, rgba(2, 6, 12, .38)); pointer-events: none; }
 .b-path-line { position: relative; }
 .b-path-svg { position: absolute; left: 0; top: 0; width: 48px; overflow: visible; }
 .b-path-track { fill: none; stroke: var(--line-2); stroke-width: 1.2; stroke-dasharray: 2 8; stroke-linecap: round; }
@@ -322,5 +320,4 @@ html.bahia-route body::before { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .b-lens li, .b-lens-scan, .b-sound .b-eq i { animation: none; }
   .b-note:hover, .b-note:hover .b-note-arrow { transform: none; }
-  .b-portrait-color { transition: none; }
 }
