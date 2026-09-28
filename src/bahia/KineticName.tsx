@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 
 const BASE = { wdth: 112, wght: 600 }
 const PEAK = { wdth: 125, wght: 900 }
@@ -7,8 +7,9 @@ const WORDS = ['JAN', 'FARIS']
 /**
  * The name as the hero visual. Each letter is a variable-font glyph: near the
  * pointer or a finger it swells wider and heavier, like water pushed aside by
- * a hand. Without a pointer a slow swell runs through the letters; phones run
- * it at half rate, and nothing runs while the name is off screen.
+ * a hand. Mouse devices get a slow swell before the first move. Touch devices
+ * float the letters with a compositor-only CSS wave instead, which stays
+ * perfectly smooth on phones; the font swell there only answers a finger.
  */
 export function KineticName({ reduced }: { reduced: boolean }) {
   const line = useRef<HTMLSpanElement>(null)
@@ -24,15 +25,11 @@ export function KineticName({ reduced }: { reduced: boolean }) {
     let visible = true
     let running = false
     let frame = 0
-    let lastDraw = 0
 
     const tick = (now: number) => {
       if (!visible) { running = false; return }
       if (pointer.until && now > pointer.until) { pointer.active = false; pointer.until = 0 }
-      const swell = !pointer.active
-      // Touch devices draw the idle swell at ~30fps; a finger gets full rate.
-      if (touchOnly && swell && now - lastDraw < 30) { frame = requestAnimationFrame(tick); return }
-      lastDraw = now
+      const swell = !touchOnly && !pointer.active
       const radius = fontSize * .82
       // Only measure letters while something is actually near them.
       const rects = pointer.active ? glyphs.map(glyph => glyph.getBoundingClientRect()) : null
@@ -122,8 +119,10 @@ export function KineticName({ reduced }: { reduced: boolean }) {
   return <h1 className="b-name">
     <span className="sr-only">Jan Faris</span>
     <span className="b-name-line" aria-hidden="true" ref={line}>
-      {WORDS.map(word => <span className="b-word" key={word}>
-        {word.split('').map((letter, i) => <span className="b-letter" key={i}><span className="b-glyph">{letter}</span></span>)}
+      {WORDS.map((word, w) => <span className="b-word" key={word}>
+        {word.split('').map((letter, i) => <span className="b-letter" key={i}>
+          <span className="b-float" style={{ '--i': WORDS.slice(0, w).join('').length + i } as CSSProperties}><span className="b-glyph">{letter}</span></span>
+        </span>)}
       </span>)}
     </span>
   </h1>

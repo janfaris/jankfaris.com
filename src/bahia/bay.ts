@@ -70,6 +70,9 @@ uniform float uBright;
 uniform float uAgitation;
 uniform float uMaxPoint;
 uniform float uScale;
+uniform float uGlowSize;
+uniform float uKeep;
+uniform float uCount;
 uniform vec3 uBeacon;
 uniform vec3 uDrop;
 uniform vec4 uTrail[TRAIL];
@@ -134,16 +137,20 @@ void main() {
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
   float depth = max(-mv.z, 0.001);
-  float size = (0.7 + aRand.x * 1.5) * mix(1.0, uIslandSize, land) * (1.0 + min(g, 2.0) * 0.6);
+  float size = (0.7 + aRand.x * 1.5) * mix(1.0, uIslandSize, land) * (1.0 + min(g, 2.0) * uGlowSize);
   float pixels = size * uScale * uPixels * 0.0105 / depth;
   gl_PointSize = clamp(pixels, 1.0, uMaxPoint);
   float reveal = clamp(uIntro * 14.0 - length(water.xz - uDrop.xz) * 0.9, 0.0, 1.0);
   float fog = smoothstep(52.0, 20.0, depth);
-  vAlpha = reveal * fog * uBright * clamp(pixels, 0.0, 1.0);
+  // Quality steps fade particles out by buffer order (spatially random)
+  // instead of cutting them, so a lighter tier never pops.
+  float keep = 1.0 - smoothstep(uKeep - 0.05, uKeep, float(gl_VertexID) / uCount);
+  vAlpha = reveal * fog * uBright * keep * clamp(pixels, 0.0, 1.0);
 }
 `
 
 const PARTICLE_FRAGMENT = /* glsl */ `
+precision mediump float;
 uniform vec3 uDeep;
 uniform vec3 uCyan;
 uniform vec3 uWhite;
@@ -233,7 +240,9 @@ export function createBay(input: BayInput): SceneFactory {
     const compact = window.matchMedia('(max-width: 760px), (pointer: coarse)').matches
     const count = compact ? 22000 : 64000
     // Phones: shorter wake history and smaller halos keep additive overdraw in check.
-    const TRAIL = compact ? 32 : 48
+    const TRAIL = compact ? 24 : 48
+    // Finger positions are for stirring, not for steering the camera while scrolling.
+    const coarse = window.matchMedia('(pointer: coarse)').matches
     const random = mulberry32(19650)
 
     // A shader that fails to compile on this GPU sends the page to its 2D water.
@@ -340,7 +349,10 @@ export function createBay(input: BayInput): SceneFactory {
       uIslandSize: { value: 2.6 },
       uBright: { value: 1 },
       uAgitation: { value: 0 },
-      uMaxPoint: { value: compact ? 36 : 56 },
+      uMaxPoint: { value: compact ? 30 : 56 },
+      uGlowSize: { value: compact ? .45 : .6 },
+      uKeep: { value: 1.08 },
+      uCount: { value: count },
       uScale: { value: compact ? 1.3 : 1 },
       uBeacon: { value: beaconWorld },
       uDrop: { value: drop },
@@ -419,32 +431,41 @@ export function createBay(input: BayInput): SceneFactory {
     beacon.renderOrder = 3
     scene.add(beacon)
 
-    // Quality governor. One-way: if a device cannot hold ~48fps it draws fewer
-    // particles at a lower pixel ratio, at most two steps. If a step does not
-    // help (a phone capped at 30fps in Low Power Mode), it stops stepping.
-    const tiers = [{ share: 1, pixelRatio: Infinity }, { share: .65, pixelRatio: 1.25 }, { share: .42, pixelRatio: 1 }]
-    const governor = { tier: 0, frames: [] as number[], settleUntil: performance.now() + 3500, previous: 0, stopped: reducedMotion, last: performance.now() }
+    // Quality governor. One-way: if a device cannot hold ~50fps it fades out a
+    // share of the particles, at most two steps. If a step does not help (a
+    // phone capped at 30fps in Low Power Mode), it stops. The pixel ratio is
+    // fixed per device class so the canvas never resizes mid-session.
+    const tiers = [{ share: 1 }, { share: .62 }, { share: .4 }]
+    const pixelCap = compact ? 1.25 : Infinity
+    const governor = { tier: 0, frames: [] as number[], settleUntil: performance.now() + 3500, previous: 0, stopped: reducedMotion, last: performance.now(), keep: 1.08, cutAt: 0 }
     const applyTier = () => {
-      geometry.setDrawRange(0, Math.floor(count * tiers[governor.tier].share))
+      // Fade first; the draw range shrinks once the faded particles are invisible.
+      governor.cutAt = performance.now() + 1600
       renderer.domElement.dataset.quality = String(governor.tier)
     }
     // Dev only: ?quality=0|1|2 pins a tier so each one can be checked by eye.
     const pinned = import.meta.env.DEV ? Number(new URLSearchParams(window.location.search).get('quality') ?? NaN) : NaN
     if (pinned >= 0 && pinned < tiers.length) { governor.tier = pinned; governor.stopped = true }
     applyTier()
-    const govern = () => {
+    const govern = (step: number) => {
       const now = performance.now()
       const frame = now - governor.last
       governor.last = now
-      // SceneViewport resets the pixel ratio on resize; keep this tier's cap.
-      const cap = tiers[governor.tier].pixelRatio
-      if (renderer.getPixelRatio() > cap + .001) renderer.setPixelRatio(cap)
+      // SceneViewport resets the pixel ratio on resize; keep the device cap.
+      if (renderer.getPixelRatio() > pixelCap + .001) renderer.setPixelRatio(pixelCap)
+      const share = tiers[governor.tier].share
+      governor.keep = damp(governor.keep, share + (share < 1 ? 0 : .08), 2.2, step)
+      particleUniforms.uKeep.value = governor.keep
+      if (governor.cutAt && now > governor.cutAt) {
+        geometry.setDrawRange(0, share < 1 ? Math.ceil(count * share) : count)
+        governor.cutAt = 0
+      }
       if (governor.stopped || governor.tier === tiers.length - 1 || now < governor.settleUntil || frame > 100) return
       governor.frames.push(frame)
       if (governor.frames.length < 90) return
       const average = governor.frames.reduce((sum, value) => sum + value, 0) / governor.frames.length
       governor.frames.length = 0
-      if (average <= 21) {
+      if (average <= 20) {
         if (governor.previous) governor.stopped = true
         return
       }
@@ -473,6 +494,9 @@ export function createBay(input: BayInput): SceneFactory {
     const projected = new THREE.Vector3()
     const size = new THREE.Vector2()
     const parallax = new THREE.Vector2()
+    const aerialBack = new THREE.Vector3()
+    const aerialUp = new THREE.Vector3()
+    const flatForward = new THREE.Vector3()
 
     const addTrail = (x: number, z: number, strength: number, time: number) => {
       trail[trailIndex].set(x, z, time, strength)
@@ -496,8 +520,8 @@ export function createBay(input: BayInput): SceneFactory {
       const span = wide ? 11.4 : 10.4
       const fill = wide ? .54 : .94
       const distance = Math.max(span / 2 / (tanH * fill), 7)
-      const back = new THREE.Vector3(0, Math.sin(pitch), Math.cos(pitch))
-      const up = new THREE.Vector3(0, Math.cos(pitch), -Math.sin(pitch))
+      const back = aerialBack.set(0, Math.sin(pitch), Math.cos(pitch))
+      const up = aerialUp.set(0, Math.cos(pitch), -Math.sin(pitch))
       // Desktop: the island sits right of centre, clear of the copy on the left.
       // Portrait: it sits in the upper half, above the copy.
       const shiftX = wide ? -.34 * distance * tanH : 0
@@ -510,9 +534,9 @@ export function createBay(input: BayInput): SceneFactory {
     return {
       update(elapsed, delta) {
         input.frames++
-        govern()
         const time = reducedMotion ? 6 : elapsed
         const step = reducedMotion ? 1 : Math.min(delta, .05)
+        govern(step)
         const targets = input.targets
         renderer.getDrawingBufferSize(size)
         const aspect = size.x / Math.max(size.y, 1)
@@ -533,8 +557,8 @@ export function createBay(input: BayInput): SceneFactory {
         tempPos.lerpVectors(heroPos, aerialPos, lift).lerp(restPos, settle)
         tempLook.lerpVectors(heroLook, aerialLook, lift).lerp(restLook, settle)
         if (!reducedMotion) {
-          parallax.x = damp(parallax.x, input.pointer.x, 2, step)
-          parallax.y = damp(parallax.y, input.pointer.y, 2, step)
+          parallax.x = damp(parallax.x, coarse ? 0 : input.pointer.x, 2, step)
+          parallax.y = damp(parallax.y, coarse ? 0 : input.pointer.y, 2, step)
           tempPos.x += parallax.x * .22 * (1 - lift * .7) + Math.sin(time * .11) * .12
           tempPos.y += parallax.y * .07 + Math.sin(time * .17) * .03
         }
@@ -604,7 +628,7 @@ export function createBay(input: BayInput): SceneFactory {
         particleUniforms.uAgitation.value = state.agitation
         particleUniforms.uPixels.value = size.y / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))
 
-        const flatForward = tempLook.clone().sub(tempPos).setY(0)
+        flatForward.copy(tempLook).sub(tempPos).setY(0)
         if (flatForward.lengthSq() > 1e-6) {
           projected.copy(flatForward.normalize().multiplyScalar(1e4)).add(camera.position).setY(0).project(camera)
           backgroundUniforms.uHorizon.value = projected.z < 1 ? THREE.MathUtils.clamp(projected.y, -1, 3) : 3
@@ -627,8 +651,8 @@ export function createBay(input: BayInput): SceneFactory {
 
         if (input.onBeacon) {
           projected.copy(beaconWorld).project(camera)
-          const width = renderer.domElement.clientWidth
-          const height = renderer.domElement.clientHeight
+          const width = size.x / renderer.getPixelRatio()
+          const height = size.y / renderer.getPixelRatio()
           input.onBeacon((projected.x * .5 + .5) * width, (-projected.y * .5 + .5) * height, beaconOpacity)
         }
       },

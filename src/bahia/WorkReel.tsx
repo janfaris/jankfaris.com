@@ -62,7 +62,7 @@ export function WorkReel({ lang, reduced }: { lang: Lang; reduced: boolean }) {
         // Phones get a compositor-only reveal; animating clip-path over video repaints every frame.
         gsap.utils.toArray<HTMLElement>('.b-frame', root).forEach(frame => gsap.fromTo(frame,
           { autoAlpha: .2, scale: .9, y: 48 },
-          { autoAlpha: 1, scale: 1, y: 0, ease: 'none', scrollTrigger: { trigger: frame, start: 'top 98%', end: 'top 58%', scrub: true } }))
+          { autoAlpha: 1, scale: 1, y: 0, ease: 'none', scrollTrigger: { trigger: frame, start: 'top 98%', end: 'top 58%', scrub: .5 } }))
         return
       }
       root.classList.add('is-reel')

@@ -41,13 +41,13 @@ function Diagnostics({ input, renderer, reduced }: { input: BayInput; renderer: 
     const probe = document.createElement('canvas').getContext('webgl2')
     const info = probe?.getExtension('WEBGL_debug_renderer_info')
     const gpu = probe ? String(info ? probe.getParameter(info.UNMASKED_RENDERER_WEBGL) : probe.getParameter(probe.RENDERER)) : 'none'
-    let frames = 0
-    let fps = 0
-    let since = performance.now()
+    const deltas: number[] = []
+    let last = performance.now()
     let raf = 0
     const count = (now: number) => {
-      frames++
-      if (now - since >= 1000) { fps = frames * 1000 / (now - since); frames = 0; since = now }
+      deltas.push(now - last)
+      last = now
+      if (deltas.length > 300) deltas.shift()
       raf = requestAnimationFrame(count)
     }
     raf = requestAnimationFrame(count)
@@ -59,7 +59,14 @@ function Diagnostics({ input, renderer, reduced }: { input: BayInput; renderer: 
         `iOS/OS reduce motion: ${window.matchMedia('(prefers-reduced-motion: reduce)').matches}`,
         `webgl2: ${Boolean(probe)} (${gpu})`,
         `scene frames: ${input.frames}  quality tier: ${canvas?.dataset.quality ?? '-'}`,
-        `page fps: ${fps.toFixed(0)}  gsap frame: ${gsap.ticker.frame}`,
+        (() => {
+          const recent = deltas.filter(value => value < 250)
+          if (!recent.length) return 'frames: -'
+          const sorted = [...recent].sort((a, b) => a - b)
+          const average = recent.reduce((sum, value) => sum + value, 0) / recent.length
+          const slow = recent.filter(value => value > 25).length / recent.length * 100
+          return `fps: ${(1000 / average).toFixed(0)}  p95: ${sorted[Math.floor(sorted.length * .95)].toFixed(1)}ms  slow frames: ${slow.toFixed(0)}%`
+        })(),
         `intro: ${document.querySelector<HTMLElement>('.bahia')?.dataset.intro}  visible: ${!document.hidden}`,
         `ua: ${navigator.userAgent}`,
         ...errors.slice(-3).map(message => `error: ${message}`),
@@ -297,7 +304,7 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
       const update = (y: number) => {
         navEl.classList.toggle('is-scrolled', y > 40)
         if (reduced) return
-        const vh = window.innerHeight
+        const vh = document.documentElement.clientHeight || window.innerHeight
         const enter = phase(y, offsets.island - vh, offsets.island)
         const stuck = phase(y, offsets.island, offsets.island + offsets.islandHeight - vh)
         const leave = phase(y, offsets.work - vh, offsets.work - vh * .12)

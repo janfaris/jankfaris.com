@@ -120,6 +120,12 @@ html.bahia-route body::before { display: none; }
 .bahia:not([data-intro='done']) .b-word { overflow: hidden; }
 .b-letter { display: inline-block; }
 .b-glyph { display: inline-block; font-variation-settings: 'wdth' 112, 'wght' 600; }
+.b-float { display: inline-block; }
+/* Phones: the letters float on a compositor-only wave (no layout, no JS). */
+@media (hover: none) {
+  html:not(.bahia-reduced) .b-float { animation: b-float 3.6s ease-in-out infinite; animation-delay: calc(var(--i) * -.32s); will-change: transform; }
+}
+@keyframes b-float { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -.045em, 0); } }
 
 /* Island */
 .b-isla { position: relative; }
