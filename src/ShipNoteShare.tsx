@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Post } from './posts'
 import { formatNoteNumber } from './posts'
 
-const siteUrl = 'https://jankfaris.com'
+const siteUrl = 'https://www.janfaris.com'
 
 const shareCopy = {
   en: {

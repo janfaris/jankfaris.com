@@ -33,7 +33,7 @@ def footer(canvas, doc):
     canvas.line(40, 32, 572, 32)
     canvas.setFont('Helvetica', 7)
     canvas.setFillColor(colors.HexColor('#626575'))
-    canvas.drawString(40, 20, 'Jan Faris | jankfaris.com')
+    canvas.drawString(40, 20, 'Jan Faris | janfaris.com')
     canvas.drawRightString(572, 20, str(doc.page))
 
 story=[p(data['name'],'name'),p(data['role'],'role'),p(data['contact'],'contact'),section('Summary'),p(data['summary']),section('Professional experience')]
@@ -43,7 +43,7 @@ for item in data['experience']:
     block.extend(p('• '+bullet,'bullet') for bullet in item['bullets'])
     story.append(KeepTogether(block))
 story.append(p(data['earlier'],'note'))
-story.extend([PageBreak(),section('AI product portfolio - independent work'),p('8 products shipped in 18 months. Live demos and writeups at jankfaris.com.')])
+story.extend([PageBreak(),section('AI product portfolio - independent work'),p('8 products shipped in 18 months. Live demos and writeups at janfaris.com.')])
 for item in data['projects']:
     story.append(KeepTogether([p(item['heading'],'heading'),p(item['body'])]))
 story.append(section('Skills'))

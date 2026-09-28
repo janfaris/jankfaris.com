@@ -8,7 +8,7 @@ import WritingEs from './WritingEs.tsx'
 import PostEs from './PostEs.tsx'
 import Resume from './Resume.tsx'
 import AiReadiness from './AiReadiness.tsx'
-import { RouteMeta, ScrollToTop } from './RouteUtilities.tsx'
+import { CanonicalSync, RouteMeta, ScrollToTop } from './RouteUtilities.tsx'
 
 const ThreeLab = lazy(() => import('./three-lab/ThreeLab.tsx'))
 const IslandExperience = lazy(() => import('./three-lab/IslandExperience.tsx'))
@@ -24,6 +24,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <ScrollToTop />
+      <CanonicalSync />
       <Routes>
         <Route path="/lab/island" element={<Suspense fallback={<p style={{ padding: 40 }}>Opening the island…</p>}><IslandExperience /></Suspense>} />
         <Route path="/lab/three" element={<Suspense fallback={<p style={{ padding: 40 }}>Loading motion studies…</p>}><ThreeLab /></Suspense>} />

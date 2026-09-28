@@ -147,7 +147,7 @@ export default function AiReadiness({ lang = 'en' }: { lang?: Language }) {
       `${copy.resultEyebrow}: ${outcome.title}`,
       outcome.body,
       missing ? `\n${copy.missingGate}:\n${missing}` : '',
-      `\nhttps://jankfaris.com${lang === 'es' ? '/es/ai-readiness' : '/ai-readiness'}?utm_source=result_share&utm_medium=referral&utm_campaign=ai_readiness`,
+      `\nhttps://www.janfaris.com${lang === 'es' ? '/es/ai-readiness' : '/ai-readiness'}?utm_source=result_share&utm_medium=referral&utm_campaign=ai_readiness`,
     ].filter(Boolean).join('\n')
   }, [copy, lang, missingCriticalItems, outcome, score])
 
@@ -180,7 +180,7 @@ export default function AiReadiness({ lang = 'en' }: { lang?: Language }) {
       await navigator.share({
         title: copy.title,
         text: `${score}/10 · ${outcome.title}`,
-        url: `https://jankfaris.com${lang === 'es' ? '/es/ai-readiness' : '/ai-readiness'}?utm_source=native_share&utm_medium=referral&utm_campaign=ai_readiness`,
+        url: `https://www.janfaris.com${lang === 'es' ? '/es/ai-readiness' : '/ai-readiness'}?utm_source=native_share&utm_medium=referral&utm_campaign=ai_readiness`,
       })
       setFeedback(copy.shared)
     } catch (error) {
