@@ -253,10 +253,13 @@ html.bahia-route body::before { display: none; }
 .b-contact { position: relative; display: flex; align-items: center; min-height: 92svh; padding-block: var(--section) 72px; }
 .b-contact-title { margin: 0; max-width: 11.5ch; font-size: clamp(50px, 8.8vw, 152px); font-weight: 650; font-stretch: 114%; letter-spacing: -.05em; line-height: .94; text-wrap: balance; }
 .b-contact-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 40px; }
-.b-email { display: inline-flex; align-items: center; gap: 14px; height: 50px; padding: 0 8px 0 22px; border: 1px solid var(--line-2); border-radius: 999px; background: rgba(2, 6, 12, .4); color: var(--text); font: 500 14px/1 var(--mono); cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: border-color .3s, scale .35s var(--ease); }
+.b-email { display: inline-flex; align-items: center; gap: 14px; height: 50px; padding: 0 8px 0 22px; border: 1px solid var(--line-2); border-radius: 999px; background: rgba(2, 6, 12, .4); color: var(--text); font: 500 14px/1 var(--mono); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: border-color .3s; }
 .b-email:hover { border-color: var(--text-2); }
-.b-email:active { scale: .98; }
-.b-email span { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 999px; background: rgba(164, 204, 255, .1); color: var(--text-2); font-size: 12px; }
+.b-email a { text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 4px; }
+.b-email a:hover { text-decoration-color: var(--accent); }
+.b-email button { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: rgba(164, 204, 255, .1); color: var(--text-2); font: 500 12px/1 var(--mono); cursor: pointer; transition: background .3s, scale .35s var(--ease); }
+.b-email button:hover { background: rgba(164, 204, 255, .18); color: var(--text); }
+.b-email button:active { scale: .96; }
 
 /* Footer */
 .b-footer { position: relative; z-index: 1; padding: 28px 0 36px; border-top: 1px solid var(--line); background: linear-gradient(to bottom, rgba(2, 6, 12, 0), rgba(2, 6, 12, .6)); font-size: 13px; color: var(--text-3); }

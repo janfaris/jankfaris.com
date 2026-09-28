@@ -229,7 +229,7 @@ const en = {
   },
   contact: {
     title: 'Good work starts with a conversation.',
-    body: 'For conversations about useful AI, open source, or the tech community in Puerto Rico, say hello.',
+    body: 'For conversations about useful AI, open source, or the tech community in Puerto Rico, say hello on LinkedIn or email me.',
     copy: 'Copy email',
     copied: 'Copied',
   },
@@ -284,7 +284,7 @@ const es: typeof en = {
   },
   contact: {
     title: 'Las buenas ideas se conversan.',
-    body: 'Para conversar sobre IA útil, open source o la comunidad tech de Puerto Rico, escríbeme.',
+    body: 'Para conversar sobre IA útil, open source o la comunidad tech de Puerto Rico, escríbeme por LinkedIn o por email.',
     copy: 'Copiar email',
     copied: 'Copiado',
   },

@@ -21,6 +21,8 @@ import { WorkReel } from './WorkReel'
 // three.js loads in its own chunk so the hero copy never waits for the scene.
 const BayBackdrop = lazy(() => import('./BayBackdrop'))
 const MAILTO = `mailto:${EMAIL}?subject=Hola%20Jan`
+// "Say hello" goes to LinkedIn; email stays one tap away in the contact section.
+const LINKEDIN = 'https://www.linkedin.com/in/jan-faris-garcia'
 const NOTE_NUMBERS = [8, 7, 4, 1]
 const staticMap = coastPaths(1000, 400)
 
@@ -381,7 +383,7 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
           <span className="b-eq" aria-hidden="true"><i /><i /><i /><i /></span>
           <span className="b-sound-text" aria-hidden="true">{soundOn ? t.sound.on : t.sound.off}</span>
         </button>
-        <a className="b-btn b-btn-primary b-nav-cta" href={MAILTO}>{t.hello}</a>
+        <a className="b-btn b-btn-primary b-nav-cta" href={LINKEDIN} target="_blank" rel="noreferrer">{t.hello}</a>
         <button className="b-menu-btn" type="button" ref={menuButton} aria-expanded={menuOpen} aria-controls="b-menu" aria-label={menuOpen ? t.nav.close : t.nav.menu} onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? <X size={20} strokeWidth={1.75} /> : <Menu size={20} strokeWidth={1.75} />}
         </button>
@@ -389,7 +391,7 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
     </header>
     {menuOpen && <nav className="b-menu" id="b-menu" ref={menuPanel} aria-label={t.nav.menu}>
       {links}
-      <a href={MAILTO}>{t.hello}</a>
+      <a href={LINKEDIN} target="_blank" rel="noreferrer">{t.hello}</a>
     </nav>}
 
     {!glLost && <div className="b-sj" id="b-sj" aria-hidden="true">
@@ -405,7 +407,7 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
             <p className="b-hero-sub b-reveal"><Scramble text={t.hero.sub} duration={900} /></p>
             <div className="b-ctas b-reveal">
               <a className="b-btn b-btn-primary" href="#work" onClick={goToWork} data-magnetic><Scramble text={t.hero.work} /><ArrowDown size={16} strokeWidth={2} aria-hidden="true" /></a>
-              <a className="b-btn b-btn-ghost" href={MAILTO} data-magnetic><Scramble text={t.hello} /></a>
+              <a className="b-btn b-btn-ghost" href={LINKEDIN} target="_blank" rel="noreferrer" data-magnetic><Scramble text={t.hello} /></a>
             </div>
           </div>
         </div>
@@ -449,11 +451,11 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
           <h2 className="b-contact-title" id="b-contact-title"><Scramble text={t.contact.title} duration={900} /></h2>
           <p className="b-lede">{t.contact.body}</p>
           <div className="b-contact-actions">
-            <a className="b-btn b-btn-primary" href={MAILTO} data-magnetic><Scramble text={t.hello} /><ArrowUpRight size={16} strokeWidth={2} aria-hidden="true" /></a>
-            <button className="b-email" type="button" onClick={copyEmail}>
-              {EMAIL}
-              <span role="status">{copied ? t.contact.copied : t.contact.copy}</span>
-            </button>
+            <a className="b-btn b-btn-primary" href={LINKEDIN} target="_blank" rel="noreferrer" data-magnetic><Scramble text={t.hello} /><ArrowUpRight size={16} strokeWidth={2} aria-hidden="true" /></a>
+            <div className="b-email">
+              <a href={MAILTO}>{EMAIL}</a>
+              <button type="button" onClick={copyEmail}><span role="status">{copied ? t.contact.copied : t.contact.copy}</span></button>
+            </div>
           </div>
         </div>
       </section>
