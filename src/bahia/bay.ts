@@ -236,6 +236,8 @@ export function createBay(input: BayInput): SceneFactory {
     const TRAIL = compact ? 32 : 48
     const random = mulberry32(19650)
 
+    // A shader that fails to compile on this GPU sends the page to its 2D water.
+    renderer.debug.onShaderError = () => { input.failed = true }
     // This scene is all additive light: no shadows, fog, or lit materials.
     renderer.shadowMap.enabled = false
     scene.background = null
@@ -507,6 +509,7 @@ export function createBay(input: BayInput): SceneFactory {
 
     return {
       update(elapsed, delta) {
+        input.frames++
         govern()
         const time = reducedMotion ? 6 : elapsed
         const step = reducedMotion ? 1 : Math.min(delta, .05)

@@ -10,7 +10,7 @@ import { Scramble } from './Scramble'
  * Career as a flight path: the line draws itself as you scroll and each stop
  * lights up when the path reaches it.
  */
-export function Trajectory({ lang }: { lang: Lang }) {
+export function Trajectory({ lang, reduced }: { lang: Lang; reduced: boolean }) {
   const t = copy[lang]
   const list = useRef<HTMLOListElement>(null)
   const svg = useRef<SVGSVGElement>(null)
@@ -66,7 +66,8 @@ export function Trajectory({ lang }: { lang: Lang }) {
     const resize = new ResizeObserver(build)
     resize.observe(ol)
     const media = gsap.matchMedia()
-    media.add('(prefers-reduced-motion: no-preference)', () => {
+    media.add('all', () => {
+      if (reduced) return
       progress = 0
       draw()
       const items = Array.from(ol.children) as HTMLElement[]
@@ -89,7 +90,7 @@ export function Trajectory({ lang }: { lang: Lang }) {
       resize.disconnect()
       media.revert()
     }
-  }, [])
+  }, [reduced])
 
   return <section className="b-path" id="path" aria-labelledby="b-path-title">
     <div className="b-wrap">

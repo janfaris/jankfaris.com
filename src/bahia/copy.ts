@@ -234,6 +234,8 @@ const en = {
     copied: 'Copied',
   },
   footer: 'Hecho en Puerto Rico · © 2026 Jan Faris',
+  motionOff: 'Reduce motion',
+  motionOn: 'Turn motion on',
 }
 
 const es: typeof en = {
@@ -289,6 +291,8 @@ const es: typeof en = {
     copied: 'Copiado',
   },
   footer: 'Hecho en Puerto Rico · © 2026 Jan Faris',
+  motionOff: 'Reducir movimiento',
+  motionOn: 'Activar movimiento',
 }
 
 export const copy: Record<Lang, typeof en> = { en, es }

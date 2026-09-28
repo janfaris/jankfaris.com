@@ -122,7 +122,8 @@ body::before {
     --dur-base: 1ms;
     --dur-slow: 1ms;
   }
-  *, *::before, *::after {
+  /* The homepage (.bahia-route) manages motion with its own footer switch. */
+  html:not(.bahia-route) *, html:not(.bahia-route) *::before, html:not(.bahia-route) *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     animation-delay: 0ms !important;

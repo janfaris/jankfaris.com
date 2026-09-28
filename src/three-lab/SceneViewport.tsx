@@ -6,7 +6,7 @@ import type { SceneController, SceneFactory } from './types'
 
 const noop = () => undefined
 
-export function SceneViewport({ factory, name, paused, controllerRef, onInfo, onProgress = noop, onSelectProject = noop, allowPageScroll = false, fitAspect = 1.35, theme = 'light', lang = 'en', showFloor = true, antialias = true }: {
+export function SceneViewport({ factory, name, paused, controllerRef, onInfo, onProgress = noop, onSelectProject = noop, allowPageScroll = false, fitAspect = 1.35, theme = 'light', lang = 'en', showFloor = true, antialias = true, reducedMotion: reducedOverride }: {
   factory: SceneFactory
   name: string
   paused: boolean
@@ -20,16 +20,19 @@ export function SceneViewport({ factory, name, paused, controllerRef, onInfo, on
   lang?: 'en' | 'es'
   showFloor?: boolean
   antialias?: boolean
+  /** Overrides the OS reduced-motion preference when set. */
+  reducedMotion?: boolean
 }) {
   const host = useRef<HTMLDivElement>(null)
   const pauseRef = useRef(paused)
   const [error, setError] = useState(false)
   const [attempt, setAttempt] = useState(0)
-  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [prefersReduced, setPrefersReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const reducedMotion = reducedOverride ?? prefersReduced
   useEffect(() => { pauseRef.current = paused }, [paused])
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const change = () => setReducedMotion(media.matches)
+    const change = () => setPrefersReduced(media.matches)
     media.addEventListener('change', change)
     return () => media.removeEventListener('change', change)
   }, [])

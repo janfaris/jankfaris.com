@@ -321,7 +321,18 @@ html.bahia-route body::before { display: none; }
   .b-sound { width: 44px; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .b-lens li, .b-lens-scan, .b-sound .b-eq i { animation: none; }
-  .b-note:hover, .b-note:hover .b-note-arrow { transform: none; }
-}
+/* Motion follows the footer switch, not the OS setting. */
+html.bahia-reduced .b-lens li, html.bahia-reduced .b-lens-scan, html.bahia-reduced .b-sound .b-eq i { animation: none; }
+html.bahia-reduced .b-note:hover, html.bahia-reduced .b-note:hover .b-note-arrow { transform: none; }
+
+.b-motion-switch { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; transition: color .3s; }
+.b-motion-switch:hover { color: var(--text); }
+
+/* Coast drawing for the 2D / no-WebGL island. */
+.b-isla-map.is-animated path { stroke-dasharray: var(--length); stroke-dashoffset: var(--length); fill-opacity: 0; transition: stroke-dashoffset 2.8s var(--ease), fill-opacity 1.4s ease 1.6s; }
+.b-isla-map.is-animated.is-drawn path { stroke-dashoffset: 0; fill-opacity: 1; }
+.b-isla-map.is-animated .b-isla-ring { transform-box: fill-box; transform-origin: center; animation: b-ping 2.4s ease-out infinite; }
+@keyframes b-ping { from { transform: scale(.6); opacity: .9; } to { transform: scale(2.4); opacity: 0; } }
+.b-backdrop-2d { width: 100%; display: block; }
+
+.b-diag { position: fixed; left: 8px; bottom: 8px; z-index: 80; max-width: calc(100vw - 16px); margin: 0; padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, .85); color: #9be8ff; font: 11px/1.45 var(--mono); white-space: pre-wrap; word-break: break-word; pointer-events: none; }

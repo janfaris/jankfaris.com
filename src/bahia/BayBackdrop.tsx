@@ -13,7 +13,7 @@ const noop = () => undefined
  * context (iOS does this when you switch apps), the page shows its static map
  * and the scene is rebuilt once the tab is visible again.
  */
-export default function BayBackdrop({ input, onLost }: { input: BayInput; onLost: (lost: boolean) => void }) {
+export default function BayBackdrop({ input, onLost, onFail, reduced }: { input: BayInput; onLost: (lost: boolean) => void; onFail: () => void; reduced: boolean }) {
   const controller = useRef<SceneController | null>(null)
   const host = useRef<HTMLDivElement>(null)
   const [generation, setGeneration] = useState(0)
@@ -27,7 +27,9 @@ export default function BayBackdrop({ input, onLost }: { input: BayInput; onLost
     let attempts = 0
     let timer = 0
     const restore = () => {
-      if (!lost || document.hidden || attempts >= 3) return
+      if (!lost || document.hidden) return
+      // A GPU that keeps dropping the context gets the 2D water instead.
+      if (attempts >= 3) { onFail(); return }
       lost = false
       attempts++
       onLost(false)
@@ -47,9 +49,9 @@ export default function BayBackdrop({ input, onLost }: { input: BayInput; onLost
       document.removeEventListener('visibilitychange', restore)
       window.clearTimeout(timer)
     }
-  }, [onLost])
+  }, [onLost, onFail])
 
   return <div className="b-backdrop" ref={host} aria-hidden="true">
-    <SceneViewport key={generation} factory={factory} name="Bioluminescent bay" paused={false} controllerRef={controller} onInfo={noop} allowPageScroll fitAspect={.01} theme="dark" showFloor={false} antialias={!compact} />
+    <SceneViewport key={generation} factory={factory} name="Bioluminescent bay" paused={false} controllerRef={controller} onInfo={noop} allowPageScroll fitAspect={.01} theme="dark" showFloor={false} antialias={!compact} reducedMotion={reduced} />
   </div>
 }

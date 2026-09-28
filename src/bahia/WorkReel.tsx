@@ -45,7 +45,7 @@ function Panel({ project, lang }: { project: FeaturedProject; lang: Lang }) {
  * by vertical scroll, and each product is revealed through a widening lens.
  * Narrow screens, reduced motion, and no-JS get the same content as a column.
  */
-export function WorkReel({ lang }: { lang: Lang }) {
+export function WorkReel({ lang, reduced }: { lang: Lang; reduced: boolean }) {
   const t = copy[lang]
   const section = useRef<HTMLElement>(null)
   const track = useRef<HTMLDivElement>(null)
@@ -55,9 +55,9 @@ export function WorkReel({ lang }: { lang: Lang }) {
     const rail = track.current
     if (!root || !rail) return
     const media = gsap.matchMedia()
-    media.add({ wide: '(min-width: 900px)', motion: '(prefers-reduced-motion: no-preference)' }, context => {
-      const { wide, motion } = context.conditions as Record<string, boolean>
-      if (!motion) return
+    media.add({ wide: '(min-width: 900px)' }, context => {
+      const { wide } = context.conditions as Record<string, boolean>
+      if (reduced) return
       if (!wide) {
         // Phones get a compositor-only reveal; animating clip-path over video repaints every frame.
         gsap.utils.toArray<HTMLElement>('.b-frame', root).forEach(frame => gsap.fromTo(frame,
@@ -92,24 +92,23 @@ export function WorkReel({ lang }: { lang: Lang }) {
       }
     })
     return () => media.revert()
-  }, [])
+  }, [reduced])
 
   // Demos play only while on screen, and never under reduced motion. Phones
   // decode one at a time: only the most visible demo plays.
   useEffect(() => {
     const root = section.current
     if (!root) return
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
     const single = window.matchMedia('(max-width: 899px), (pointer: coarse)').matches
     const videos = Array.from(root.querySelectorAll('video'))
     const ratios = new Map<HTMLVideoElement, number>()
-    videos.forEach(video => { video.controls = reduced.matches })
+    videos.forEach(video => { video.controls = reduced })
     const sync = () => {
       const threshold = single ? .6 : .35
       const best = single ? [...ratios].sort((a, b) => b[1] - a[1])[0]?.[0] : undefined
       for (const video of videos) {
         const ratio = ratios.get(video) ?? 0
-        const play = !reduced.matches && ratio >= threshold && (!single || video === best)
+        const play = !reduced && ratio >= threshold && (!single || video === best)
         if (play && video.paused) void video.play().catch(() => undefined)
         else if (!play && !video.paused) video.pause()
       }
@@ -120,7 +119,7 @@ export function WorkReel({ lang }: { lang: Lang }) {
     }, { threshold: [0, .35, .6, .8, 1] })
     videos.forEach(video => observer.observe(video))
     return () => observer.disconnect()
-  }, [])
+  }, [reduced])
 
   return <section className="b-work" id="work" ref={section} aria-labelledby="b-work-title">
     <div className="b-work-stage">

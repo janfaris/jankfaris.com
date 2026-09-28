@@ -1,14 +1,16 @@
 import '@fontsource-variable/archivo/wdth.css'
 import '@fontsource-variable/geist-mono/wght.css'
 import './bahia.css'
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowDown, ArrowUpRight, Menu, X } from 'lucide-react'
 import { JFMark } from '../JFMark'
 import type { Lang } from '../content'
 import { formatNoteNumber, posts, type Post } from '../posts'
 import { postsEs } from '../posts.es'
+import BayCanvas2D from './BayCanvas2D'
 import { createBayInput, hasWebGL, type BayInput } from './input'
+import { motion, readReducedPreference, writeReducedPreference } from './motion'
 import { createNightSound } from './coqui'
 import { copy, EMAIL, socials } from './copy'
 import { gsap, ScrollTrigger } from './gsap'
@@ -29,15 +31,47 @@ const staticMap = coastPaths(1000, 400)
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 const phase = (value: number, start: number, end: number) => clamp01((value - start) / (end - start))
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+/** ?diag on any page URL shows what this device reports, for remote debugging. */
+function Diagnostics({ input, renderer, reduced }: { input: BayInput; renderer: string; reduced: boolean }) {
+  const [text, setText] = useState('')
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const change = () => setReduced(media.matches)
-    media.addEventListener('change', change)
-    return () => media.removeEventListener('change', change)
-  }, [])
-  return reduced
+    const errors: string[] = []
+    const onError = (event: ErrorEvent) => { errors.push(event.message) }
+    window.addEventListener('error', onError)
+    const probe = document.createElement('canvas').getContext('webgl2')
+    const info = probe?.getExtension('WEBGL_debug_renderer_info')
+    const gpu = probe ? String(info ? probe.getParameter(info.UNMASKED_RENDERER_WEBGL) : probe.getParameter(probe.RENDERER)) : 'none'
+    let frames = 0
+    let fps = 0
+    let since = performance.now()
+    let raf = 0
+    const count = (now: number) => {
+      frames++
+      if (now - since >= 1000) { fps = frames * 1000 / (now - since); frames = 0; since = now }
+      raf = requestAnimationFrame(count)
+    }
+    raf = requestAnimationFrame(count)
+    const timer = window.setInterval(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>('.b-backdrop canvas')
+      setText([
+        `renderer: ${renderer}${input.failed ? ' (shader error)' : ''}`,
+        `motion: ${reduced ? 'reduced by footer switch' : 'on'}`,
+        `iOS/OS reduce motion: ${window.matchMedia('(prefers-reduced-motion: reduce)').matches}`,
+        `webgl2: ${Boolean(probe)} (${gpu})`,
+        `scene frames: ${input.frames}  quality tier: ${canvas?.dataset.quality ?? '-'}`,
+        `page fps: ${fps.toFixed(0)}  gsap frame: ${gsap.ticker.frame}`,
+        `intro: ${document.querySelector<HTMLElement>('.bahia')?.dataset.intro}  visible: ${!document.hidden}`,
+        `ua: ${navigator.userAgent}`,
+        ...errors.slice(-3).map(message => `error: ${message}`),
+      ].join('\n'))
+    }, 500)
+    return () => {
+      window.removeEventListener('error', onError)
+      window.clearInterval(timer)
+      cancelAnimationFrame(raf)
+    }
+  }, [input, renderer, reduced])
+  return <pre className="b-diag" aria-hidden="true">{text}</pre>
 }
 
 type Note = Post & { href: string; english: boolean }
@@ -75,8 +109,22 @@ function placeBeacon(label: HTMLElement | null, x: number, y: number, opacity: n
   label.style.transform = `translate3d(${(flip ? x - 14 - label.offsetWidth : x + 14).toFixed(1)}px, ${(y - 40).toFixed(1)}px, 0)`
 }
 
-function StaticIsland({ label }: { label: string }) {
-  return <svg className="b-isla-map" viewBox="0 0 1000 400" role="img" aria-label={label}>
+function StaticIsland({ label, animate }: { label: string; animate: boolean }) {
+  const map = useRef<SVGSVGElement>(null)
+  // Without the particle scene, the coast still draws itself when it scrolls into view.
+  useEffect(() => {
+    const svg = map.current
+    if (!svg || !animate) return
+    svg.querySelectorAll('path').forEach(path => path.style.setProperty('--length', String(Math.ceil(path.getTotalLength()))))
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return
+      svg.classList.add('is-drawn')
+      observer.disconnect()
+    }, { threshold: .3 })
+    observer.observe(svg)
+    return () => observer.disconnect()
+  }, [animate])
+  return <svg className={`b-isla-map${animate ? ' is-animated' : ''}`} ref={map} viewBox="0 0 1000 400" role="img" aria-label={label}>
     {staticMap.paths.map(d => <path key={d.slice(0, 24)} d={d} />)}
     <circle className="b-isla-ring" cx={staticMap.sanJuan.x} cy={staticMap.sanJuan.y} r="15" />
     <circle cx={staticMap.sanJuan.x} cy={staticMap.sanJuan.y} r="5" />
@@ -106,8 +154,11 @@ function NoteRow({ note, input, englishLabel }: { note: Note; input: BayInput; e
 
 export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
   const t = copy[lang]
-  const reduced = useReducedMotion()
-  const webgl = useMemo(() => hasWebGL(), [])
+  const [reduced, setReduced] = useState(readReducedPreference)
+  const [renderer, setRenderer] = useState<'webgl' | '2d'>(() => hasWebGL() ? 'webgl' : '2d')
+  const diagnostics = useMemo(() => new URLSearchParams(window.location.search).has('diag'), [])
+  // Stable, so the backdrop's context-loss recovery timer is not reset by re-renders.
+  const fallbackTo2d = useCallback(() => setRenderer('2d'), [])
   const input = useMemo(() => createBayInput((x, y, opacity) => placeBeacon(document.getElementById('b-sj'), x, y, opacity)), [])
   const sound = useMemo(() => createNightSound(), [])
   const page = useRef<HTMLDivElement>(null)
@@ -126,6 +177,27 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
   const navigate = useNavigate()
   const home = lang === 'es' ? '/es' : '/'
   const other = lang === 'es' ? '/' : '/es'
+
+  // The footer switch is the only thing that turns motion down on this page.
+  useLayoutEffect(() => {
+    motion.reduced = reduced
+    document.documentElement.classList.toggle('bahia-reduced', reduced)
+    return () => document.documentElement.classList.remove('bahia-reduced')
+  }, [reduced])
+
+  // If the WebGL scene never produces a frame (driver, shader, or chunk failure),
+  // switch to the 2D water so the page is never left without its motion.
+  useEffect(() => {
+    if (renderer !== 'webgl') return
+    let visibleSeconds = 0
+    const check = window.setInterval(() => {
+      if (input.failed) { setRenderer('2d'); return }
+      if (document.hidden) return
+      visibleSeconds++
+      if (visibleSeconds >= 5 && input.frames === 0) setRenderer('2d')
+    }, 1000)
+    return () => window.clearInterval(check)
+  }, [input, renderer])
 
   // Page chrome: dark document and browser UI, no ambient glow from the old theme.
   useEffect(() => {
@@ -213,8 +285,8 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
     const work = document.getElementById('work')
     if (!root || !islandEl || !stageEl || !contactEl || !navEl || !work) return
     const media = gsap.matchMedia()
-    media.add('(prefers-reduced-motion: no-preference)', () => {
-      root.classList.add('is-motion')
+    media.add('all', () => {
+      if (!reduced) root.classList.add('is-motion')
       let offsets = { island: 0, islandHeight: 1, work: 0, contact: 0 }
       let step = ''
       let caption = ''
@@ -223,6 +295,8 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
         offsets = { island: top(islandEl), islandHeight: islandEl.offsetHeight, work: top(work), contact: top(contactEl) }
       }
       const update = (y: number) => {
+        navEl.classList.toggle('is-scrolled', y > 40)
+        if (reduced) return
         const vh = window.innerHeight
         const enter = phase(y, offsets.island - vh, offsets.island)
         const stuck = phase(y, offsets.island, offsets.island + offsets.islandHeight - vh)
@@ -237,14 +311,13 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
         if (nextStep !== step) { step = nextStep; stageEl.dataset.step = step }
         const nextCaption = String(stuck > .64)
         if (nextCaption !== caption) { caption = nextCaption; stageEl.dataset.caption = caption }
-        navEl.classList.toggle('is-scrolled', y > 40)
       }
       measure()
       const master = ScrollTrigger.create({
         start: 0,
         end: 'max',
         onUpdate: self => {
-          input.velocity.value = self.getVelocity()
+          if (!reduced) input.velocity.value = self.getVelocity()
           update(self.scroll())
         },
         onRefresh: self => { measure(); update(self.scroll()) },
@@ -260,13 +333,13 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
       }
     })
     return () => media.revert()
-  }, [input])
+  }, [input, reduced])
 
   // Entrance: the name rises out of the water once the display face is ready.
   useLayoutEffect(() => {
     const root = page.current
     if (!root) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (readReducedPreference()) {
       root.dataset.intro = 'done'
       return
     }
@@ -368,7 +441,9 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
 
   return <div className="bahia" ref={page}>
     <a className="b-skip" href="#b-main">{t.skip}</a>
-    {webgl && <Suspense fallback={null}><BayBackdrop input={input} onLost={setGlLost} /></Suspense>}
+    {renderer === 'webgl'
+      ? <Suspense fallback={null}><BayBackdrop input={input} onLost={setGlLost} onFail={fallbackTo2d} reduced={reduced} /></Suspense>
+      : <BayCanvas2D input={input} reduced={reduced} />}
     <div className="b-grain" aria-hidden="true" />
 
     <header className="b-nav" ref={nav}>
@@ -394,7 +469,7 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
       <a href={LINKEDIN} target="_blank" rel="noreferrer">{t.hello}</a>
     </nav>}
 
-    {!glLost && <div className="b-sj" id="b-sj" aria-hidden="true">
+    {renderer === 'webgl' && !glLost && !reduced && <div className="b-sj" id="b-sj" aria-hidden="true">
       <span className="b-sj-name">San Juan</span>
       <span className="b-sj-coords">18.47° N, 66.11° W</span>
     </div>}
@@ -416,7 +491,7 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
 
       <section className="b-isla" ref={island} aria-labelledby="b-isla-title">
         <div className="b-isla-stage" ref={stage}>
-          {(!webgl || reduced || glLost) && <StaticIsland label={t.island.mapLabel} />}
+          {(renderer === '2d' || reduced || glLost) && <StaticIsland label={t.island.mapLabel} animate={!reduced} />}
           <div className="b-wrap b-isla-copy">
             <div className="b-isla-steps">
               {t.island.steps.map((step, i) => <div className="b-isla-step" key={i}>
@@ -429,8 +504,8 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
         </div>
       </section>
 
-      <WorkReel lang={lang} />
-      <Trajectory lang={lang} />
+      <WorkReel lang={lang} reduced={reduced} />
+      <Trajectory lang={lang} reduced={reduced} />
 
       <section className="b-notes" aria-labelledby="b-notes-title">
         <div className="b-wrap">
@@ -461,11 +536,15 @@ export default function BahiaPage({ lang = 'en' }: { lang?: Lang }) {
       </section>
     </main>
 
+    {diagnostics && <Diagnostics input={input} renderer={renderer} reduced={reduced} />}
     <footer className="b-footer">
       <div className="b-wrap b-footer-row">
         <p>{t.footer}</p>
         <nav aria-label={lang === 'es' ? 'Redes' : 'Social'}>
           {socials.map(social => <a key={social.label} href={social.href} target="_blank" rel="noreferrer">{social.label}</a>)}
+          <button className="b-motion-switch" type="button" aria-pressed={reduced} onClick={() => { writeReducedPreference(!reduced); setReduced(!reduced) }}>
+            {reduced ? t.motionOn : t.motionOff}
+          </button>
         </nav>
       </div>
     </footer>

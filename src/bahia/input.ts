@@ -23,6 +23,10 @@ export type BayInput = {
   splashes: { x: number; y: number; strength: number }[]
   /** Where San Juan sits on screen, so the page can pin a label to it. */
   onBeacon?: (x: number, y: number, opacity: number) => void
+  /** Frames the WebGL scene has produced; the page falls back to 2D if this stays at 0. */
+  frames: number
+  /** Set when a shader fails to compile on this device. */
+  failed: boolean
 }
 
 export function hasWebGL() {
@@ -41,5 +45,7 @@ export function createBayInput(onBeacon?: BayInput['onBeacon']): BayInput {
     velocity: { value: 0 },
     pointer: { x: 0, y: 0, moved: false, lastMove: -Infinity },
     splashes: [],
+    frames: 0,
+    failed: false,
   }
 }

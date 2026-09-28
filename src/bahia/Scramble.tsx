@@ -1,8 +1,7 @@
 import { useLayoutEffect, useRef, type ElementType } from 'react'
+import { motion } from './motion'
 
 const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzñáéíóú¿¡0123456789'
-
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /** Decodes `from` into `to` one character at a time, left to right. */
 function decode(element: HTMLElement, from: string, to: string, duration: number) {
@@ -51,7 +50,7 @@ export function Scramble({ text, as: Tag = 'span', className, replay = 0, durati
     const from = changed ? shown.current : text
     shown.current = text
     played.current = replay
-    if ((!changed && !replayed) || reducedMotion()) {
+    if ((!changed && !replayed) || motion.reduced) {
       element.textContent = text
       return
     }
