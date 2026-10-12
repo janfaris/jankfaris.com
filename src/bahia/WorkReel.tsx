@@ -1,9 +1,96 @@
-import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react'
-import { ArrowUpRight } from 'lucide-react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { ArrowUpRight, Check } from 'lucide-react'
 import type { Lang } from '../content'
-import { alsoShipped, copy, featured, type FeaturedProject } from './copy'
+import { alsoShipped, copy, featured, type FeaturedProject, type NotchLine } from './copy'
 import { gsap, ScrollTrigger } from './gsap'
 import { Scramble } from './Scramble'
+
+type NotchBeat = { line: number; words: number; phase: 'idle' | 'listen' | 'done'; applied: number; ms: number }
+
+/** The loop as a list of beats: each request is heard word by word, pressed, then the notch closes. */
+function notchBeats(lines: NotchLine[]): NotchBeat[] {
+  const beats: NotchBeat[] = [{ line: -1, words: 0, phase: 'idle', applied: 0, ms: 1100 }]
+  lines.forEach((line, i) => {
+    const count = line.say.split(' ').length
+    for (let w = 0; w <= count; w++) beats.push({ line: i, words: w, phase: 'listen', applied: i, ms: w === 0 ? 520 : 250 })
+    beats.push({ line: i, words: count, phase: 'listen', applied: i, ms: 420 })
+    beats.push({ line: i, words: count, phase: 'done', applied: i + 1, ms: 1500 })
+    beats.push({ line: i, words: count, phase: 'idle', applied: i + 1, ms: i === lines.length - 1 ? 2200 : 650 })
+  })
+  return beats
+}
+
+/** Intent's notch hears three requests and Word applies each one. Runs only while on screen. */
+function IntentNotch({ notch, lang, reduced }: { notch: NonNullable<FeaturedProject['notch']>; lang: Lang; reduced: boolean }) {
+  const t = copy[lang].work
+  const lines = notch.lines[lang]
+  const scene = useRef<HTMLDivElement>(null)
+  const [beat, setBeat] = useState(0)
+  const [visible, setVisible] = useState(false)
+  const beats = useMemo(() => notchBeats(lines), [lines])
+  const run = !reduced && visible
+
+  useEffect(() => {
+    const el = scene.current
+    if (!el) return
+    const observer = new IntersectionObserver(entries => setVisible(entries[entries.length - 1].intersectionRatio >= .3), { threshold: [0, .3, .6] })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!run) return
+    const id = window.setTimeout(() => setBeat(b => (b + 1) % beats.length), beats[beat % beats.length].ms)
+    return () => window.clearTimeout(id)
+  }, [run, beat, beats])
+
+  // With motion off, show the finished state: every request applied.
+  const now: NotchBeat = reduced ? { line: lines.length - 1, words: 99, phase: 'done', applied: lines.length, ms: 0 } : beats[beat % beats.length]
+  const applied = lines.slice(0, now.applied).map(line => `is-${line.effect}`)
+  const line = now.line >= 0 ? lines[now.line] : undefined
+  const open = now.phase !== 'idle' && !!line
+  // Keep the pressed command showing while the notch closes, not 'Listening'.
+  const heard = !!line && now.applied > now.line
+
+  return <div ref={scene} className="b-intent" role="img" aria-label={t.notchLabel}>
+    <div className="b-mac-bar" aria-hidden="true">
+      <b>{notch.app}</b><span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Format</span>
+      <i className="b-mac-icon"><i /><i /><i /><i /><i /></i>
+    </div>
+    <div className="b-notch-hw" aria-hidden="true" />
+    <div className={`b-notch${open ? ' is-open' : ''} is-${now.phase}`} aria-hidden="true">
+      <div className="b-notch-row">
+        {heard && line
+          ? <span className="b-notch-did"><Check size={13} strokeWidth={2.5} />{line.did}</span>
+          : <span className="b-notch-state"><span className="b-wave"><i /><i /><i /><i /><i /></span>{t.listening}</span>}
+        <span className="b-notch-app">{notch.app}</span>
+      </div>
+      <p className="b-notch-words">
+        {line?.say.split(' ').map((word, k) => <span key={`${now.line}-${k}`} className={k < now.words ? 'is-on' : undefined}>{word} </span>)}
+        {now.phase === 'listen' && <span className="b-caret" />}
+      </p>
+    </div>
+    <div className="b-doc" aria-hidden="true">
+      <div className="b-doc-bar"><i /><i /><i /><span>{notch.doc}.docx</span></div>
+      <div className="b-doc-page">
+        <p className={['b-doc-title', ...applied].join(' ')}><span>{notch.doc}</span></p>
+        {[94, 88, 97, 72, 0, 90, 84, 61].map((w, i) => <span key={i} className="b-doc-line" style={{ '--w': `${w}%` } as CSSProperties} />)}
+      </div>
+    </div>
+  </div>
+}
+
+/** PÚBLICO's frame wears a windshield route board: real stops from the game's San Juan. */
+function RouteBoard({ stops }: { stops: string[] }) {
+  return <div className="b-route" aria-hidden="true">
+    <span className="b-route-plate">San Juan</span>
+    <div className="b-route-rail">
+      <div className="b-route-track">
+        {[...stops, ...stops].map((stop, i) => <span key={i}>{stop}<i>›</i></span>)}
+      </div>
+    </div>
+  </div>
+}
 
 /** Lupa means magnifying glass; its panel shows the real pipeline under one. */
 function LupaLens({ steps, label }: { steps: string[]; label: string }) {
@@ -18,14 +105,18 @@ function LupaLens({ steps, label }: { steps: string[]; label: string }) {
   </div>
 }
 
-function Panel({ project, lang }: { project: FeaturedProject; lang: Lang }) {
+function Panel({ project, lang, reduced }: { project: FeaturedProject; lang: Lang; reduced: boolean }) {
   const t = copy[lang]
-  return <article className={`b-panel${project.video ? '' : ' b-panel-diagram'}`}>
+  const tint = project.tint ? { '--tint': project.tint } as CSSProperties : undefined
+  return <article className={`b-panel${project.video ? '' : ' b-panel-diagram'}${project.tint ? ' has-tint' : ''}`} style={tint}>
     <h3 className="b-panel-name">{project.name}</h3>
     <div className="b-frame">
       {project.video
         ? <video className="b-video" src={project.video.src} poster={project.video.poster} muted loop playsInline preload="none" aria-label={`${project.name} demo`} />
-        : project.pipeline && <LupaLens steps={project.pipeline[lang]} label={t.work.pipeline} />}
+        : project.notch
+          ? <IntentNotch key={lang} notch={project.notch} lang={lang} reduced={reduced} />
+          : project.pipeline && <LupaLens steps={project.pipeline[lang]} label={t.work.pipeline} />}
+      {project.route && <RouteBoard stops={project.route} />}
     </div>
     <div className="b-panel-info">
       <p className="b-meta">{project.meta[lang]}</p>
@@ -131,7 +222,7 @@ export function WorkReel({ lang, reduced }: { lang: Lang; reduced: boolean }) {
             {t.work.stats.map(stat => <div key={stat.label}><dt>{stat.label}</dt><dd>{stat.value}</dd></div>)}
           </dl>
         </div>
-        {featured.map(project => <Panel key={project.name} project={project} lang={lang} />)}
+        {featured.map(project => <Panel key={project.name} project={project} lang={lang} reduced={reduced} />)}
         <article className="b-panel b-panel-also">
           <h3 className="b-also-title"><Scramble text={t.work.also} /></h3>
           <ul>

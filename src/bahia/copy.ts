@@ -1,9 +1,13 @@
 import type { Lang } from '../content'
 
-// Every claim here comes from content.ts, posts.ts, or the current homepage.
+// Every claim here comes from content.ts, posts.ts, the current homepage, or
+// the product's own repo and site (Intent: intentmac.vercel.app; PÚBLICO: publicopr.com).
 export const EMAIL = 'jankarlo.faris@outlook.com'
 
 type Text = Record<Lang, string>
+
+/** One spoken request in the Intent panel: what you say, and the app command it presses. */
+export type NotchLine = { say: string; did: string; effect: 'bigger' | 'center' | 'bold' }
 
 export type FeaturedProject = {
   name: string
@@ -15,6 +19,13 @@ export type FeaturedProject = {
   tech: string[]
   video?: { src: string; poster: string }
   pipeline?: Record<Lang, string[]>
+  /** Intent: a drawn notch hears a few requests and the document changes. Commands use Word's English
+   *  names in both languages, as Intent shows them; Spanish speech still presses English menus. */
+  notch?: { app: string; doc: string; lines: Record<Lang, NotchLine[]> }
+  /** Route-board stops along the foot of the frame (PÚBLICO). */
+  route?: string[]
+  /** Brand color for the frame's edge and glow; the page keeps its one accent. */
+  tint?: string
   stats?: { value: string; label: Text }[]
 }
 
@@ -29,6 +40,59 @@ export type SmallProject = {
 }
 
 export const featured: FeaturedProject[] = [
+  {
+    name: 'PÚBLICO',
+    link: 'https://publicopr.com',
+    linkLabel: { en: 'Open PÚBLICO', es: 'Abrir PÚBLICO' },
+    meta: { en: 'Game · TestFlight beta · 2026', es: 'Juego · Beta en TestFlight · 2026' },
+    body: {
+      en: 'Drive the real San Juan, street by street. Pick up riders on streets you know, get paid, and pass your friends on the weekly board.',
+      es: 'Maneja el San Juan real, calle por calle. Recoge pasajeros por calles que conoces, cobra y pásale a tus panas en la tabla de la semana.',
+    },
+    note: {
+      en: 'Free public beta for iPhone, iPad, and Apple TV, in Spanish and English. Clip recorded in the game’s Apple TV version; car models by Quaternius / Kay Lousberg (CC0) and Poly by Google (CC BY 3.0, modified).',
+      es: 'Beta pública y gratis para iPhone, iPad y Apple TV, en español y en inglés. Clip grabado en la versión del juego para Apple TV; carros de Quaternius / Kay Lousberg (CC0) y Poly by Google (CC BY 3.0, modificados).',
+    },
+    tech: ['Unity 6', 'Cloudflare Workers', 'Durable Objects', 'Supabase', 'OpenStreetMap'],
+    video: { src: '/demos/publico.mp4', poster: '/demos/publico.jpg' },
+    route: ['Viejo San Juan', 'Puerta de Tierra', 'Condado', 'Santurce', 'Hato Rey', 'Isla Grande', 'Ocean Park', 'Miramar'],
+    tint: '#ffd400',
+    stats: [
+      { value: '748 km', label: { en: 'of real San Juan streets', es: 'de calles reales de San Juan' } },
+      { value: '43', label: { en: 'landmarks to collect', es: 'sitios conocidos para coleccionar' } },
+    ],
+  },
+  {
+    name: 'Intent',
+    link: 'https://intentmac.vercel.app',
+    linkLabel: { en: 'Open Intent', es: 'Abrir Intent' },
+    meta: { en: 'Mac app · Public beta · 2026', es: 'App para Mac · Beta pública · 2026' },
+    body: {
+      en: 'Talk to the apps on your Mac. Hold a key and say what you want, in English or Spanish. Intent presses the matching menu or button, finds the part of a document you described, or carries the work into the next app.',
+      es: 'Háblale a las apps de tu Mac. Aguanta una tecla y di lo que quieres, en español o en inglés. Intent le da al menú o al botón que corresponde, encuentra la parte del documento que describiste o pasa el trabajo a la próxima app.',
+    },
+    note: {
+      en: 'Public beta for Apple Silicon Macs. Your voice becomes text on your Mac, and Intent never sends, buys, deletes, or signs in for you.',
+      es: 'Beta pública para Macs con Apple Silicon. Tu voz se convierte en texto en tu Mac, e Intent nunca envía, compra, borra ni inicia sesión por ti.',
+    },
+    tech: ['Swift', 'SpeechAnalyzer', 'Accessibility API', 'Claude Haiku 4.5', 'ElevenLabs'],
+    notch: {
+      app: 'Word',
+      doc: 'Q4 Launch Plan',
+      lines: {
+        en: [
+          { say: 'make the title bigger', did: 'Grow Font', effect: 'bigger' },
+          { say: 'center it', did: 'Center', effect: 'center' },
+          { say: 'ponlo en negrita', did: 'Bold', effect: 'bold' },
+        ],
+        es: [
+          { say: 'agranda el título', did: 'Grow Font', effect: 'bigger' },
+          { say: 'céntralo', did: 'Center', effect: 'center' },
+          { say: 'make it bold', did: 'Bold', effect: 'bold' },
+        ],
+      },
+    },
+  },
   {
     name: 'Lupa',
     link: 'https://lupa-seven.vercel.app',
@@ -203,14 +267,16 @@ const en = {
   },
   work: {
     title: 'Things I’ve shipped.',
-    sub: 'Eight products built end to end. Two on npm, one on the App Store.',
+    sub: 'Ten products built end to end. Two on npm, one on the App Store, and two in public beta.',
     stats: [
-      { value: '08', label: 'products shipped' },
+      { value: '10', label: 'products shipped' },
       { value: '2', label: 'npm packages' },
       { value: '1', label: 'App Store app' },
     ],
     also: 'Also shipped',
     pipeline: 'How it works',
+    listening: 'Listening',
+    notchLabel: 'Intent hears three requests, one in Spanish, and Word makes the title bigger, centers it, and makes it bold.',
   },
   path: {
     title: 'From jet engines to AI agents.',
@@ -260,14 +326,16 @@ const es: typeof en = {
   },
   work: {
     title: 'Lo que he lanzado.',
-    sub: 'Ocho productos de principio a fin. Dos en npm y uno en el App Store.',
+    sub: 'Diez productos de principio a fin. Dos en npm, uno en el App Store y dos en beta pública.',
     stats: [
-      { value: '08', label: 'productos lanzados' },
+      { value: '10', label: 'productos lanzados' },
       { value: '2', label: 'paquetes npm' },
       { value: '1', label: 'app en el App Store' },
     ],
     also: 'También lancé',
     pipeline: 'Cómo funciona',
+    listening: 'Escuchando',
+    notchLabel: 'Intent escucha tres peticiones, una en inglés, y Word agranda el título, lo centra y lo pone en negrita.',
   },
   path: {
     title: 'De motores de avión a agentes de IA.',

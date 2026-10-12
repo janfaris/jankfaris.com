@@ -167,9 +167,9 @@ html.bahia-route body::before { display: none; }
 .b-proof dt, .b-panel-stats dt { font-size: 13px; color: var(--text-3); }
 .b-panel { position: relative; display: grid; gap: 22px; }
 .b-work.is-reel .b-panel { flex: 0 0 min(74vw, 1180px); grid-template-columns: minmax(250px, 4fr) 8fr; grid-template-rows: auto auto; column-gap: clamp(28px, 3vw, 56px); row-gap: 0; align-items: end; }
-.b-panel-name { margin: 0; font-size: clamp(60px, 9.4vw, 168px); font-weight: 700; font-stretch: 120%; letter-spacing: -.05em; line-height: .84; color: var(--text); }
+.b-panel-name { margin: 0; font-size: clamp(min(60px, 15.5vw), 9.4vw, 168px); font-weight: 700; font-stretch: 120%; letter-spacing: -.05em; line-height: .84; color: var(--text); }
 .b-work.is-reel .b-panel-name { grid-column: 1 / -1; grid-row: 1; position: relative; z-index: 2; margin-bottom: -.2em; pointer-events: none; text-shadow: 0 10px 50px rgba(2, 6, 12, .55); }
-.b-frame { position: relative; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: #050c17; box-shadow: 0 40px 120px -48px rgba(40, 130, 240, .5); }
+.b-frame { position: relative; aspect-ratio: 16 / 10; overflow: hidden; container-type: inline-size; border: 1px solid var(--line); border-radius: var(--radius); background: #050c17; box-shadow: 0 40px 120px -48px rgba(40, 130, 240, .5); }
 .b-work.is-reel .b-frame { grid-column: 2; grid-row: 2; max-height: 62svh; justify-self: stretch; }
 .b-video { display: block; width: 100%; height: 100%; object-fit: cover; }
 .b-panel-info { display: grid; gap: 12px; align-content: end; max-width: 440px; }
@@ -195,6 +195,63 @@ html.bahia-route body::before { display: none; }
   0%, 28%, 100% { color: var(--text-3); }
   5%, 22% { color: var(--text); text-shadow: 0 0 18px rgba(120, 210, 255, .8); }
 }
+
+/* A product's own color on its frame edge and glow only (PÚBLICO's route-board yellow). */
+.b-panel.has-tint .b-frame { border-color: color-mix(in srgb, var(--tint) 46%, transparent); box-shadow: 0 40px 120px -52px color-mix(in srgb, var(--tint) 42%, transparent); }
+
+/* PÚBLICO: the stops scroll along the frame's foot like a público's route board.
+   At the bottom so the overlapping panel name never covers it. Transform-only. */
+.b-route { position: absolute; bottom: 0; left: 0; right: 0; z-index: 1; display: flex; align-items: stretch; height: clamp(26px, 5.2cqw, 38px); border-top: 2px solid var(--tint, var(--accent)); background: rgba(14, 14, 14, .9); font-stretch: 86%; font-weight: 640; letter-spacing: .005em; line-height: 1; }
+.b-route-plate { flex: none; display: grid; place-items: center; padding: 0 clamp(10px, 1.8cqw, 16px); background: var(--tint, var(--accent)); color: #121212; font-size: clamp(10.5px, 1.65cqw, 13px); font-weight: 820; font-stretch: 72%; letter-spacing: .06em; text-transform: uppercase; }
+.b-route-rail { position: relative; flex: 1; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.b-route-track { display: flex; width: max-content; height: 100%; align-items: center; animation: b-route 34s linear infinite; }
+.b-route-track span { display: inline-flex; align-items: center; gap: clamp(10px, 1.8cqw, 18px); padding-right: clamp(10px, 1.8cqw, 18px); font-size: clamp(11px, 1.75cqw, 14.5px); color: #ece6da; white-space: nowrap; }
+.b-route-track i { font-style: normal; font-weight: 800; color: var(--tint, var(--accent)); }
+@keyframes b-route { to { transform: translateX(-50%); } }
+
+/* Intent: a Mac menu bar whose notch opens, hears a request, and presses it in Word.
+   Sized in container units so it reads the same on a phone and a desktop frame. */
+.b-intent { position: absolute; inset: 0; container-type: inline-size; overflow: hidden; background: radial-gradient(90% 80% at 50% 0%, #0d2440 0%, #050c17 70%); font-family: var(--display); }
+.b-mac-bar { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: clamp(8px, 2cqw, 20px); height: clamp(16px, 3.6cqw, 28px); padding: 0 clamp(10px, 2.4cqw, 22px); background: rgba(164, 204, 255, .06); border-bottom: 1px solid var(--line); font-size: clamp(8.5px, 1.32cqw, 12px); color: var(--text-3); white-space: nowrap; }
+.b-mac-bar b { font-weight: 640; color: var(--text-2); }
+.b-mac-bar span:nth-of-type(n + 4) { visibility: hidden; }
+@container (min-width: 520px) { .b-mac-bar span:nth-of-type(n + 4) { visibility: visible; } }
+.b-mac-icon { display: inline-flex; align-items: center; gap: 1.5px; height: 58%; margin-left: auto; padding: 0 5px; border-radius: 999px; background: var(--text-2); }
+.b-mac-icon i { width: 1.5px; height: 40%; border-radius: 1px; background: #050c17; }
+.b-mac-icon i:nth-child(2), .b-mac-icon i:nth-child(4) { height: 62%; }
+.b-mac-icon i:nth-child(3) { height: 80%; }
+.b-notch-hw { position: absolute; top: 0; left: 50%; width: 15cqw; height: clamp(16px, 3.6cqw, 28px); border-radius: 0 0 clamp(6px, 1.2cqw, 12px) clamp(6px, 1.2cqw, 12px); background: #000; transform: translateX(-50%); }
+.b-notch { position: absolute; z-index: 2; top: 0; left: 50%; display: grid; gap: clamp(4px, .9cqw, 9px); width: max(212px, 60cqw); padding: clamp(8px, 1.6cqw, 15px) clamp(12px, 2.4cqw, 22px) clamp(10px, 2cqw, 18px); border-radius: 0 0 clamp(14px, 2.6cqw, 26px) clamp(14px, 2.6cqw, 26px); background: #000; box-shadow: 0 18px 50px -18px rgba(100, 179, 255, .35); opacity: 0; transform: translateX(-50%) scale(.25); transform-origin: 50% 0; transition: transform .6s var(--ease), opacity .25s ease .05s; }
+.b-notch.is-open { opacity: 1; transform: translateX(-50%) scale(1); transition: transform .6s var(--ease), opacity .12s ease; }
+.b-notch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 500 clamp(9.5px, 1.45cqw, 13px)/1 var(--mono); color: var(--text-3); white-space: nowrap; }
+.b-notch-state, .b-notch-did { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.b-notch-did svg { flex: none; }
+.b-notch-did { color: var(--text); }
+.b-notch-did svg { color: var(--accent); }
+.b-wave { display: inline-flex; align-items: center; gap: 2px; height: 12px; }
+.b-wave i { width: 2px; height: 100%; border-radius: 2px; background: var(--accent); transform: scaleY(.3); }
+.b-notch.is-listen .b-wave i { animation: b-wave .9s ease-in-out infinite; }
+.b-wave i:nth-child(2) { animation-delay: -.6s; }
+.b-wave i:nth-child(3) { animation-delay: -.3s; }
+.b-wave i:nth-child(4) { animation-delay: -.75s; }
+.b-wave i:nth-child(5) { animation-delay: -.15s; }
+@keyframes b-wave { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+.b-notch-words { min-height: 1.15em; margin: 0; font-size: clamp(12px, 2.5cqw, 23px); font-weight: 560; font-stretch: 108%; letter-spacing: -.02em; line-height: 1.15; color: var(--text); white-space: nowrap; }
+.b-notch-words span { opacity: 0; transition: opacity .25s ease; }
+.b-notch-words span.is-on { opacity: 1; }
+.b-caret { display: inline-block; width: 2px; height: .95em; margin-left: -.15em; vertical-align: -.12em; background: var(--accent); animation: b-blink 1s steps(1) infinite; }
+@keyframes b-blink { 50% { opacity: 0; } }
+.b-doc { position: absolute; left: 13cqw; right: 13cqw; top: 15cqw; bottom: -2cqw; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line-2); border-radius: clamp(6px, 1.2cqw, 12px); background: #0a1524; box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .8); }
+.b-doc-bar { position: relative; display: flex; align-items: center; gap: clamp(3px, .7cqw, 6px); height: clamp(16px, 3.4cqw, 26px); padding: 0 clamp(8px, 1.6cqw, 14px); border-bottom: 1px solid var(--line); }
+.b-doc-bar i { width: clamp(5px, 1cqw, 9px); aspect-ratio: 1; border-radius: 50%; background: rgba(164, 204, 255, .22); }
+.b-doc-bar span { position: absolute; left: 50%; transform: translateX(-50%); font-size: clamp(8.5px, 1.25cqw, 11.5px); color: var(--text-3); white-space: nowrap; }
+.b-doc-page { position: relative; flex: 1; display: grid; align-content: start; gap: clamp(5px, 1.15cqw, 10px); padding: clamp(14px, 3.4cqw, 30px) clamp(16px, 4.6cqw, 40px); }
+.b-doc-title { position: relative; height: clamp(22px, 5.4cqw, 46px); margin: 0 0 clamp(2px, .6cqw, 6px); }
+.b-doc-title span { position: absolute; left: 0; bottom: 0; font-size: clamp(11px, 2.3cqw, 19px); font-weight: 380; letter-spacing: -.015em; line-height: 1; color: var(--text-2); white-space: nowrap; transform: translateX(0); transition: font-size .55s var(--ease), left .7s var(--ease), transform .7s var(--ease), font-weight .45s ease, color .45s ease, text-shadow .9s ease; }
+.b-doc-title.is-bigger span { font-size: clamp(16px, 3.8cqw, 32px); color: var(--text); }
+.b-doc-title.is-center span { left: 50%; transform: translateX(-50%); }
+.b-doc-title.is-bold span { font-weight: 760; text-shadow: 0 0 22px rgba(120, 210, 255, .45); }
+.b-doc-line { display: block; width: var(--w); height: clamp(4px, .9cqw, 8px); border-radius: 999px; background: rgba(164, 204, 255, .13); }
 
 /* Also shipped */
 .b-work.is-reel .b-panel-also { flex: 0 0 min(580px, 44vw); display: block; }
@@ -325,10 +382,14 @@ html.bahia-route body::before { display: none; }
   .b-menu { background: rgba(2, 6, 12, .97); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .b-lang, .b-sound, .b-menu-btn { height: 44px; min-width: 44px; }
   .b-sound { width: 44px; }
+  .b-doc-title.is-bold span { text-shadow: none; }
 }
 
 /* Motion follows the footer switch, not the OS setting. */
-html.bahia-reduced .b-lens li, html.bahia-reduced .b-lens-scan, html.bahia-reduced .b-sound .b-eq i { animation: none; }
+html.bahia-reduced .b-lens li, html.bahia-reduced .b-lens-scan, html.bahia-reduced .b-sound .b-eq i, html.bahia-reduced .b-route-track, html.bahia-reduced .b-wave i, html.bahia-reduced .b-caret { animation: none; }
+html.bahia-reduced :is(.b-notch, .b-doc-title span) { transition: none; }
+/* With motion off the demos show native controls along their foot, so the route board moves up. */
+html.bahia-reduced .b-route { top: 0; bottom: auto; border-top: 0; border-bottom: 2px solid var(--tint, var(--accent)); }
 html.bahia-reduced .b-note:hover, html.bahia-reduced .b-note:hover .b-note-arrow { transform: none; }
 
 .b-motion-switch { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; transition: color .3s; }
