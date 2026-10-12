@@ -35,7 +35,7 @@ export type SmallProject = {
   linkLabel: Text
   meta: Text
   body: Text
-  image?: string
+  image?: { src: string; alt: Text }
   code?: string
 }
 
@@ -53,7 +53,7 @@ export const featured: FeaturedProject[] = [
       en: 'Free public beta for iPhone, iPad, and Apple TV, in Spanish and English. Clip recorded in the game’s Apple TV version; car models by Quaternius / Kay Lousberg (CC0) and Poly by Google (CC BY 3.0, modified).',
       es: 'Beta pública y gratis para iPhone, iPad y Apple TV, en español y en inglés. Clip grabado en la versión del juego para Apple TV; carros de Quaternius / Kay Lousberg (CC0) y Poly by Google (CC BY 3.0, modificados).',
     },
-    tech: ['Unity 6', 'Cloudflare Workers', 'Durable Objects', 'Supabase', 'OpenStreetMap'],
+    tech: ['Unity 6', 'Cloudflare Workers', 'OpenStreetMap'],
     video: { src: '/demos/publico.mp4', poster: '/demos/publico.jpg' },
     route: ['Viejo San Juan', 'Puerta de Tierra', 'Condado', 'Santurce', 'Hato Rey', 'Isla Grande', 'Ocean Park', 'Miramar'],
     tint: '#ffd400',
@@ -75,7 +75,7 @@ export const featured: FeaturedProject[] = [
       en: 'Public beta for Apple Silicon Macs. Your voice becomes text on your Mac, and Intent never sends, buys, deletes, or signs in for you.',
       es: 'Beta pública para Macs con Apple Silicon. Tu voz se convierte en texto en tu Mac, e Intent nunca envía, compra, borra ni inicia sesión por ti.',
     },
-    tech: ['Swift', 'SpeechAnalyzer', 'Accessibility API', 'Claude Haiku 4.5', 'ElevenLabs'],
+    tech: ['Swift', 'SpeechAnalyzer', 'Accessibility API', 'LLM routing'],
     notch: {
       app: 'Word',
       doc: 'Q4 Launch Plan',
@@ -141,6 +141,17 @@ export const featured: FeaturedProject[] = [
     tech: ['TypeScript', 'Playwright', 'FFmpeg', 'Zod'],
     video: { src: '/demos/demotape.mp4', poster: '/demos/demotape.jpg' },
   },
+]
+
+export const alsoShipped: SmallProject[] = [
+  {
+    name: 'Janga',
+    link: 'https://apps.apple.com/us/app/janga/id6744530407',
+    linkLabel: { en: 'View on the App Store', es: 'Ver en el App Store' },
+    meta: { en: 'iOS app · 2025', es: 'App iOS · 2025' },
+    body: { en: 'Helps people find where to hang out. Live on the App Store.', es: 'Ayuda a encontrar dónde janguear. Disponible en el App Store.' },
+    image: { src: '/demos/janga.jpg', alt: { en: 'Janga App Store artwork', es: 'Arte de Janga en el App Store' } },
+  },
   {
     name: 'Blok',
     link: 'https://www.blokpr.co',
@@ -150,8 +161,7 @@ export const featured: FeaturedProject[] = [
       en: 'Brings condo management into WhatsApp, where residents and administrators already communicate.',
       es: 'Lleva la administración del condominio a WhatsApp, donde ya se comunican residentes y administradores.',
     },
-    tech: ['Next.js', 'WhatsApp API', 'Twilio', 'Claude'],
-    video: { src: '/demos/blok.mp4', poster: '/demos/blok.jpg' },
+    image: { src: '/demos/blok.jpg', alt: { en: 'Blok product screen', es: 'Pantalla de Blok' } },
   },
   {
     name: 'Wandr',
@@ -162,19 +172,7 @@ export const featured: FeaturedProject[] = [
       en: 'Brings itineraries, flights, and local events into one AI-assisted trip plan.',
       es: 'Reúne itinerarios, vuelos y eventos locales en un plan de viaje asistido por IA.',
     },
-    tech: ['React', 'Supabase', 'Gemini', 'SerpAPI'],
-    video: { src: '/demos/wandr.mp4', poster: '/demos/wandr.jpg' },
-  },
-]
-
-export const alsoShipped: SmallProject[] = [
-  {
-    name: 'Janga',
-    link: 'https://apps.apple.com/us/app/janga/id6744530407',
-    linkLabel: { en: 'View on the App Store', es: 'Ver en el App Store' },
-    meta: { en: 'iOS app · 2025', es: 'App iOS · 2025' },
-    body: { en: 'Helps people find where to hang out. Live on the App Store.', es: 'Ayuda a encontrar dónde janguear. Disponible en el App Store.' },
-    image: '/demos/janga.jpg',
+    image: { src: '/demos/wandr.jpg', alt: { en: 'Wandr product screen', es: 'Pantalla de Wandr' } },
   },
   {
     name: 'spanish-tone-spec',

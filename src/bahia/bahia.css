@@ -214,6 +214,9 @@ html.bahia-route body::before { display: none; }
 .b-intent { position: absolute; inset: 0; container-type: inline-size; overflow: hidden; background: radial-gradient(90% 80% at 50% 0%, #0d2440 0%, #050c17 70%); font-family: var(--display); }
 .b-mac-bar { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: clamp(8px, 2cqw, 20px); height: clamp(16px, 3.6cqw, 28px); padding: 0 clamp(10px, 2.4cqw, 22px); background: rgba(164, 204, 255, .06); border-bottom: 1px solid var(--line); font-size: clamp(8.5px, 1.32cqw, 12px); color: var(--text-3); white-space: nowrap; }
 .b-mac-bar b { font-weight: 640; color: var(--text-2); }
+/* In the reel the panel name overlaps the frame's top-left corner; the menu starts past it. */
+.b-work.is-reel .b-mac-bar { padding-left: 17cqw; }
+.b-work.is-reel .b-mac-bar span:nth-of-type(n + 3) { display: none; }
 .b-mac-bar span:nth-of-type(n + 4) { visibility: hidden; }
 @container (min-width: 520px) { .b-mac-bar span:nth-of-type(n + 4) { visibility: visible; } }
 .b-mac-icon { display: inline-flex; align-items: center; gap: 1.5px; height: 58%; margin-left: auto; padding: 0 5px; border-radius: 999px; background: var(--text-2); }
@@ -254,7 +257,12 @@ html.bahia-route body::before { display: none; }
 .b-doc-line { display: block; width: var(--w); height: clamp(4px, .9cqw, 8px); border-radius: 999px; background: rgba(164, 204, 255, .13); }
 
 /* Also shipped */
-.b-work.is-reel .b-panel-also { flex: 0 0 min(580px, 44vw); display: block; }
+/* In the reel the five side projects sit in two columns so the panel fits a short screen. */
+.b-work.is-reel .b-panel-also { flex: 0 0 min(1100px, 84vw); display: block; }
+.b-work.is-reel .b-panel-also .b-also-title { margin-bottom: clamp(18px, 3vh, 30px); }
+.b-work.is-reel .b-panel-also ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(18px, 3.4vh, 30px) clamp(28px, 3.4vw, 56px); }
+.b-work.is-reel .b-panel-also li { grid-template-columns: clamp(84px, 8.4vw, 136px) minmax(0, 1fr); gap: clamp(14px, 1.5vw, 22px); }
+.b-work.is-reel .b-panel-also p { margin: 4px 0 8px; font-size: clamp(14px, 1.05vw, 15px); }
 .b-also-title { margin: 0 0 30px; font-size: clamp(30px, 2.8vw, 44px); font-weight: 620; font-stretch: 112%; letter-spacing: -.035em; line-height: 1; }
 .b-panel-also ul { display: grid; gap: 30px; margin: 0; padding: 0; list-style: none; }
 .b-panel-also li { display: grid; grid-template-columns: 136px minmax(0, 1fr); gap: 22px; align-items: start; }

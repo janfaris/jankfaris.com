@@ -228,7 +228,7 @@ export function WorkReel({ lang, reduced }: { lang: Lang; reduced: boolean }) {
           <ul>
             {alsoShipped.map(project => <li key={project.name}>
               <div className="b-also-media" aria-hidden={!project.image && !project.code}>
-                {project.image ? <img src={project.image} alt={`${project.name} App Store artwork`} loading="lazy" /> : project.code ? <code>{project.code}</code> : <span>@{project.name}</span>}
+                {project.image ? <img src={project.image.src} alt={project.image.alt[lang]} loading="lazy" /> : project.code ? <code>{project.code}</code> : <span>@{project.name}</span>}
               </div>
               <div>
                 <h4>{project.name}</h4>
